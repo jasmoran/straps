@@ -1,0 +1,527 @@
+~
+section .bss
+	current_char:	resb	1
+	ret_size:			resq	1
+  loop_cnt:     resq  1
+  if_cnt:       resq  1
+
+section .data
+	registers:		db		'rax,', 'rdi,', 'rsi,', 'rdx,', 'r10,', 'r8, '
+	mov_inst:			db		10, 'mov '
+	sys_inst:			db		10, 'syscall', 10
+	func_prolog:	db		':', 10, 'push rbp', 10, 'mov rbp, rsp', 10, 'sub rsp, ' ;33
+	func_post:		db		10, 'mov rsp, rbp', 10, 'pop rbp', 10, 'ret ' ;26
+	new_line:			db		10
+  loop_label:   db    '.loop_'
+  loop_end_label: db    '.loop_end_'
+  if_label:     db    '.if_'
+  colon:        db    ':', 10
+  jmp:          db    'jmp '
+  jne:          db    'jne '
+  cmp:          db    'cmp '
+
+section .text
+global main
+
+~
+f asm_literal,0,0:
+~
+.byte_loop:
+~
+	# Read byte from stdin
+	*0,0,current_char,1*
+~
+
+	; Check for EOF
+	cmp rax, 0
+	je .ret
+
+	; Check for end NASM section
+	cmp BYTE[current_char], 0x7E ; tilde
+	je .ret
+
+~
+	# Write byte to stdout
+	*1,1,current_char,1*
+~
+
+	jmp .byte_loop
+
+.ret:
+~
+	r
+
+
+f syscall,0,0:
+~
+	push 0
+
+.print_mov:
+~
+	# Write move instruction to stdout
+	*1,1,mov_inst,5*
+~
+
+	pop r9
+	push r9
+	shl r9, 2
+	add r9, registers
+
+~
+	# Write register to stdout
+	*1,1,r9,4*
+~
+
+	pop r9
+	inc r9
+	push r9
+
+.print_val:
+~
+	# Read byte from stdin
+	*0,0,current_char,1*
+~
+
+	; Check for EOF
+	cmp rax, 0
+	je .ret
+
+	; Check for end of syscall
+	cmp BYTE[current_char], 0x2A ; asterisk
+	je .close
+
+	; Check for comma
+	cmp BYTE[current_char], ','
+	je .print_mov
+
+~
+	# Write byte to stdout
+	*1,1,current_char,1*
+~
+
+	jmp .print_val
+
+.close:
+~
+	# Write syscall instruction
+	*1,1,sys_inst,9*
+~
+
+.ret:
+	pop rax
+~
+	r
+
+
+f comment,0,0:
+~
+.byte_loop:
+~
+	# Read byte from stdin
+	*0,0,current_char,1*
+~
+
+	; Check for EOF
+	cmp rax, 0
+	je .ret
+
+	; Check for hash
+	cmp BYTE[current_char], '#'
+	je .ret
+
+	; Check for EOL
+	cmp BYTE[current_char], 10
+	je .ret
+
+	jmp .byte_loop
+
+.ret:
+~
+	r
+
+
+f read_number,0,0:
+~
+	push 0
+
+.read_loop:
+~
+	# Read byte from stdin
+	*0,0,current_char,1*
+~
+
+	sub BYTE[current_char], '0'
+
+	; Check for current_char < 0
+	cmp BYTE[current_char], 0
+	jl .ret
+
+	; Check for current_char > 9
+	cmp BYTE[current_char], 9
+	jg .ret
+
+	pop rax
+	mov rcx, 10
+	mul rcx
+
+	add al, BYTE[current_char]
+
+	push rax
+
+	jmp .read_loop
+
+.ret:
+	pop rax
+~
+	r
+
+
+f write_number,0,0:
+	# rax - integer input
+	# rcx - divisor
+	# rdx - remainder
+	# r12 - digit counter
+~
+	mov rcx, 10
+	xor r12, r12
+
+.divide:
+	xor rdx, rdx
+	div rcx
+	push rdx
+	inc r12
+
+	cmp rax, 0
+	jne .divide
+
+.print_loop:
+	pop rax
+	add rax, '0'
+
+	mov BYTE[current_char], al
+~
+	# Write byte to stdout
+	*1,1,current_char,1*
+~
+
+	dec r12
+
+	cmp r12, 0
+	jne .print_loop
+~
+	r
+
+
+f func_decl,0,0:
+~
+.byte_loop:
+~
+	# Read byte from stdin
+	*0,0,current_char,1*
+~
+
+	; Check for EOF
+	cmp rax, 0
+	je .ret
+
+	; Check for comma
+	cmp BYTE[current_char], ','
+	je .arg_cnt
+
+~
+	# Write byte to stdout
+	*1,1,current_char,1*
+~
+
+	jmp .byte_loop
+
+.arg_cnt:
+	call read_number
+	shl rax, 3
+	mov [ret_size], rax
+
+~
+	# Write function prologue to stdout
+	*1,1,func_prolog,33*
+~
+	call read_number
+	shl rax, 3
+	call write_number
+
+~
+	# Write new line to stdout
+	*1,1,new_line,1*
+
+~
+.ret:
+~
+	r
+
+
+f func_ret,0,0:
+	# Write function post to stdout
+	*1,1,func_post,26*
+~
+	mov rax, [ret_size]
+	call write_number
+~
+	# Write new line to stdout
+	*1,1,new_line,1*
+
+	r
+
+
+f loop_start,0,0:
+  # Read '{' from stdin
+  *0,0,current_char,1*
+
+  # Write new line to stdout
+  *1,1,new_line,1*
+
+  # Write label to stdout
+  *1,1,loop_label,6*
+
+~
+  mov rax, [loop_cnt]
+  call write_number
+~
+
+  # Write colon to stdout
+  *1,1,colon,2*
+
+  r
+
+
+f if_start,0,0:
+  # Write new line to stdout
+  *1,1,new_line,1*
+
+  # Write cmp to stdout
+  *1,1,cmp,4*
+
+~
+.byte_loop:
+~
+
+	# Read byte from stdin
+	*0,0,current_char,1*
+
+~
+	; Check for EOF
+	cmp rax, 0
+	je .write_jne
+
+	; Check for '{' section
+	cmp BYTE[current_char], '{'
+	je .write_jne
+~
+
+	# Write byte to stdout
+	*1,1,current_char,1*
+
+~
+  jmp .byte_loop
+.write_jne:
+~
+
+  # Write new line to stdout
+  *1,1,new_line,1*
+
+  # Write jne to stdout
+  *1,1,jne,4*
+
+  # Write if label to stdout
+  *1,1,if_label,4*
+
+~
+  mov rax, [if_cnt]
+  call write_number
+~
+
+  # Write new line to stdout
+  *1,1,new_line,1*
+  r
+
+f loop_next,0,0:
+  # Write jump to stdout
+  *1,1,jmp,4*
+
+  # Write loop label to stdout
+  *1,1,loop_label,6*
+
+~
+  mov rax, [loop_cnt]
+  call write_number
+~
+
+  # Write new line to stdout
+  *1,1,new_line,1*
+  r
+
+
+f loop_end,0,0:
+~
+  call loop_next
+~
+
+  # Write loop end label to stdout
+  *1,1,loop_end_label,10*
+
+~
+  mov rax, [loop_cnt]
+  call write_number
+  inc QWORD[loop_cnt]
+~
+
+  # Write colon to stdout
+  *1,1,colon,2*
+
+  # Write new line to stdout
+  *1,1,new_line,1*
+  r
+
+f if_end,0,0:
+  # Write if label to stdout
+  *1,1,if_label,4*
+
+~
+  mov rax, [if_cnt]
+  call write_number
+  inc QWORD[if_cnt]
+~
+
+  # Write colon to stdout
+  *1,1,colon,2*
+  r
+
+
+f loop_break,0,0:
+  # Write jump to stdout
+  *1,1,jmp,4*
+
+  # Write loop label to stdout
+  *1,1,loop_end_label,10*
+
+~
+  mov rax, [loop_cnt]
+  call write_number
+~
+
+  # Write new line to stdout
+  *1,1,new_line,1*
+  r
+
+
+f block_end,0,0:
+  # Read block type from stdin
+  *0,0,current_char,1*
+
+~
+  ; If block
+  cmp BYTE[current_char], 'i'
+  jne .end_if1
+    call if_end
+~
+    r
+~
+  .end_if1:
+
+  ; Loop block
+  cmp BYTE[current_char], 'l'
+  jne .end_if2
+    call loop_end
+  .end_if2:
+~
+  r
+
+
+f main,0,0:
+~
+.byte_loop:
+~
+	# Read byte from stdin
+	*0,0,current_char,1*
+
+~
+	; Check for EOF
+	cmp rax, 0
+	je .exit
+
+	; Check for NASM section
+	cmp BYTE[current_char], 0x7E ; tilde
+	jne .end_if1
+		call asm_literal
+		jmp .byte_loop
+	.end_if1:
+
+	; Check for syscall
+	cmp BYTE[current_char], 0x2A ; asterisk
+	jne .end_if2
+		call syscall
+		jmp .byte_loop
+	.end_if2:
+
+	; Check for comment
+	cmp BYTE[current_char], '#'
+	jne .end_if3
+		call comment
+		jmp .byte_loop
+	.end_if3:
+
+	; Check for function declaration
+	cmp BYTE[current_char], 'f'
+	jne .end_if4
+		call func_decl
+		jmp .byte_loop
+	.end_if4:
+
+	; Check for function return
+	cmp BYTE[current_char], 'r'
+	jne .end_if5
+		call func_ret
+		jmp .byte_loop
+	.end_if5:
+
+  ; Check for loop declaration
+  cmp BYTE[current_char], 'l'
+  jne .end_if6
+    call loop_start
+    jmp .byte_loop
+  .end_if6:
+
+  ; Check for if declaration
+  cmp BYTE[current_char], 'i'
+  jne .end_if7
+    call if_start
+    jmp .byte_loop
+  .end_if7:
+
+  ; Check for next call
+  cmp BYTE[current_char], 'n'
+  jne .end_if8
+    call loop_next
+    jmp .byte_loop
+  .end_if8:
+
+  ; Check for break call
+  cmp BYTE[current_char], 'b'
+  jne .end_if9
+    call loop_break
+    jmp .byte_loop
+  .end_if9:
+
+  ; Check for end of block
+  cmp BYTE[current_char], '}'
+  jne .end_if10
+    call block_end
+    jmp .byte_loop
+  .end_if10:
+
+	jmp .byte_loop
+
+	; No man's land
+
+.exit:
+  mov rsp, rbp
+  pop rbp
+~

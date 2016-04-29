@@ -1,0 +1,748 @@
+~
+section .bss
+	current_char:	resb	1
+	ret_size:			resq	1
+  block_cnt:		resq  1
+	enclosing_loo:resq  1
+
+section .data
+	registers:		db		'rax,', 'rdi,', 'rsi,', 'rdx,', 'r10,', 'r8, '
+	mov_inst:			db		10, 'mov '
+	sys_inst:			db		10, 'syscall', 10
+	func_prolog:	db		':', 10, 'push rbp', 10, 'mov rbp, rsp', 10, 'sub rsp, ' ;33
+	func_post:		db		10, 'mov rsp, rbp', 10, 'pop rbp', 10, 'ret ' ;26
+	new_line:			db		10
+  loop_label:   db    '.loop_'
+  loop_end_label: db    '.loop_end_'
+  else_label:   db    '.else_'
+  end_if_label: db    '.end_if_'
+  colon:        db    ':', 10
+  jmp:          db    'jmp '
+  jne:          db    'jne '
+	jng:					db		'jng '
+	jnl:					db		'jnl '
+  cmp:          db    'cmp '
+  push:         db    'push '
+  call:         db    'call '
+	comma:				db		', '
+	param_ebp:		db		'QWORD[rbp + '
+	var_ebp:			db		'QWORD[rbp - '
+	square_close:	db		']'
+
+section .text
+global main
+~
+
+f asm_literal,0,0:
+  l{
+  	# Read byte from stdin
+  	*0,0,current_char,1*
+
+    # Check for EOF
+    i rax = 0{
+      b
+    }{}
+
+    # Check for end NASM section
+    i BYTE[current_char] = 0x7E {
+      b
+    }{}
+
+  	# Write byte to stdout
+  	*1,1,current_char,1*
+  }
+
+	r
+
+
+f syscall,0,1:
+	a v1 =0;
+
+	~
+	.print_mov:
+	~
+
+	# Write move instruction to stdout
+	*1,1,mov_inst,5*
+
+	a r9=v1 ;
+	~
+		shl r9, 2
+		add r9, registers
+	~
+
+	# Write register to stdout
+	*1,1,r9,4*
+
+	~inc ~v1
+
+	l{
+		# Read byte from stdin
+		*0,0,current_char,1*
+
+		# Check for EOF
+		i rax = 0 {
+			b
+		}{}
+
+		# Check for end of syscall
+		i BYTE[current_char] = 0x2A {
+			b
+		}{}
+
+		# Check for comma
+		i BYTE[current_char], ',' {
+			~
+				jmp .print_mov
+			~
+		}{}
+
+		# Write byte to stdout
+		*1,1,current_char,1*
+	}
+
+	# Write syscall instruction
+	*1,1,sys_inst,9*
+
+	r
+
+
+f comment,0,0:
+	l{
+		# Read byte from stdin
+		*0,0,current_char,1*
+
+		# Check for EOF
+		i rax = 0 {
+			b
+		}{}
+
+		# Check for hash
+		i BYTE[current_char] = '#' {
+			b
+		}{}
+
+		# Check for EOL
+		i BYTE[current_char] = 10 {
+			b
+		}{}
+	}
+	r
+
+
+f read_number,0,1:
+	a v1 =0;
+
+	l{
+		# Read byte from stdin
+		*0,0,current_char,1*
+
+		~
+			sub BYTE[current_char], '0'
+		~
+
+		# Check for current_char < 0
+		i BYTE[current_char] < 0 {
+			b
+		}{}
+
+		# Check for current_char > 9
+		i BYTE[current_char] > 9 {
+			b
+		}{}
+
+		a rax=v1 ;
+		a rcx=10;
+		~
+			mul rcx
+			add al, BYTE[current_char]
+		~
+		a v1 =rax;
+	}
+
+	a rax=v1 ;
+	r
+
+
+f write_number,1,0:
+	# rax/p1 - integer input
+	# rcx - divisor
+	# rdx - remainder
+	# r12 - digit counter
+
+	a rax=p1 ;
+	a rcx=10;
+	a r12=0;
+
+	l{
+		a rdx=0;
+		~
+			div rcx
+			push rdx
+			inc r12
+		~
+
+		# Check for EOF
+		i rax = 0 {
+			b
+		}{}
+	}
+
+	l{
+		~
+			pop rax
+			add rax, '0'
+		~
+
+		a BYTE[current_char]=al;
+
+		# Write byte to stdout
+		*1,1,current_char,1*
+
+		~
+			dec r12
+		~
+
+		# Exit loop if count has reached 0
+		i r12 = 0 {
+			b
+		}{}
+	}
+	r
+
+
+f func_decl,0,0:
+	l{
+		# Read byte from stdin
+		*0,0,current_char,1*
+
+		# Check for EOF
+		i rax = 0 {
+			b
+		}{}
+
+		# Check for comma
+		i BYTE[current_char], ',' {
+			b
+		}{}
+
+		# Write byte to stdout
+		*1,1,current_char,1*
+	}
+
+	()read_number;
+	~
+		shl rax, 3
+	~
+	a [ret_size]=rax;
+
+	# Write function prologue to stdout
+	*1,1,func_prolog,33*
+
+	()read_number;
+	~
+		shl rax, 3
+	~
+	(rax)write_number;
+
+	# Write new line to stdout
+	*1,1,new_line,1*
+
+	l{
+		()exression;
+		i rax = 0 { b }{}
+	}
+
+	r
+
+
+f func_ret,0,0:
+	# Write function post to stdout
+	*1,1,func_post,26*
+
+	(QWORD[ret_size])write_number;
+
+	# Write new line to stdout
+	*1,1,new_line,1*
+
+	r
+
+
+f if,0,2:
+	# Reserve block id number
+	a rax=[block_cnt];
+	a v1 =rax;
+	~
+		inc QWORD[block_cnt]
+	~
+
+  # Write new line to stdout
+  *1,1,new_line,1*
+
+  # Write cmp to stdout
+  *1,1,cmp,4*
+
+	l{
+		# Read byte from stdin
+		*0,0,current_char,1*
+
+		# Check for EOF
+		i rax = 0 {
+			b
+		}{}
+
+		# Check for '='
+		i BYTE[current_char] = 61 {
+			a v2 =jne;
+			*1,1,comma,2*
+			n
+		}{}
+
+		# Check for '<'
+		i BYTE[current_char] = 60 {
+			a v2 =jnl;
+			*1,1,comma,2*
+			n
+		}{}
+
+		# Check for '>'
+		i BYTE[current_char] = 62 {
+			a v2 =jng;
+			*1,1,comma,2*
+			n
+		}{}
+
+		# Check for '{'
+		i BYTE[current_char] = 123 {
+			b
+		}{}
+
+		# Write byte to stdout
+		*1,1,current_char,1*
+	}
+
+  # Write new line to stdout
+  *1,1,new_line,1*
+
+  # Write jump type to stdout
+	a r9,v2 ;
+  *1,1,r9,4*
+
+  # Write if label to stdout
+  *1,1,else_label,6*
+
+	(v1 )write_number;
+
+  # Write new line to stdout
+  *1,1,new_line,1*
+
+	# IF block
+	l{
+		()exression;
+		i rax = 0 { b }{}
+	}
+
+	# Read '{' from stdin
+	*0,0,current_char,1*
+
+	# Write new line to stdout
+	*1,1,new_line,1*
+
+	# Write jmp to stdout
+	*1,1,jmp,4*
+
+	# Write end if label to stdout
+	*1,1,end_if_label,8*
+
+	(v1 )write_number;
+
+	# Write new line to stdout
+	*1,1,new_line,1*
+
+	# Write else label to stdout
+	*1,1,else_label,6*
+
+	(v1 )write_number;
+
+	# Write colon to stdout
+	*1,1,colon,2*
+
+	# ELSE block
+	l{
+		()exression;
+		i rax = 0 { b }{}
+	}
+
+	# Read '}' from stdin
+	*0,0,current_char,1*
+
+	# Write new line to stdout
+  *1,1,new_line,1*
+
+	# Write end if label to stdout
+	*1,1,end_if_label,8*
+
+	(v1 )write_number;
+
+	# Write colon to stdout
+	*1,1,colon,2*
+	r
+
+f loo_next,0,0:
+  # Write jump to stdout
+  *1,1,jmp,4*
+
+  # Write loop label to stdout
+  *1,1,loop_label,6*
+
+	(QWORD[enclosing_loo])write_number;
+
+  # Write new line to stdout
+  *1,1,new_line,1*
+  r
+
+f loo,0,2:
+	# Save enclosing loop value
+	a rax=[enclosing_loo];
+	a v2 =rax;
+
+	# Reserve block id number
+	a rax=[block_cnt];
+	a v1 =rax;
+	a [enclosing_loo]=rax;
+	~
+		inc QWORD[block_cnt]
+	~
+
+  # Read '{' from stdin
+  *0,0,current_char,1*
+
+  # Write new line to stdout
+  *1,1,new_line,1*
+
+  # Write label to stdout
+  *1,1,loop_label,6*
+
+	(v1 )write_number;
+
+  # Write colon to stdout
+  *1,1,colon,2*
+
+	l{
+		()exression;
+		i rax = 0 { b }{}
+	}
+
+	()loo_next;
+
+  # Write loop end label to stdout
+  *1,1,loop_end_label,10*
+
+	(v1 )write_number;
+
+  # Write colon to stdout
+  *1,1,colon,2*
+
+  # Write new line to stdout
+  *1,1,new_line,1*
+
+	# Restore enclosing loop
+	a r9=v2 ;
+	a QWORD[enclosing_loo]=r9;
+
+  r
+
+
+
+f loo_break,0,0:
+  # Write jump to stdout
+  *1,1,jmp,4*
+
+  # Write loop label to stdout
+  *1,1,loop_end_label,10*
+
+	(QWORD[enclosing_loo])write_number;
+
+  # Write new line to stdout
+  *1,1,new_line,1*
+  r
+
+f function_call,0,0:
+	# Read byte from stdin
+	*0,0,current_char,1*
+
+	~
+		cmp BYTE[current_char], ')'
+		je .first_iter
+	~
+
+	# Write push to stdout
+	*1,1,push,5*
+
+	~
+		jmp .first_iter
+	~
+
+	l{
+		# Read byte from stdin
+		*0,0,current_char,1*
+
+		~
+			.first_iter:
+		~
+
+		# Check for EOF
+		i rax = 0 {
+		b
+		}{}
+
+		# Check for comma
+		i BYTE[current_char], ',' {
+			# Write new line to stdout
+			*1,1,new_line,1*
+
+			# Write push to stdout
+			*1,1,push,5*
+
+			n
+		}{}
+
+		# Check for close bracket
+		i BYTE[current_char] = ')' {
+			# Write new line to stdout
+			*1,1,new_line,1*
+
+			# Write call to stdout
+			*1,1,call,5*
+
+			n
+		}{}
+
+		# Check for parameter
+		i BYTE[current_char] = 'p' {
+			()arameter;
+			n
+		}{}
+
+		# Check for variable
+		i BYTE[current_char] = 'v' {
+			()ariable;
+			n
+		}{}
+
+		# Check for semicolon
+		i BYTE[current_char] = ';' {
+			# Write new line to stdout
+			*1,1,new_line,1*
+
+			b
+		}{}
+
+		# Write byte to stdout
+		*1,1,current_char,1*
+	}
+
+	r
+
+
+f arameter,0,0:
+	# Print 'QWORD[rbp + ' to stdout
+	*1,1,param_ebp,12*
+
+	()read_number;
+	~
+		inc rax
+		shl rax, 3
+	~
+	(rax)write_number;
+
+	# Print square close bracket
+	*1,1,square_close,1*
+
+	r
+
+
+f ariable,0,0:
+	# Print 'QWORD[rbp - ' to stdout
+	*1,1,var_ebp,12*
+
+	()read_number;
+	~
+		shl rax, 3
+	~
+	(rax)write_number;
+
+	# Print square close bracket
+	*1,1,square_close,1*
+
+	r
+
+
+f assignment,0,0:
+	# Print mov instruction to stdout
+	*1,1,mov_inst,5*
+
+	l{
+		# Read byte from stdin
+		*0,0,current_char,1*
+
+		# Check for EOF
+		i rax = 0 {
+			b
+		}{}
+
+		# Check for equals
+		i BYTE[current_char] = 61 {
+			# Write comma to stdout
+			*1,1,comma,2*
+			n
+		}{}
+
+		# Check for parameter
+		i BYTE[current_char] = 'p' {
+			()arameter;
+			n
+		}{}
+
+		# Check for variable
+		i BYTE[current_char] = 'v' {
+			()ariable;
+			n
+		}{}
+
+		# Check for semicolon
+		i BYTE[current_char] = ';' {
+			# Write new line to stdout
+			*1,1,new_line,1*
+
+			b
+		}{}
+
+		# Write byte to stdout
+		*1,1,current_char,1*
+	}
+
+	r
+
+
+f exression,0,0:
+	l{
+		# Read byte from stdin
+		*0,0,current_char,1*
+
+		# Check for EOF
+		i rax = 0 {
+			a rax=0;
+			r
+		}{}
+
+		# Skip whitespace
+		i BYTE[current_char] > ' ' {
+			b
+		}{}
+	}
+
+	# Check for NASM section
+	i BYTE[current_char] = 0x7E {
+		()asm_literal;
+		a rax=1;
+		r
+	}{}
+
+	# Check for syscall
+	i BYTE[current_char] = 0x2A {
+		()syscall;
+		a rax=1;
+		r
+	}{}
+
+	# Check for comment
+	i BYTE[current_char] = '#' {
+		()comment;
+		a rax=1;
+		r
+	}{}
+
+	# Check for function declaration
+	i BYTE[current_char] = 'f' {
+		()func_decl;
+		a rax=1;
+		r
+	}{}
+
+	# Check for function return
+	i BYTE[current_char] = 'r' {
+		()func_ret;
+		a rax=1;
+		r
+	}{}
+
+  # Check for loop declaration
+  i BYTE[current_char] = 'l' {
+  	()loo;
+    a rax=1;
+		r
+  }{}
+
+  # Check for if declaration
+  i BYTE[current_char] = 'i' {
+  	()if;
+    a rax=1;
+		r
+  }{}
+
+	# Check for next call
+	i BYTE[current_char], 'n' {
+		()loo_next;
+		a rax=1;
+		r
+	}{}
+
+	# Check for break call
+	i BYTE[current_char], 'b' {
+		()loo_break;
+		a rax=1;
+		r
+	}{}
+
+	# Check function call
+  i BYTE[current_char] = '(' {
+  	()function_call;
+    a rax=1;
+		r
+  }{}
+
+	# Check for assignment
+	i BYTE[current_char] = 'a' {
+		()assignment;
+		a rax=1;
+		r
+	}{}
+
+	# Check for parameter
+	i BYTE[current_char] = 'p' {
+		()arameter;
+		a rax=1;
+		r
+	}{}
+
+	# Check for variable
+	i BYTE[current_char] = 'v' {
+		()ariable;
+		a rax=1;
+		r
+	}{}
+
+	a rax=0;
+	r
+
+f main,0,0:
+	l{
+		()exression;
+		i rax = 0 { b }{}
+	}
+
+	~
+		mov rsp, rbp
+	  pop rbp
+	~

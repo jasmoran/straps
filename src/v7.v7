@@ -1,0 +1,1419 @@
+nasm("
+%define ANY 			 0
+%define ARG 			 1
+%define BREAK 		 2
+%define CALL			 3
+%define CASE			 4
+%define ELSE			 5
+%define FOR   		 6
+%define FUNC			 7
+%define IF				 8
+%define LOOP			 9
+%define NASM			 10
+%define NEXT			 11
+%define RETURN		 12
+%define SWITCH		 13
+%define SYS 			 14
+%define VAR 			 15
+%define WHILE 		 16
+%define NUMBER		 17
+%define IDENTIFIER 18
+%define STRING		 19
+%define PAREN_OPEN 20
+%define PAREN_CLOSE 21
+%define COMMA			 22
+%define COMMENT		 23
+%define CURLY_OPEN 24
+%define CURLY_CLOSE 25
+%define EQUAL			 26
+%define NOT_EQUAL	 27
+%define GREATER		 28
+%define GREATER_EQ 29
+%define LESS			 30
+%define LESS_EQ		 31
+%define ASSIGN		 32
+%define CHARACTER	 33
+
+section .bss
+	current_char:	resb	1
+	char_next:	resb	1
+	ret_size:			resq	1
+	block_cnt:		resq  1
+	enclosing_loo:resq  1
+
+	token_tye:		resq	1
+	token_image:	resb	2048
+	token_length:	resq	1
+
+	fun:					resb 256
+	fun_length:		resq 1
+	ident:				resb 256
+	ident_length:	resq 1
+
+section .data
+	registers:		db		'rax,', 'rdi,', 'rsi,', 'rdx,', 'r10,', 'r8, '
+	mov_inst:			db		10, 'mov '
+	inst_sys:			db		10, 'syscall', 10
+	fun_prolog:	db		':', 10, 'push rbp', 10, 'mov rbp, rsp', 10, 'sub rsp, ' ;33
+	fun_post:		db		10, 'mov rsp, rbp', 10, 'pop rbp', 10, 'ret ' ;26
+	new_line:			db		10
+	label_loop:   db    '.loop_'
+	label_loop_end: db    '.loop_end_'
+	end_if_label: db    '.end_if_'
+	end_else_label: db    '.end_else_'
+	colon:        db    ':', 10
+	jmp:          db    'jmp '
+	jne:          db    'jne '
+	jng:					db		'jng '
+	jnl:					db		'jnl '
+	je:						db		'je  '
+	jl:						db		'jl  '
+	jg:						db		'jg  '
+	cmp:          db    'cmp '
+	push:         db    'push '
+	inst_call:		db    'call '
+	comma:				db		', '
+	inst_arg:		db		'QWORD[rbp + '
+	inst_var:			db		'QWORD[rbp - '
+	square_close:	db		']'
+	error:				db		'Error: '
+	inv_char:			db		'invalid character: ', 39
+	quote:				db		39
+	exp_token:		db		'expected token '
+	got_token:		db		' got token '
+	expres:				db		'EXPRESSION'
+	stmt:					db		'STATEMENT'
+
+section .text
+global main
+")
+
+func asm_literal(0, 0) {
+	call token_consume(NASM)
+	call token_consume(PAREN_OPEN)
+	call token_load()
+	call token_rint()
+	call token_consume(STRING)
+	call token_consume(PAREN_CLOSE)
+	return
+}
+
+func kernel_call(0, 1) {
+	call token_consume(SYS)
+	call token_consume(PAREN_OPEN)
+
+	var1 = 0
+
+	loop {
+		# Write move instruction to stdout
+		sys(1,1,mov_inst,5)
+
+		r9 = var1
+		nasm("
+			shl r9, 2
+			add r9, registers
+		")
+
+		# Write register to stdout
+		sys(1,1,r9,4)
+
+		nasm("inc ")var1
+		nasm("
+		")
+
+		call exression(1)
+
+		call token_load()
+
+		# Check for end of syscall
+		if (QWORD[token_tye] == PAREN_CLOSE) {
+			break
+		} else {
+			call token_consume(COMMA)
+		}
+	}
+
+	call token_consume(PAREN_CLOSE)
+
+	# Write syscall instruction
+	sys(1,1,inst_sys,9)
+
+	return
+}
+
+func read_number(0, 0) {
+	rax = 0
+	rbx = token_image
+	rcx = 10
+	r11 = 0
+	r12 = QWORD[token_length]
+
+	loop {
+		r11b = BYTE[rbx]
+		nasm("
+			inc rbx
+			sub r11b, '0'
+			mul rcx
+			add al, r11b
+			dec r12
+		")
+		if (r12 == 0) {break}
+	}
+	return
+}
+
+func write_number(1, 0) {
+	# rax/arg1 - integer input
+	# rcx - divisor
+	# rdx - remainder
+	# r12 - digit counter
+
+	rax = arg1
+	rcx = 10
+	r12 = 0
+
+	loop {
+		rdx = 0
+		nasm("
+			div rcx
+			push rdx
+			inc r12
+		")
+
+		if (rax == 0) {
+			break
+		}
+	}
+
+	loop {
+		nasm("
+			pop rax
+			add rax, '0'
+		")
+
+		BYTE[current_char] = al
+
+		# Write byte to stdout
+		sys(1,1,current_char,1)
+
+		nasm("
+			dec r12
+		")
+
+		# Exit loop if count has reached 0
+		if (r12 == 0) {
+			break
+		}
+	}
+	return
+}
+
+func statements(0, 0) {
+	loop {
+		call statement(0)
+		if (rax == 0) { break }
+	}
+	return
+}
+
+func block(0, 0) {
+	call token_consume(CURLY_OPEN)
+	call statements()
+	call token_consume(CURLY_CLOSE)
+	return
+}
+
+func str_coy(3, 0) {
+	rsi = arg1
+	rdi = arg2
+	rcx = arg3
+	nasm("
+		rep movsb
+	")
+	return
+}
+
+func fun_decl(0, 0) {
+	call token_consume(FUNC)
+
+	call token_load()
+	call token_rint()
+	call token_consume(IDENTIFIER)
+
+	call token_consume(PAREN_OPEN)
+	call token_load()
+	call read_number()
+	nasm("shl rax, 3")
+	QWORD[ret_size] = rax
+	call token_consume(NUMBER)
+
+	call token_consume(COMMA)
+
+	# Write funion prologue to stdout
+	sys(1,1,fun_prolog,33)
+
+	call token_load()
+	call read_number()
+	nasm("shl rax, 3
+	")
+	call write_number(rax)
+	call token_consume(NUMBER)
+
+	call token_consume(PAREN_CLOSE)
+
+	# TODO: Warn that end of funion has been reached
+
+	# Write new line to stdout
+	sys(1,1,new_line,1)
+
+	call block()
+
+	return
+}
+
+
+func fun_ret(0, 0) {
+	call token_consume(RETURN)
+
+	# Write funion post to stdout
+	sys(1,1,fun_post,26)
+
+	rax = QWORD[ret_size]
+	if (rax > 0) {
+		call write_number(rax)
+	}
+
+	# Write new line to stdout
+	sys(1,1,new_line,1)
+
+	return
+}
+
+func nt_if(0, 2) {
+	call token_consume(IF)
+	call token_consume(PAREN_OPEN)
+
+	# Write new line to stdout
+	sys(1,1,new_line,1)
+
+	# Write cmp to stdout
+	sys(1,1,cmp,4)
+
+	call exression(1)
+
+	call comarison()
+	if (QWORD[token_tye] == EQUAL) { var2 = jne }
+	if (QWORD[token_tye] == NOT_EQUAL) { var2 = je  }
+	if (QWORD[token_tye] == GREATER) { var2 = jng }
+	if (QWORD[token_tye] == GREATER_EQ) { var2 = jl  }
+	if (QWORD[token_tye] == LESS) { var2 = jnl }
+	if (QWORD[token_tye] == LESS_EQ) { var2 = jg  }
+	call token_consume(ANY)
+
+	# Write comma to stdout
+	sys(1,1,comma,2)
+
+	call exression(1)
+
+	call token_consume(PAREN_CLOSE)
+
+	# Write new line to stdout
+	sys(1,1,new_line,1)
+
+	# Write jump type to stdout
+	r9 = var2
+	sys(1,1,r9,4)
+
+	# Write end if label to stdout
+	sys(1,1,end_if_label,8)
+
+	# Reserve block id number
+	rax = QWORD[block_cnt]
+	var1 = rax
+	nasm("
+	inc QWORD[block_cnt]
+	")
+	call write_number(var1)
+
+	# Write new line to stdout
+	sys(1,1,new_line,1)
+
+	# IF block
+	call block()
+
+	# Write new line to stdout
+	sys(1,1,new_line,1)
+
+	call token_load()
+
+	if (QWORD[token_tye] == ELSE) {
+		call token_consume(ELSE)
+
+		# Write jmp to stdout
+		sys(1,1,jmp,4)
+
+		# Write end else label to stdout
+		sys(1,1,end_else_label,10)
+
+		call write_number(var1)
+
+		# Write new line to stdout
+		sys(1,1,new_line,1)
+
+		var2 = 1
+	} else {
+		var2 = 0
+	}
+
+	# Write end_if label to stdout
+	sys(1,1,end_if_label,8)
+
+	call write_number(var1)
+
+	# Write colon to stdout
+	sys(1,1,colon,2)
+
+	rax = var2
+	if (rax == 1) {
+		# ELSE block
+		call block()
+
+		# Write new line to stdout
+		sys(1,1,new_line,1)
+
+		# Write end if label to stdout
+		sys(1,1,end_else_label,10)
+
+		call write_number(var1)
+
+		# Write colon to stdout
+		sys(1,1,colon,2)
+	}
+	return
+}
+
+func loo_next(0, 0) {
+	call token_consume(NEXT)
+
+	# Write jump to stdout
+	sys(1,1,jmp,4)
+
+	# Write loop label to stdout
+	sys(1,1,label_loop,6)
+
+	call write_number(QWORD[enclosing_loo])
+
+	# Write new line to stdout
+	sys(1,1,new_line,1)
+	return
+}
+
+func loo(0, 2) {
+	call token_consume(LOOP)
+
+	# Save enclosing loop value
+	rax = QWORD[enclosing_loo]
+	var2 = rax
+
+	# Reserve block id number
+	rax = QWORD[block_cnt]
+	var1 = rax
+	QWORD[enclosing_loo] = rax
+	nasm("
+		inc QWORD[block_cnt]
+	")
+
+	# Write label to stdout
+	sys(1,1,label_loop,6)
+
+	call write_number(var1)
+
+	# Write colon to stdout
+	sys(1,1,colon,2)
+
+	call block()
+
+	# Write jump to stdout
+	sys(1,1,jmp,4)
+
+	# Write loop label to stdout
+	sys(1,1,label_loop,6)
+
+	call write_number(QWORD[enclosing_loo])
+
+	# Write new line to stdout
+	sys(1,1,new_line,1)
+
+	# Write loop end label to stdout
+	sys(1,1,label_loop_end,10)
+
+	call write_number(var1)
+
+	# Write colon to stdout
+	sys(1,1,colon,2)
+
+	# Write new line to stdout
+	sys(1,1,new_line,1)
+
+	# Restore enclosing loop
+	r9 = var2
+	QWORD[enclosing_loo] = r9
+
+	return
+}
+
+func loo_break(0, 0) {
+	call token_consume(BREAK)
+	# Write jump to stdout
+	sys(1,1,jmp,4)
+
+	# Write loop label to stdout
+	sys(1,1,label_loop_end,10)
+
+	call write_number(QWORD[enclosing_loo])
+
+	# Write new line to stdout
+	sys(1,1,new_line,1)
+	return
+}
+
+func fun_call(0, 0) {
+	call token_consume(CALL)
+
+	# Get funion name
+	call token_load()
+	r12 = QWORD[token_length]
+	call str_coy(r12, fun, token_image)
+	QWORD[fun_length] = r12
+	call token_consume(IDENTIFIER)
+
+	call token_consume(PAREN_OPEN)
+
+	call token_load()
+	if (QWORD[token_tye] == PAREN_CLOSE) {
+		call token_consume(PAREN_CLOSE)
+	} else {
+		loop {
+			# Write push to stdout
+			sys(1,1,push,5)
+
+			call exression(1)
+
+			# Write new line to stdout
+			sys(1,1,new_line,1)
+
+			call token_load()
+			if (QWORD[token_tye] == PAREN_CLOSE) {
+				call token_consume(PAREN_CLOSE)
+				break
+			}
+			call token_consume(COMMA)
+		}
+	}
+
+	# Write call to stdout
+	sys(1,1,inst_call,5)
+
+	# Write funion name to stdout
+	sys(1,1,fun,QWORD[fun_length])
+
+	# Write new line to stdout
+	sys(1,1,new_line,1)
+
+	return
+}
+
+func nt_arg(0, 1) {
+	call token_consume(ARG)
+
+
+	call token_load()
+	call read_number()
+	nasm("
+		inc rax
+		shl rax, 3
+	")
+	var1 = rax
+	call token_consume(NUMBER)
+
+	call token_load()
+	if (QWORD[token_tye] == ASSIGN) {
+		# Print mov instruction to stdout
+		sys(1,1,mov_inst,5)
+	}
+
+	# Print 'QWORD[rbp + ' to stdout
+	sys(1,1,inst_arg,12)
+
+	call write_number(var1)
+
+	# Print square close bracket
+	sys(1,1,square_close,1)
+
+	if (QWORD[token_tye] == ASSIGN) {
+		call assignment()
+	}
+
+	return
+}
+
+func ariable(0, 1) {
+	call token_consume(VAR)
+
+	call token_load()
+	call read_number()
+	nasm("
+		shl rax, 3
+	")
+	var1 = rax
+	call token_consume(NUMBER)
+
+	call token_load()
+	if (QWORD[token_tye] == ASSIGN) {
+		# Print mov instruction to stdout
+		sys(1,1,mov_inst,5)
+	}
+
+	# Print 'QWORD[rbp - ' to stdout
+	sys(1,1,inst_var,12)
+
+	call write_number(var1)
+
+	# Print square close bracket
+	sys(1,1,square_close,1)
+
+	if (QWORD[token_tye] == ASSIGN) {
+		call assignment()
+	}
+
+	return
+}
+
+func identifier(0, 1) {
+	r12 = QWORD[token_length]
+	call str_coy(r12, ident, token_image)
+	QWORD[ident_length] = r12
+	call token_consume(IDENTIFIER)
+
+	call token_load()
+	if (QWORD[token_tye] == ASSIGN) {
+		# Print mov instruction to stdout
+		sys(1,1,mov_inst,5)
+	}
+
+	# Print identifier
+	sys(1,1,ident,QWORD[ident_length])
+
+	if (QWORD[token_tye] == ASSIGN) {
+		call assignment()
+	}
+
+	return
+}
+
+func assignment(0, 0) {
+	call token_consume(ASSIGN)
+
+	# Write comma to stdout
+	sys(1,1,comma,2)
+
+	call exression(1)
+
+	# Write new line to stdout
+	sys(1,1,new_line,1)
+
+	return
+}
+
+func comarison(0, 0) {
+	call token_load()
+	if (QWORD[token_tye] == EQUAL) { rax = 1 return }
+	if (QWORD[token_tye] == NOT_EQUAL) { rax = 1 return }
+	if (QWORD[token_tye] == GREATER) { rax = 1 return }
+	if (QWORD[token_tye] == GREATER_EQ) { rax = 1 return }
+	if (QWORD[token_tye] == LESS) { rax = 1 return }
+	if (QWORD[token_tye] == LESS_EQ) { rax = 1 return }
+
+	sys(1,2,error,7)
+	sys(1,2,exp_token,15)
+	call write_number(99)
+	sys(1,2,got_token,11)
+	call write_number(QWORD[token_tye])
+	sys(1,2,new_line,1)
+
+	sys(60,1)
+	return
+}
+
+func statement(1, 0) {
+	call exression(0)
+	if (rax == 1) {return}
+
+	# Check for break call
+	if (QWORD[token_tye] == BREAK) {
+		call loo_break()
+		rax = 1
+		return
+	}
+
+	# Check for comment
+	if (QWORD[token_tye] == COMMENT) {
+		call token_consume(COMMENT)
+		rax = 1
+		return
+	}
+
+	# TODO: add FOR
+
+	# Check for funion declaration
+	if (QWORD[token_tye] == FUNC) {
+		call fun_decl()
+		rax = 1
+		return
+	}
+
+	# Check for if declaration
+	if (QWORD[token_tye] == IF) {
+		call nt_if()
+		rax = 1
+		return
+	}
+
+	# Check for loop declaration
+	if (QWORD[token_tye] == LOOP) {
+		call loo()
+		rax = 1
+		return
+	}
+
+	# Check for NASM section
+	if (QWORD[token_tye] == NASM) {
+		call asm_literal()
+		rax = 1
+		return
+	}
+
+	# Check for next call
+	if (QWORD[token_tye] == NEXT) {
+		call loo_next()
+		rax = 1
+		return
+	}
+
+	# Check for funion return
+	if (QWORD[token_tye] == RETURN) {
+		call fun_ret()
+		rax = 1
+		return
+	}
+
+	# TODO: add SWITCH/CASE
+
+	# Check for syscall
+	if (QWORD[token_tye] == SYS) {
+		call kernel_call()
+		rax = 1
+		return
+	}
+
+	# TODO: add WHILE
+
+	# Throw error if no match and one is required
+	if (arg1 == 1) {
+		sys(1,2,error,7)
+		sys(1,2,exp_token,15)
+		sys(1,2,stmt,9)
+		sys(1,2,got_token,11)
+		call write_number(QWORD[token_tye])
+		sys(1,2,new_line,1)
+		sys(60,1)
+	}
+
+	rax = 0
+	return
+}
+
+func exression(1, 0) {
+	call token_load()
+
+	# Check for funion argument
+	if (QWORD[token_tye] == ARG) {
+		call nt_arg()
+		rax = 1
+		return
+	}
+
+	# Check funion call
+	if (QWORD[token_tye] == CALL) {
+		call fun_call()
+		rax = 1
+		return
+	}
+
+	# Check character
+	if (QWORD[token_tye] == CHARACTER) {
+		call token_rint()
+		call token_consume(CHARACTER)
+		rax = 1
+		return
+	}
+
+	# TODO: add STRING (print label and out string in data section)
+
+	# Check for identifier
+	if (QWORD[token_tye] == IDENTIFIER) {
+		call identifier()
+		rax = 1
+		return
+	}
+
+	# Check for number
+	if (QWORD[token_tye] == NUMBER) {
+		call token_rint()
+		call token_consume(NUMBER)
+		rax = 1
+		return
+	}
+
+	# Check for local variable
+	if (QWORD[token_tye] == VAR) {
+		call ariable()
+		rax = 1
+		return
+	}
+
+	# Throw error if no match and one is required
+	if (arg1 == 1) {
+		sys(1,2,error,7)
+		sys(1,2,exp_token,15)
+		sys(1,2,expres,10)
+		sys(1,2,got_token,11)
+		call write_number(QWORD[token_tye])
+		sys(1,2,new_line,1)
+		sys(60,1)
+	}
+
+	rax = 0
+	return
+}
+
+func main(0, 0) {
+	# Initialize tokenizer
+	BYTE[char_next] = 1
+	call token_kee_char()
+	QWORD[token_length] = 0
+
+	call statements()
+
+	nasm("
+	mov rsp, rbp
+	pop rbp
+	")
+	sys(60,0)
+}
+
+# TOKENIZER
+func token_kee_char(0, 1) {
+	# Move char_next into image
+	rax = 0
+	al = BYTE[char_next]
+	var1 = rax
+	rbx = QWORD[token_length]
+	nasm("add rbx, token_image")
+	BYTE[rbx] = al
+	nasm("inc QWORD[token_length]")
+
+	# TODO: Check for length > 256
+	# TODO: Line counter
+
+	if (BYTE[char_next] == 0) {
+		rax = 0
+	} else {
+		# Load new char_next from stdin
+		sys(0,0,char_next,1)
+
+		if (rax == 0) {
+			BYTE[char_next] = 0
+		}
+
+		# Return old char_next
+		rax = var1
+	}
+
+	return
+}
+
+func token_eek_char(0, 0) {
+	rax = 0
+	al = BYTE[char_next]
+	return
+}
+
+func token_rint(0, 0) {
+	sys(1,1,token_image,QWORD[token_length])
+	return
+}
+
+func token_load(0, 0) {
+	# Check previous token has been consumed
+	if (QWORD[token_length] == 0) {
+		# Skip whitespace
+		loop {
+			call token_kee_char()
+			if (rax == 0) {
+				QWORD[token_tye] = 0
+				return
+			}
+			if (rax > ' ') {
+				break
+			} else {
+				QWORD[token_length] = 0
+			}
+		}
+
+		if (rax == 'a') {
+			call token_arg()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 'b') {
+			call token_break()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 'c') {
+			call token_eek_char()
+
+			if (rax == 'a') {
+				call token_kee_char()
+				call token_eek_char()
+
+				if (rax == 'l') {
+					call token_call()
+					if (rax == 1) {return}
+				}
+
+				if (rax == 's') {
+					call token_case()
+					if (rax == 1) {return}
+				}
+			}
+
+			rax = 0
+		}
+
+		if (rax == 'e') {
+			call token_else()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 'f') {
+			call token_eek_char()
+
+			if (rax == 'o') {
+				call token_for()
+				if (rax == 1) {return}
+			}
+
+			if (rax == 'u') {
+				call token_func()
+				if (rax == 1) {return}
+			}
+
+			rax = 0
+		}
+
+		if (rax == 'i') {
+			call token_if()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 'l') {
+			call token_loo()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 'n') {
+			call token_eek_char()
+
+			if (rax == 'a') {
+				call token_nasm()
+				if (rax == 1) {return}
+			}
+
+			if (rax == 'e') {
+				call token_next()
+				if (rax == 1) {return}
+			}
+
+			rax = 0
+		}
+
+		if (rax == 'r') {
+			call token_return()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 's') {
+			call token_eek_char()
+
+			if (rax == 'w') {
+				call token_switch()
+				if (rax == 1) {return}
+			}
+
+			if (rax == 'y') {
+				call token_sys()
+				if (rax == 1) {return}
+			}
+
+			rax = 0
+		}
+
+		if (rax == 'v') {
+			call token_ar()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 'w') {
+			call token_while()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 34) {
+			call token_string()
+			if (rax == 1) {return}
+		}
+
+		if (rax == '#') {
+			call token_comment()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 39) {
+			call token_character()
+			if (rax == 1) {return}
+		}
+
+		if (rax == '(') {
+			QWORD[token_tye] = PAREN_OPEN
+			return
+		}
+
+		if (rax == ')') {
+			QWORD[token_tye] = PAREN_CLOSE
+			return
+		}
+
+		if (rax == 123) {
+			QWORD[token_tye] = CURLY_OPEN
+			return
+		}
+
+		if (rax == '}') {
+			QWORD[token_tye] = CURLY_CLOSE
+			return
+		}
+
+		if (rax == ',') {
+			QWORD[token_tye] = COMMA
+			return
+		}
+
+		if (rax == 60) {
+			call token_eek_char()
+
+			if (rax == 61) {
+				call token_kee_char()
+				QWORD[token_tye] = LESS_EQ
+			} else {
+				QWORD[token_tye] = LESS
+			}
+			return
+		}
+
+		if (rax == 61) {
+			call token_eek_char()
+
+			if (rax == 61) {
+				call token_kee_char()
+				QWORD[token_tye] = EQUAL
+			} else {
+				QWORD[token_tye] = ASSIGN
+			}
+			return
+		}
+
+		if (rax == 62) {
+			call token_eek_char()
+
+			if (rax == 61) {
+				call token_kee_char()
+				QWORD[token_tye] = GREATER_EQ
+			} else {
+				QWORD[token_tye] = GREATER
+			}
+			return
+		}
+
+		if (rax >= '0') {
+			if (rax <= '9') {
+				call token_number()
+				if (rax == 1) {return}
+			}
+		}
+
+		if (rax == 0) {
+			al = BYTE[token_image]
+		}
+
+		if (rax >= 'a') {
+			if (rax <= 'z') {
+				call token_identifier()
+				if (rax == 1) {return}
+			}
+		}
+
+		if (rax >= 'A') {
+			if (rax <= 'Z') {
+				call token_identifier()
+				if (rax == 1) {return}
+			}
+		}
+
+		sys(1,2,error,7)
+		sys(1,2,inv_char,20)
+		call token_rint()
+		sys(1,2,quote,1)
+		sys(1,2,new_line,1)
+
+		sys(60,1)
+	} else {
+		return
+	}
+}
+
+func token_consume(1, 0) {
+	call token_load()
+	r12 = arg1
+	if (r12 == ANY) {
+		QWORD[token_tye] = 0
+		QWORD[token_length] = 0
+		return
+	}
+	if (r12 == QWORD[token_tye]) {
+		QWORD[token_tye] = 0
+		QWORD[token_length] = 0
+	} else {
+		sys(1,2,error,7)
+		sys(1,2,exp_token,15)
+		call write_number(r12)
+		sys(1,2,got_token,11)
+		call write_number(QWORD[token_tye])
+		sys(1,2,new_line,1)
+
+		sys(60,1)
+	}
+
+	return
+}
+
+func token_arg(0, 0) {
+	call token_eek_char() if (rax == 'r') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'g') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = ARG
+	rax = 1
+	return
+}
+
+func token_break(0, 0) {
+	call token_eek_char() if (rax == 'r') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'e') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'a') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'k') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = BREAK
+	rax = 1
+	return
+}
+
+func token_call(0, 0) {
+	call token_eek_char() if (rax == 'l') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'l') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = CALL
+	rax = 1
+	return
+}
+
+func token_case(0, 0) {
+	call token_eek_char() if (rax == 's') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'e') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = CASE
+	rax = 1
+	return
+}
+
+func token_else(0, 0) {
+	call token_eek_char() if (rax == 'l') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 's') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'e') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = ELSE
+	rax = 1
+	return
+}
+
+func token_for(0, 0) {
+	call token_eek_char() if (rax == 'o') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'r') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = FOR
+	rax = 1
+	return
+}
+
+func token_func(0, 0) {
+	call token_eek_char() if (rax == 'u') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'n') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'c') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = FUNC
+	rax = 1
+	return
+}
+
+func token_if(0, 0) {
+	call token_eek_char() if (rax == 'f') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = IF
+	rax = 1
+	return
+}
+
+func token_loo(0, 0) {
+	call token_eek_char() if (rax == 'o') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'o') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'p') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = LOOP
+	rax = 1
+	return
+}
+
+func token_nasm(0, 0) {
+	call token_eek_char() if (rax == 'a') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 's') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'm') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = NASM
+	rax = 1
+	return
+}
+
+func token_next(0, 0) {
+	call token_eek_char() if (rax == 'e') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'x') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 't') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = NEXT
+	rax = 1
+	return
+}
+
+func token_return(0, 0) {
+	call token_eek_char() if (rax == 'e') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 't') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'u') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'r') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'n') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = RETURN
+	rax = 1
+	return
+}
+
+func token_switch(0, 0) {
+	call token_eek_char() if (rax == 'w') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'i') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 't') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'c') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'h') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = SWITCH
+	rax = 1
+	return
+}
+
+func token_sys(0, 0) {
+	call token_eek_char() if (rax == 'y') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 's') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = SYS
+	rax = 1
+	return
+}
+
+func token_ar(0, 0) {
+	call token_eek_char() if (rax == 'a') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'r') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = VAR
+	rax = 1
+	return
+}
+
+func token_while(0, 0) {
+	call token_eek_char() if (rax == 'h') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'i') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'l') { call token_kee_char() } else { rax = 0 return }
+	call token_eek_char() if (rax == 'e') { call token_kee_char() } else { rax = 0 return }
+
+	QWORD[token_tye] = WHILE
+	rax = 1
+	return
+}
+
+func token_number(0, 0) {
+	loop {
+		call token_eek_char()
+
+		if (rax >= '0') {
+			if (rax <= '9') {
+				call token_kee_char()
+				next
+			}
+		}
+
+		break
+	}
+
+	QWORD[token_tye] = NUMBER
+	rax = 1
+	return
+}
+
+func token_identifier(0, 0) {
+	loop {
+		call token_eek_char()
+
+		if (rax >= 'a') {
+			if (rax <= 'z') {
+				call token_kee_char()
+				next
+			}
+		}
+
+		if (rax >= 'A') {
+			if (rax <= 'Z') {
+				call token_kee_char()
+				next
+			}
+		}
+
+		if (rax >= '0') {
+			if (rax <= '9') {
+				call token_kee_char()
+				next
+			}
+		}
+
+		if (rax == '_') {
+			call token_kee_char()
+			next
+		}
+
+		if (rax == '[') {
+			call token_kee_char()
+			next
+		}
+
+		if (rax == ']') {
+			call token_kee_char()
+			next
+		}
+
+		break
+	}
+
+	QWORD[token_tye] = IDENTIFIER
+	rax = 1
+	return
+}
+
+func token_string(0, 0) {
+	QWORD[token_length] = 0
+
+	loop {
+		call token_kee_char()
+
+		if (rax == 0) {
+			break
+		}
+
+		if (rax == 34) {
+			break
+		}
+
+		if (rax == 92) {
+			call token_kee_char()
+		}
+	}
+
+	nasm("
+		dec QWORD[token_length]
+	")
+
+	QWORD[token_tye] = STRING
+	rax = 1
+	return
+}
+
+func token_comment(0, 0) {
+	QWORD[token_length] = 0
+
+	loop {
+		call token_kee_char()
+
+		if (rax == 0) {
+			break
+		}
+
+		if (rax == '#') {
+			break
+		}
+
+		if (rax == 10) {
+			break
+		}
+	}
+
+	nasm("
+		dec QWORD[token_length]
+	")
+
+	QWORD[token_tye] = COMMENT
+	rax = 1
+	return
+}
+
+func token_character(0, 0) {
+	call token_kee_char()
+
+	if (rax == 92) {
+		call token_kee_char()
+	}
+
+	call token_kee_char()
+
+	if (rax == 39) {
+		QWORD[token_tye] = CHARACTER
+		rax = 1
+	} else {
+		rax = 0
+	}
+
+	return
+}

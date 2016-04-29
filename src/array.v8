@@ -1,0 +1,59 @@
+func array_new(1,1) {
+	# arg1 - size
+
+	# Allocate memory
+	rax = arg1
+	rax << 3
+	rax += 16
+	call allocate(rax)
+	var1 = rax
+
+	# Set length and size
+	rbx = arg1
+	rax[0] = 0
+	rax[8] = rbx
+
+	return var1
+}
+
+func array_length(1,0) {
+	rax = arg1
+	return rax[0]
+}
+
+func array_size(1,0) {
+	rax = arg1
+	return rax[8]
+}
+
+func array_append(2,0) {
+	# arg2 - array
+	# arg1 - item
+
+	# TODO: check size is large enough
+
+	rax = arg2
+	rbx = rax[0]
+	rbx << 3
+	rax += rbx
+	rbx = arg1
+	rax[16] = rbx
+
+	# Increment length
+	rax = arg2
+	rax[0]++
+
+	return
+}
+
+func array_get(2, 0) {
+	# arg2 - array
+	# arg1 - index
+
+	rax = arg2
+	rbx = arg1
+	rbx += 2
+	rbx << 3
+	rax += rbx
+	return rax[0]
+}

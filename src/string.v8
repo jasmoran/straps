@@ -1,0 +1,122 @@
+func string_new(1,1) {
+	# arg1 - size
+
+	# Allocate memory
+	rax = arg1
+	rax += 16
+	call allocate(rax)
+	var1 = rax
+
+	# Set length and size
+	rax[0] = 0
+	rax += 8
+	rbx = arg1
+	rax[0] = rbx
+
+	return var1
+}
+
+func string_length(1,0) {
+	rax = arg1
+	return rax[0]
+}
+
+func string_size(1,0) {
+	rax = arg1
+	return rax[8]
+}
+
+func string_data(1,0) {
+	rax = arg1
+	rax += 16
+	return
+}
+
+func string_append(2,0) {
+	# arg2 - string
+	# arg1 - character
+
+	# TODO: check size is large enough
+
+	rax = arg2
+	rbx = rax[0]
+	rax[0]++
+	rax += 16
+	rax += rbx
+	rbx = arg1
+	nasm("mov BYTE[rax], bl
+	")
+
+	return
+}
+
+func string_print(2,0) {
+	if (arg2 == FILE) {
+		rax = out_file_fid[0]
+		arg2 = rax
+	}
+
+	r12 = arg1
+	r13 = r12[0]
+	r12 += 16
+
+	sys(1, arg2, r12, r13)
+	return
+}
+
+func string_copy(2, 0) {
+	# arg2 - source
+	# arg1 - dest
+
+	# Copy main data
+	rsi = arg2
+	rsi += 16
+	rdi = arg1
+	rdi += 16
+	rcx = arg2
+	rcx = rcx[0]
+	nasm("rep movsb
+	")
+
+	# Set length of destination
+	rax = arg2
+	rax = rax[0]
+	rbx = arg1
+	rbx[0] = rax
+
+	return
+}
+
+func string_clone(1, 1) {
+	# arg1 - source
+
+	call string_length(arg1)
+	call string_new(rax)
+	var1 = rax
+	call string_copy(arg1, var1)
+	return var1
+}
+
+func string_clear(1, 0) {
+	rax = arg1
+	rax[0] = 0
+	return
+}
+
+func string_inspect(2, 0) {
+	# arg2 - output stream
+	# arg1 - string
+
+	call printer_number(arg2, arg1)
+	call string_print(arg2, " - ")
+	call string_length(arg1)
+	call printer_number(arg2, rax)
+	call string_print(arg2, " - ")
+	call string_size(arg1)
+	call printer_number(arg2, rax)
+	call string_print(arg2, " - ")
+	call string_print(arg2, arg1)
+	call string_print(arg2, new_line)
+
+	return arg1
+}
