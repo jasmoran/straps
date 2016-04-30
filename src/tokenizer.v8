@@ -1,7 +1,6 @@
 nasm("
 %define ARG 			 1
 %define BREAK 		 2
-%define CALL			 3
 %define CASE			 4
 %define ELSE			 5
 %define FOR   		 6
@@ -123,24 +122,8 @@ func token_load(0, 0) {
 		}
 
 		if (rax == 'c') {
-			call token_eek_char()
-
-			if (rax == 'a') {
-				call token_kee_char()
-				call token_eek_char()
-
-				if (rax == 'l') {
-					call token_call()
-					if (rax == 1) {return}
-				}
-
-				if (rax == 's') {
-					call token_case()
-					if (rax == 1) {return}
-				}
-			}
-
-			rax = 0
+			call token_case()
+			if (rax == 1) {return}
 		}
 
 		if (rax == 'e') {
@@ -461,15 +444,8 @@ func token_break(0, 0) {
 	return 1
 }
 
-func token_call(0, 0) {
-	call token_eek_char() if (rax == 'l') { call token_kee_char() } else { return 0 }
-	call token_eek_char() if (rax == 'l') { call token_kee_char() } else { return 0 }
-
-	token_tye[0] = CALL
-	return 1
-}
-
 func token_case(0, 0) {
+	call token_eek_char() if (rax == 'a') { call token_kee_char() } else { return 0 }
 	call token_eek_char() if (rax == 's') { call token_kee_char() } else { return 0 }
 	call token_eek_char() if (rax == 'e') { call token_kee_char() } else { return 0 }
 

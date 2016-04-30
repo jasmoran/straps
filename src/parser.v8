@@ -306,13 +306,8 @@ func loo_break(0, 0) {
 	return
 }
 
-func fun_call(0, 0) {
-	call token_consume(CALL)
-
-	# Get funion name
-	call token_load()
-	call string_copy(token, fun)
-	call token_consume(IDENTIFIER)
+func fun_call(1, 0) {
+	# arg1 - function identifier
 
 	call token_consume(PAREN_OPEN)
 
@@ -321,12 +316,12 @@ func fun_call(0, 0) {
 		call token_consume(PAREN_CLOSE)
 	} else {
 		loop {
-			call exression(1, 12, ident)
+			call exression(1, 12, fun)
 
 			call string_print(FILE, new_line)
 
 			call string_print(FILE, "push ")
-			call string_print(FILE, ident)
+			call string_print(FILE, fun)
 
 
 			call token_load()
@@ -344,10 +339,12 @@ func fun_call(0, 0) {
 	call string_print(FILE, "call ")
 
 	# Write funion name to stdout
-	call string_print(FILE, fun)
+	call string_print(FILE, arg1)
 
 	# Write new line to stdout
 	call string_print(FILE, new_line)
+
+	call string_copy("rax", arg1)
 
 	return
 }
@@ -392,7 +389,8 @@ func operation(0, 2) {
 	call assignable(1, 12, ident)
 	if (rax == 0) {return}
 
-	call operator()
+	call operator(0)
+	if (rax == 0) {return}
 	var1 = rax
 
 	if (rax == INCREMENT) {
@@ -457,7 +455,7 @@ func comarison(0, 0) {
 	return
 }
 
-func operator(0, 0) {
+func operator(1, 0) {
 	call token_load()
 	if (token_tye[0] == INCREMENT) { call token_consume(INCREMENT) return INCREMENT }
 	if (token_tye[0] == DECREMENT) { call token_consume(DECREMENT) return DECREMENT }
@@ -467,14 +465,18 @@ func operator(0, 0) {
 	if (token_tye[0] == SHIFTL) { call token_consume(SHIFTL) return SHIFTL }
 	if (token_tye[0] == SHIFTR) { call token_consume(SHIFTR) return SHIFTR }
 
-	call string_print(STDERR, "Error: expected token OPERATOR got token ")
-	call printer_number(STDERR, token_tye[0])
-	call printer_line(STDERR)
-	call string_print(STDERR, new_line)
-	call printer_stack(STDERR)
+	if (arg1 == 1) {
+		call string_print(STDERR, "Error: expected token OPERATOR got token ")
+		call printer_number(STDERR, token_tye[0])
+		call printer_line(STDERR)
+		call string_print(STDERR, new_line)
+		call printer_stack(STDERR)
 
-	sys(60,1)
-	return
+		sys(60,1)
+		return
+	}
+
+	return 0
 }
 
 func nt_include(0,4) {
@@ -539,11 +541,6 @@ func statement(1, 0) {
 	# Check for break call
 	if (token_tye[0] == BREAK) {
 		call loo_break()
-		return 1
-	}
-
-	if (token_tye[0] == CALL) {
-		call fun_call()
 		return 1
 	}
 
@@ -630,54 +627,47 @@ func exression(3, 1) {
 
 	var1 = 1
 
-	# Check funion call
-	if (token_tye[0] == CALL) {
-		call fun_call()
-		call string_copy("rax", arg1)
+	# Check character
+	if (token_tye[0] == CHARACTER) {
+		call string_copy(token, arg1)
+		call token_consume(CHARACTER)
+		var1 = 2
 	} else {
 
-		# Check character
-		if (token_tye[0] == CHARACTER) {
-			call string_copy(token, arg1)
-			call token_consume(CHARACTER)
-			var1 = 2
+		# Check for string
+		if (token_tye[0] == STRING) {
+			# Store function name in array
+			call string_copy("str_", arg1)
+			call array_length(strings[0])
+			call string_from_number(rax, arg1)
+			call string_clone(token)
+			call array_append(strings[0], rax)
+			call token_consume(STRING)
 		} else {
 
-			# Check for string
-			if (token_tye[0] == STRING) {
-				# Store function name in array
-				call string_copy("str_", arg1)
-				call array_length(strings[0])
-				call string_from_number(rax, arg1)
-				call string_clone(token)
-				call array_append(strings[0], rax)
-				call token_consume(STRING)
+			# Check for number
+			if (token_tye[0] == NUMBER) {
+				call string_copy(token, arg1)
+				call token_consume(NUMBER)
+				var1 = 2
 			} else {
 
-				# Check for number
-				if (token_tye[0] == NUMBER) {
-					call string_copy(token, arg1)
-					call token_consume(NUMBER)
-					var1 = 2
+				# Throw error if no match and one is required
+				if (arg1 == 1) {
+					call string_print(STDERR, "Error: expected token EXPRESSION got token")
+					call printer_number(STDERR, token_tye[0])
+					call printer_line(STDERR)
+					call string_print(STDERR, new_line)
+					call printer_stack(STDERR)
+					sys(60,1)
 				} else {
-
-					# Throw error if no match and one is required
-					if (arg1 == 1) {
-						call string_print(STDERR, "Error: expected token EXPRESSION got token")
-						call printer_number(STDERR, token_tye[0])
-						call printer_line(STDERR)
-						call string_print(STDERR, new_line)
-						call printer_stack(STDERR)
-						sys(60,1)
-					} else {
-						return 0
-					}
+					return 0
 				}
 			}
 		}
 	}
 
-	call indices(arg2, arg1, var1)
+	call index_and_call(arg2, arg1, var1)
 	var1 = rax
 
 	return var1
@@ -723,13 +713,13 @@ func assignable(2, 1) {
 		}
 	}
 
-	call indices(arg2, arg1, var1)
+	call index_and_call(arg2, arg1, var1)
 	var1 = rax
 
 	return var1
 }
 
-func indices(2, 0) {
+func index_and_call(2, 0) {
 	# arg3 - register number
 	# arg2 - output string
 	# arg1 - 2 == immediate value
@@ -770,7 +760,12 @@ func indices(2, 0) {
 
 			call string_copy(indexing, arg2)
 		} else {
-			return arg1
+
+			if (token_tye[0] == PAREN_OPEN) {
+				call fun_call(arg2)
+			} else {
+				return arg1
+			}
 		}
 	}
 }
