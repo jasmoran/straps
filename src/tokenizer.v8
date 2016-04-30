@@ -43,6 +43,7 @@ nasm("
 %define MINUS			 43
 %define SQUARE_OPEN  44
 %define SQUARE_CLOSE 45
+%define ENUM			 46
 ")
 
 func token_kee_char(0, 1) {
@@ -127,8 +128,19 @@ func token_load(0, 0) {
 		}
 
 		if (rax == 'e') {
-			call token_else()
-			if (rax == 1) {return}
+			call token_eek_char()
+
+			if (rax == 'l') {
+				call token_else()
+				if (rax == 1) {return}
+			}
+
+			if (rax == 'n') {
+				call token_enum()
+				if (rax == 1) {return}
+			}
+
+			rax = 0
 		}
 
 		if (rax == 'f') {
@@ -459,6 +471,15 @@ func token_else(0, 0) {
 	call token_eek_char() if (rax == 'e') { call token_kee_char() } else { return 0 }
 
 	token_tye[0] = ELSE
+	return 1
+}
+
+func token_enum(0, 0) {
+	call token_eek_char() if (rax == 'n') { call token_kee_char() } else { return 0 }
+	call token_eek_char() if (rax == 'u') { call token_kee_char() } else { return 0 }
+	call token_eek_char() if (rax == 'm') { call token_kee_char() } else { return 0 }
+
+	token_tye[0] = ENUM
 	return 1
 }
 

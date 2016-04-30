@@ -534,6 +534,31 @@ func nt_include(0,4) {
 	return
 }
 
+func nt_enum(0, 1) {
+	call token_consume(ENUM)
+	call token_consume(CURLY_OPEN)
+	var1 = 0
+	loop {
+		call token_load()
+
+		if (token_tye[0] == CURLY_CLOSE) {
+			call token_consume(CURLY_CLOSE)
+			break
+		}
+
+		call string_print(FILE, "%define ")
+		call token_rint(FILE)
+		call token_consume(IDENTIFIER)
+		call string_print(FILE, " ")
+		call printer_number(FILE, var1)
+		call string_print(FILE, new_line)
+
+		var1++
+	}
+
+	return
+}
+
 func statement(1, 0) {
 	call operation(0)
 	if (rax == 1) {return 1}
@@ -547,6 +572,12 @@ func statement(1, 0) {
 	# Check for comment
 	if (token_tye[0] == COMMENT) {
 		call token_consume(COMMENT)
+		return 1
+	}
+
+	# Check for enum
+	if (token_tye[0] == ENUM) {
+		call nt_enum()
 		return 1
 	}
 
