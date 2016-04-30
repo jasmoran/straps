@@ -23,7 +23,15 @@ section .bss
 	ident_size:		resq 1
 	ident_data:		resb 256
 
+	ident2:
+	resq 2
+	resb 256
+
 	num_str:
+	resq 2
+	resb 256
+
+	indexing:
 	resq 2
 	resb 256
 

@@ -15,6 +15,8 @@ func kernel_call(0, 1) {
 	var1 = 0
 
 	loop {
+		call exression(1, 12, ident)
+
 		# Write move instruction to stdout
 		call string_print(FILE, new_line)
 		call string_print(FILE, "mov ")
@@ -24,7 +26,7 @@ func kernel_call(0, 1) {
 		call string_print(FILE, rax)
 		var1++
 
-		call exression(1)
+		call string_print(FILE, ident)
 
 		call token_load()
 
@@ -114,12 +116,11 @@ func fun_ret(0, 0) {
 	call token_consume(RETURN)
 
 
-	call string_print(FILE, new_line)
-	call string_print(FILE, "mov rax, ")
-
-	call exression(0)
-	if (rax == 0) {
-		call string_print(FILE, "rax")
+	call exression(0, 12, ident)
+	if (rax > 0) {
+		call string_print(FILE, new_line)
+		call string_print(FILE, "mov rax, ")
+		call string_print(FILE, ident)
 	}
 
 	# Write funion post to stdout
@@ -145,12 +146,7 @@ func nt_if(0, 2) {
 	call token_consume(IF)
 	call token_consume(PAREN_OPEN)
 
-	# Write new line to stdout
-	call string_print(FILE, new_line)
-
-	call string_print(FILE, "cmp ")
-
-	call exression(1)
+	call exression(1, 12, ident)
 
 	call comarison()
 	if (token_tye[0] == EQUAL) { var2 = "jne" call token_consume(EQUAL) }
@@ -160,9 +156,14 @@ func nt_if(0, 2) {
 	if (token_tye[0] == LESS) { var2 = "jnl" call token_consume(LESS) }
 	if (token_tye[0] == LESS_EQ) { var2 = "jg" call token_consume(LESS_EQ) }
 
-	call string_print(FILE, ", ")
+	call exression(1, 13, ident2)
 
-	call exression(1)
+	call string_print(FILE, new_line)
+
+	call string_print(FILE, "cmp ")
+	call string_print(FILE, ident)
+	call string_print(FILE, ", ")
+	call string_print(FILE, ident2)
 
 	call token_consume(PAREN_CLOSE)
 
@@ -320,12 +321,13 @@ func fun_call(0, 0) {
 		call token_consume(PAREN_CLOSE)
 	} else {
 		loop {
-			call string_print(FILE, "push ")
+			call exression(1, 12, ident)
 
-			call exression(1)
-
-			# Write new line to stdout
 			call string_print(FILE, new_line)
+
+			call string_print(FILE, "push ")
+			call string_print(FILE, ident)
+
 
 			call token_load()
 			if (token_tye[0] == PAREN_CLOSE) {
@@ -335,6 +337,8 @@ func fun_call(0, 0) {
 			call token_consume(COMMA)
 		}
 	}
+
+	call string_print(FILE, new_line)
 
 	# Write call to stdout
 	call string_print(FILE, "call ")
@@ -348,162 +352,128 @@ func fun_call(0, 0) {
 	return
 }
 
-func nt_arg(0, 2) {
+func nt_arg(1, 0) {
 	call token_consume(ARG)
+
+	call string_copy("QWORD[rbp + ", arg1)
 
 	call token_load()
 	call read_number()
 	rax++
 	rax << 3
-	var1 = rax
+	call string_from_number(rax, arg1)
 	call token_consume(NUMBER)
-
-	call operator_begin()
-	var2 = rax
-
-	call string_print(FILE, "QWORD[rbp + ")
-
-	call printer_number(FILE, var1)
-
-	# Print square close bracket
-	call string_print(FILE, "]")
-
-	call operator_end(var2)
-
+	call string_join("]", arg1)
 	return
 }
 
-func ariable(0, 2) {
+func ariable(1, 0) {
 	call token_consume(VAR)
+
+	call string_copy("QWORD[rbp - ", arg1)
 
 	call token_load()
 	call read_number()
 	rax << 3
-	var1 = rax
+	call string_from_number(rax, arg1)
 	call token_consume(NUMBER)
-
-	call operator_begin()
-	var2 = rax
-
-	# Print 'QWORD[rbp - ' to stdout
-	call string_print(FILE, "QWORD[rbp - ")
-
-	call printer_number(FILE, var1)
-
-	# Print square close bracket
-	call string_print(FILE, "]")
-
-	call operator_end(var2)
-
+	call string_join("]", arg1)
 	return
 }
 
-func identifier(0, 3) {
-	call string_copy(token, ident)
+func identifier(1, 0) {
+	call string_copy(token, arg1)
 	call token_consume(IDENTIFIER)
+	return
+}
 
+func operation(0, 2) {
+	# Get LHS
+	call assignable(1, 12, ident)
+	if (rax == 0) {return}
 
-	call token_load()
-	var3 = 0
-	if (token_tye[0] == SQUARE_OPEN) {
-		call token_consume(SQUARE_OPEN)
-		call token_load()
-		call read_number()
-		var1 = rax
-		call token_consume(NUMBER)
-		call token_consume(SQUARE_CLOSE)
-		var3 = 1
+	call operator()
+	var1 = rax
+
+	if (rax == INCREMENT) {
+		var2 = 0
+	} else {
+		if (rax == DECREMENT) {
+			var2 = 0
+		} else {
+			var2 = 1
+
+			# Prepare RHS
+			call exression(1, 13, ident2)
+
+			if (rax == 1) {
+				call string_print(FILE, new_line)
+				call string_print(FILE, "mov r13, ")
+				call string_print(FILE, ident2)
+				call string_copy("r13", ident2)
+			}
+		}
 	}
 
-	call operator_begin()
-	var2 = rax
+	# Print operation
+	call string_print(FILE, new_line)
 
-	if (var3 == 1) {
-		# Print 'QWORD['
-		call string_print(FILE, "QWORD[")
-	}
+	if (var1 == INCREMENT) { call string_print(FILE, "inc ") }
+	if (var1 == DECREMENT) { call string_print(FILE, "dec ") }
+	if (var1 == ASSIGN) {	call string_print(FILE, "mov ") }
+	if (var1 == ADD) { call string_print(FILE, "add ") }
+	if (var1 == SUB) { call string_print(FILE, "sub ") }
+	if (var1 == SHIFTL) { call string_print(FILE, "shl ") }
+	if (var1 == SHIFTR) { call string_print(FILE, "shr ") }
 
-	# Print identifier
 	call string_print(FILE, ident)
 
-	if (var3 == 1) {
-		call string_print(FILE, " + ")
-		call printer_number(FILE, var1)
-		call string_print(FILE, "]")
+	if (var2 == 1) {
+		call string_print(FILE, ", ")
+		call string_print(FILE, ident2)
 	}
 
-	call operator_end(var2)
+	call string_print(FILE, new_line)
 
+	return 1
+}
+
+func comarison(0, 0) {
+	call token_load()
+	if (token_tye[0] == EQUAL) { return 1 }
+	if (token_tye[0] == NOT_EQUAL) { return 1 }
+	if (token_tye[0] == GREATER) { return 1 }
+	if (token_tye[0] == GREATER_EQ) { return 1 }
+	if (token_tye[0] == LESS) { return 1 }
+	if (token_tye[0] == LESS_EQ) { return 1 }
+
+	call string_print(STDERR, "Error: expected token COMPARISON got token ")
+	call printer_number(STDERR, token_tye[0])
+	call printer_line(STDERR)
+	call string_print(STDERR, new_line)
+	call printer_stack(STDERR)
+
+	sys(60,1)
 	return
 }
 
-func operator_begin(0, 0) {
+func operator(0, 0) {
 	call token_load()
+	if (token_tye[0] == INCREMENT) { call token_consume(INCREMENT) return INCREMENT }
+	if (token_tye[0] == DECREMENT) { call token_consume(DECREMENT) return DECREMENT }
+	if (token_tye[0] == ASSIGN) {	call token_consume(ASSIGN) return ASSIGN }
+	if (token_tye[0] == ADD) { call token_consume(ADD) return ADD }
+	if (token_tye[0] == SUB) { call token_consume(SUB) return SUB }
+	if (token_tye[0] == SHIFTL) { call token_consume(SHIFTL) return SHIFTL }
+	if (token_tye[0] == SHIFTR) { call token_consume(SHIFTR) return SHIFTR }
 
-	if (token_tye[0] == ASSIGN) {
-		call token_consume(ASSIGN)
-		call string_print(FILE, new_line)
-		call string_print(FILE, "mov ")
-		return 1
-	}
+	call string_print(STDERR, "Error: expected token OPERATOR got token ")
+	call printer_number(STDERR, token_tye[0])
+	call printer_line(STDERR)
+	call string_print(STDERR, new_line)
+	call printer_stack(STDERR)
 
-	if (token_tye[0] == INCREMENT) {
-		call token_consume(INCREMENT)
-		call string_print(FILE, new_line)
-		call string_print(FILE, "inc ")
-		return 2
-	}
-
-	if (token_tye[0] == ADD) {
-		call token_consume(ADD)
-		call string_print(FILE, new_line)
-		call string_print(FILE, "add ")
-		return 1
-	}
-
-	if (token_tye[0] == DECREMENT) {
-		call token_consume(DECREMENT)
-		call string_print(FILE, new_line)
-		call string_print(FILE, "dec ")
-		return 2
-	}
-
-	if (token_tye[0] == SUB) {
-		call token_consume(SUB)
-		call string_print(FILE, new_line)
-		call string_print(FILE, "sub ")
-		return 1
-	}
-
-	if (token_tye[0] == SHIFTL) {
-		call token_consume(SHIFTL)
-		call string_print(FILE, new_line)
-		call string_print(FILE, "shl ")
-		return 1
-	}
-
-	if (token_tye[0] == SHIFTR) {
-		call token_consume(SHIFTR)
-		call string_print(FILE, new_line)
-		call string_print(FILE, "shr ")
-		return 1
-	}
-
-	return 0
-}
-
-func operator_end(1, 0) {
-	if (arg1 > 0) {
-		if (arg1 == 1) {
-			call string_print(FILE, ", ")
-
-			call exression(1)
-		}
-
-		# Write new line to stdout
-		call string_print(FILE, new_line)
-	}
-
+	sys(60,1)
 	return
 }
 
@@ -562,32 +532,18 @@ func nt_include(0,4) {
 	return
 }
 
-func comarison(0, 0) {
-	call token_load()
-	if (token_tye[0] == EQUAL) { return 1 }
-	if (token_tye[0] == NOT_EQUAL) { return 1 }
-	if (token_tye[0] == GREATER) { return 1 }
-	if (token_tye[0] == GREATER_EQ) { return 1 }
-	if (token_tye[0] == LESS) { return 1 }
-	if (token_tye[0] == LESS_EQ) { return 1 }
-
-	call string_print(STDERR, "Error: expected token COMPARISON got token ")
-	call printer_number(STDERR, token_tye[0])
-	call printer_line(STDERR)
-	call string_print(STDERR, new_line)
-	call printer_stack(STDERR)
-
-	sys(60,1)
-	return
-}
-
 func statement(1, 0) {
-	call exression(0)
-	if (rax == 1) {return}
+	call operation(0)
+	if (rax == 1) {return 1}
 
 	# Check for break call
 	if (token_tye[0] == BREAK) {
 		call loo_break()
+		return 1
+	}
+
+	if (token_tye[0] == CALL) {
+		call fun_call()
 		return 1
 	}
 
@@ -664,70 +620,159 @@ func statement(1, 0) {
 	return 0
 }
 
-func exression(1, 0) {
-	call token_load()
+func exression(3, 1) {
+	# arg3 - required
+	# arg2 - register number
+	# arg1 - output string
 
-	# Check for funion argument
-	if (token_tye[0] == ARG) {
-		call nt_arg()
-		return 1
-	}
+	call assignable(0, arg2, arg1)
+	if (rax > 0) { return }
+
+	var1 = 1
 
 	# Check funion call
 	if (token_tye[0] == CALL) {
 		call fun_call()
-		return 1
+		call string_copy("rax", arg1)
+	} else {
+
+		# Check character
+		if (token_tye[0] == CHARACTER) {
+			call string_copy(token, arg1)
+			call token_consume(CHARACTER)
+			var1 = 2
+		} else {
+
+			# Check for string
+			if (token_tye[0] == STRING) {
+				# Store function name in array
+				call string_copy("str_", arg1)
+				call array_length(strings[0])
+				call string_from_number(rax, arg1)
+				call string_clone(token)
+				call array_append(strings[0], rax)
+				call token_consume(STRING)
+			} else {
+
+				# Check for number
+				if (token_tye[0] == NUMBER) {
+					call string_copy(token, arg1)
+					call token_consume(NUMBER)
+					var1 = 2
+				} else {
+
+					# Throw error if no match and one is required
+					if (arg1 == 1) {
+						call string_print(STDERR, "Error: expected token EXPRESSION got token")
+						call printer_number(STDERR, token_tye[0])
+						call printer_line(STDERR)
+						call string_print(STDERR, new_line)
+						call printer_stack(STDERR)
+						sys(60,1)
+					} else {
+						return 0
+					}
+				}
+			}
+		}
 	}
 
-	# Check character
-	if (token_tye[0] == CHARACTER) {
-		call token_rint(FILE)
-		call token_consume(CHARACTER)
-		return 1
+	call indices(arg2, arg1, var1)
+	var1 = rax
+
+	return var1
+}
+
+func assignable(2, 1) {
+	# arg3 - required
+	# arg2 - register number
+	# arg1 - output string
+
+	call token_load()
+
+	var1 = 1
+
+	# Check for function argument
+	if (token_tye[0] == ARG) {
+		call nt_arg(arg1)
+	} else {
+
+		# Check for identifier
+		if (token_tye[0] == IDENTIFIER) {
+			call identifier(arg1)
+			var1 = 2
+		} else {
+
+			# Check for local variable
+			if (token_tye[0] == VAR) {
+				call ariable(arg1)
+			} else {
+
+				# Throw error if no match and one is required
+				if (arg2 == 1) {
+					call string_print(STDERR, "Error: expected token ASSIGNABLE got token")
+					call printer_number(STDERR, token_tye[0])
+					call printer_line(STDERR)
+					call string_print(STDERR, new_line)
+					call printer_stack(STDERR)
+					sys(60,1)
+				} else {
+					return 0
+				}
+			}
+		}
 	}
 
-	# Check for string
-	if (token_tye[0] == STRING) {
-		# Store function name in array
-		call string_print(FILE, "str_")
-		call array_length(strings[0])
-		call printer_number(FILE, rax)
-		call string_clone(token)
-		call array_append(strings[0], rax)
-		call token_consume(STRING)
-		return 1
-	}
+	call indices(arg2, arg1, var1)
+	var1 = rax
 
-	# Check for identifier
-	if (token_tye[0] == IDENTIFIER) {
-		call identifier()
-		return 1
-	}
+	return var1
+}
 
-	# Check for number
-	if (token_tye[0] == NUMBER) {
-		call token_rint(FILE)
-		call token_consume(NUMBER)
-		return 1
-	}
+func indices(2, 0) {
+	# arg3 - register number
+	# arg2 - output string
+	# arg1 - 2 == immediate value
 
-	# Check for local variable
-	if (token_tye[0] == VAR) {
-		call ariable()
-		return 1
-	}
+	loop {
+		call token_load()
 
-	# Throw error if no match and one is required
-	if (arg1 == 1) {
-		call string_print(STDERR, "Error: expected token EXPRESSION got token")
-		call printer_number(STDERR, token_tye[0])
-		call printer_line(STDERR)
-		call string_print(STDERR, new_line)
-		call printer_stack(STDERR)
-		sys(60,1)
-	}
+		if (token_tye[0] == SQUARE_OPEN) {
+			call token_consume(SQUARE_OPEN)
 
-	return 0
+			if (arg1 != 2) {
+				call string_print(FILE, new_line)
+				call string_print(FILE, "mov r")
+				call printer_number(FILE, arg3)
+				call string_print(FILE, ", ")
+				call string_print(FILE, arg2)
+			}
+
+			call string_clear(indexing)
+			call string_join("QWORD[", indexing)
+
+			if (arg1 == 2) {
+				call string_join(arg2, indexing)
+				arg1 = 1
+			} else {
+				call string_join("r", indexing)
+				call string_from_number(arg3, indexing)
+			}
+
+			call string_join(" + ", indexing)
+
+			call token_load()
+			call string_join(token, indexing)
+			call token_consume(NUMBER)
+
+			call token_consume(SQUARE_CLOSE)
+			call string_join("]", indexing)
+
+			call string_copy(indexing, arg2)
+		} else {
+			return arg1
+		}
+	}
 }
 
 func list_func(1, 3) {

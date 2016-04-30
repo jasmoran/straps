@@ -120,3 +120,72 @@ func string_inspect(2, 0) {
 
 	return arg1
 }
+
+func string_join(2, 0) {
+	# arg2 - source
+	# arg1 - dest
+
+	rax = arg1
+	rax = rax[0]
+
+	# Copy main data
+	rsi = arg2
+	rsi += 16
+	rdi = arg1
+	rdi += 16
+	rdi += rax
+	rcx = arg2
+	rcx = rcx[0]
+	nasm("rep movsb
+	")
+
+	# Set length of destination
+	rax = arg2
+	rax = rax[0]
+	rbx = arg1
+	rbx[0] += rax
+
+	return
+
+}
+
+func string_from_number(2, 1) {
+	# rax/arg2 - integer input
+	# arg1 - string output
+	# rcx - divisor
+	# rdx - remainder
+	# var1 - digit counter
+
+	rax = arg2
+	rcx = 10
+	var1 = 0
+
+	loop {
+		rdx = 0
+		nasm("
+			div rcx
+			push rdx
+		")
+		var1++
+
+		if (rax == 0) {
+			break
+		}
+	}
+
+	loop {
+		nasm("pop rax")
+		rax += '0'
+
+		call string_append(arg1, rax)
+
+		var1--
+
+		# Exit loop if count has reached 0
+		if (var1 == 0) {
+			break
+		}
+	}
+
+	return
+}

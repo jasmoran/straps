@@ -430,7 +430,7 @@ func token_consume(1, 0) {
 		token_length[0] = 0
 	} else {
 		call string_print(STDERR, "Error: expected token ")
-		call printer_number(STDERR, r12)
+		call printer_number(STDERR, arg1)
 		call string_print(STDERR, " got token ")
 		call printer_number(STDERR, token_tye[0])
 		call printer_line(STDERR)

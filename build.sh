@@ -45,7 +45,7 @@
 # gcc -m64 -o bin/v8 bin/v8.o &&
 # rm bin/v8.o &&
 
-./bin/v8 src/v8.v8 asm_out/v88.asm &&
-nasm -f elf64 -o bin/v88.o asm_out/v88.asm &&
-gcc -m64 -o bin/v88 bin/v88.o &&
-rm bin/v88.o
+./bin/v8 src/v9.v8 asm_out/v9.asm &&
+nasm -f elf64 -o bin/v9.o asm_out/v9.asm &&
+gcc -m64 -o bin/v9 bin/v9.o &&
+rm bin/v9.o
