@@ -212,3 +212,31 @@ func string_hash(1, 0) {
 
 	return
 }
+
+func string_equal(2, 0) {
+	# Compare addresses
+	rsi = arg1
+	rdi = arg2
+	if (rsi == rdi) {
+		return 1
+	}
+
+	# Compare lengths
+	rbx = rsi[0]
+	rcx = rdi[0]
+	if (rbx != rcx) {
+		return 0
+	}
+
+	rsi += 16
+	rdi += 16
+
+	# Compare byte by byte
+	nasm("repe cmpsb
+	jne .str_not_eq
+	")
+	return 1
+	nasm(".str_not_eq:
+	")
+	return 0
+}

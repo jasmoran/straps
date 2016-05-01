@@ -84,3 +84,12 @@ func array_find(3, 2) {
 		}
 	}
 }
+
+func int_equal(2, 0) {
+	rax = arg1
+	if (rax == arg2) {
+		return 1
+	} else {
+		return 0
+	}
+}
