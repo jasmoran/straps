@@ -58,6 +58,21 @@ func array_get(2, 0) {
 	return rax[0]
 }
 
+func array_set(3, 0) {
+	# arg3 - array
+	# arg2 - index
+	# arg1 - value
+
+	rax = arg3
+	rbx = arg2
+	rbx += 2
+	rbx << 3
+	rax += rbx
+	rbx = arg1
+	rax[0] = rbx
+	return
+}
+
 func array_find(3, 2) {
 	# arg3 - array
 	# arg2 - value
@@ -67,6 +82,13 @@ func array_find(3, 2) {
 	var1 = rax
 	var2 = 0
 	loop {
+		# Detect end of array
+		rax = var1
+		if (rax == var2) {
+			nasm("mov rax, -1")
+			return rax
+		}
+
 		# Detect match
 		call array_get(arg3, var2)
 		rbx = arg1
@@ -75,13 +97,7 @@ func array_find(3, 2) {
 			return var2
 		}
 
-		# Detect end of array
 		var2++
-		rax = var1
-		if (rax == var2) {
-			nasm("mov rax, -1")
-			return rax
-		}
 	}
 }
 
