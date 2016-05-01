@@ -101,6 +101,12 @@ func array_find(3, 2) {
 	}
 }
 
+func array_clear(1, 0) {
+	rax = arg1
+	rax[0] = 0
+	return
+}
+
 func int_equal(2, 0) {
 	rax = arg1
 	if (rax == arg2) {

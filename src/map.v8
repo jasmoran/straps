@@ -50,3 +50,11 @@ func map_set(3, 0) {
 
 	return
 }
+
+func map_clear(1, 0) {
+	rax = arg1
+	call array_clear(rax[0])
+	rax = arg1
+	call array_clear(rax[8])
+	return
+}
