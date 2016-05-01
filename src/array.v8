@@ -57,3 +57,30 @@ func array_get(2, 0) {
 	rax += rbx
 	return rax[0]
 }
+
+func array_find(3, 2) {
+	# arg3 - array
+	# arg2 - value
+	# arg1 - matching function
+
+	call array_length(arg3)
+	var1 = rax
+	var2 = 0
+	loop {
+		# Detect match
+		call array_get(arg3, var2)
+		rbx = arg1
+		call rbx(arg2, rax)
+		if (rax == 1) {
+			return var2
+		}
+
+		# Detect end of array
+		var2++
+		rax = var1
+		if (rax == var2) {
+			nasm("mov rax, -1")
+			return rax
+		}
+	}
+}
