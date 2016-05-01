@@ -45,6 +45,7 @@ section .bss
 	registers:		resq 1
 	enum_names:		resq 1
 	enum_items:		resq 1
+	local_vars:		resq 1
 
 section .data
 	new_line:
@@ -117,7 +118,11 @@ func main(0, 1) {
 	call array_new(10)
 	enum_items[0] = rax
 
-	# initialize registers array
+	# Create map for local variables
+	call map_new(100)
+	local_vars[0] = rax
+
+	# Initialize registers array
 	call array_new(6)
 	registers[0] = rax
 	call array_append(registers[0], "rax,")

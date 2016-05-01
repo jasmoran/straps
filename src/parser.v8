@@ -63,7 +63,7 @@ func block(0, 0) {
 	return
 }
 
-func fun_decl(0, 0) {
+func fun_decl(0, 2) {
 	call token_consume(FUNC)
 
 	call token_load()
@@ -75,15 +75,6 @@ func fun_decl(0, 0) {
 	call token_rint(FILE)
 	call token_consume(IDENTIFIER)
 
-	call token_consume(PAREN_OPEN)
-	call token_load()
-	call read_number()
-	rax << 3
-	ret_size[0] = rax
-	call token_consume(NUMBER)
-
-	call token_consume(COMMA)
-
 	# Write funion prologue to stdout
 	call string_print(FILE, ":")
 	call string_print(FILE, new_line)
@@ -93,18 +84,75 @@ func fun_decl(0, 0) {
 	call string_print(FILE, new_line)
 	call string_print(FILE, "sub rsp, ")
 
+	# Load arguments
+	call token_consume(PAREN_OPEN)
 	call token_load()
-	call read_number()
-	rax << 3
-	call printer_number(FILE, rax)
-	call token_consume(NUMBER)
+	var1 = 16
+	if (token_tye[0] == PAREN_CLOSE) {
+		call token_consume(PAREN_CLOSE)
+	} else {
+		loop {
+			call string_new(16)
+			var2 = rax
+			call string_copy("QWORD[rbp+", var2)
+			call string_from_number(var1, var2)
+			call string_join("]", var2)
 
-	call token_consume(PAREN_CLOSE)
+			call string_clone(token)
+			call map_set(local_vars[0], rax, var2)
+			call token_consume(IDENTIFIER)
+
+			call token_load()
+			if (token_tye[0] == PAREN_CLOSE) {
+				call token_consume(PAREN_CLOSE)
+				break
+			}
+
+			var1 += 8
+			call token_consume(COMMA)
+		}
+	}
+	rax = var1
+	rax -= 8
+	ret_size[0] = rax
+
+	# Load variables
+	call token_consume(PAREN_OPEN)
+	call token_load()
+	var1 = 8
+	if (token_tye[0] == PAREN_CLOSE) {
+		call token_consume(PAREN_CLOSE)
+	} else {
+		loop {
+			call string_new(16)
+			var2 = rax
+			call string_copy("QWORD[rbp-", var2)
+			call string_from_number(var1, var2)
+			call string_join("]", var2)
+
+			call string_clone(token)
+			call map_set(local_vars[0], rax, var2)
+			call token_consume(IDENTIFIER)
+
+
+			call token_load()
+			if (token_tye[0] == PAREN_CLOSE) {
+				call token_consume(PAREN_CLOSE)
+				break
+			}
+
+			var1 += 8
+			call token_consume(COMMA)
+		}
+	}
+	call printer_number(FILE, var1)
 
 	# Write new line to stdout
 	call string_print(FILE, new_line)
 
 	call block()
+
+	call map_clear(local_vars[0])
 
 	# TODO: Warn that end of funion has been reached
 
@@ -366,15 +414,10 @@ func nt_arg(1, 0) {
 
 func ariable(1, 0) {
 	call token_consume(VAR)
-
-	call string_copy("QWORD[rbp - ", arg1)
-
 	call token_load()
-	call read_number()
-	rax << 3
-	call string_from_number(rax, arg1)
-	call token_consume(NUMBER)
-	call string_join("]", arg1)
+	call map_get(local_vars[0], token)
+	call string_copy(rax, arg1)
+	call token_consume(IDENTIFIER)
 	return
 }
 
