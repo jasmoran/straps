@@ -1,0 +1,52 @@
+func map_new(1, 1) {
+	# arg1 - size
+
+	# Allocate memory
+	call allocate(16)
+	var1 = rax
+
+	# Allocate arrays
+	call array_new(arg1)
+	rbx = var1
+	rbx[0] = rax
+	call array_new(arg1)
+	rbx = var1
+	rbx[8] = rax
+
+	return var1
+}
+
+func map_get(2, 0) {
+	# arg2 - map
+	# arg1 - key
+
+	rbx = arg2
+	call array_find(rbx[0], arg1, string_equal)
+	if (rax < 0) {
+		return
+	}
+
+	rbx = arg2
+	call array_get(rbx[8], rax)
+	return
+}
+
+func map_set(3, 0) {
+	# arg3 - map
+	# arg2 - key
+	# arg1 - value
+
+	rbx = arg3
+	call array_find(rbx[0], arg2, string_equal)
+	if (rax < 0) {
+		rbx = arg3
+		call array_append(rbx[0], arg2)
+		rbx = arg3
+		call array_append(rbx[8], arg1)
+	} else {
+		rbx = arg3
+		call array_set(rbx[8], rax, arg1)
+	}
+
+	return
+}

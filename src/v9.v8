@@ -65,6 +65,7 @@ include "src/array.v8"
 include "src/memory.v8"
 include "src/parser.v8"
 include "src/string.v8"
+include "src/map.v8"
 
 func read_number(0, 0) {
 	rax = 0
