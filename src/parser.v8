@@ -534,10 +534,18 @@ func nt_include(0,4) {
 	return
 }
 
-func nt_enum(0, 1) {
+func nt_enum(0, 2) {
 	call token_consume(ENUM)
+
+	call token_load()
+	call string_clone(token)
+	call array_append(enum_names[0], rax)
+	call token_consume(IDENTIFIER)
+
 	call token_consume(CURLY_OPEN)
 	var1 = 0
+	call array_new(99)
+	var2 = rax
 	loop {
 		call token_load()
 
@@ -548,6 +556,8 @@ func nt_enum(0, 1) {
 
 		call string_print(FILE, "%define ")
 		call token_rint(FILE)
+		call string_clone(token)
+		call array_append(var2, rax)
 		call token_consume(IDENTIFIER)
 		call string_print(FILE, " ")
 		call printer_number(FILE, var1)
@@ -555,6 +565,8 @@ func nt_enum(0, 1) {
 
 		var1++
 	}
+
+	call array_append(enum_items[0], var2)
 
 	return
 }
@@ -886,6 +898,87 @@ func list_str(1, 3) {
 		var1++
 	}
 	call string_print(arg1, new_line)
+
+	return
+}
+
+func list_enums(1, 6) {
+	# Loop through enumerations
+	var1 = 0
+	loop {
+		call array_length(enum_names[0])
+		if (var1 == rax) {
+			break
+		}
+
+		# Loop through enum items
+		call array_get(enum_items[0], var1)
+		var2 = rax
+
+		call array_get(enum_names[0], var1)
+		var3 = rax
+
+		var4 = 0
+		loop {
+			call array_length(var2)
+			if (var4 == rax) {
+				break
+			}
+
+			call array_get(var2, var4)
+			var5 = rax
+
+			call string_length(var5)
+			var6 = rax
+
+			call string_print(arg1, var3)
+			call string_print(arg1, "_")
+			call printer_number(arg1, var4)
+			call string_print(arg1, ":")
+			call string_print(arg1, new_line)
+			call string_print(arg1, "dq ")
+			call printer_number(arg1, var6)
+			call string_print(arg1, ", ")
+			call printer_number(arg1, var6)
+			call string_print(arg1, new_line)
+			call string_print(arg1, "db ")
+			call string_print(arg1, quote)
+			call string_print(arg1, var5)
+			call string_print(arg1, quote)
+			call string_print(arg1, new_line)
+
+			var4++
+		}
+
+		call array_length(var2)
+		var6 = rax
+
+		call string_print(arg1, var3)
+		call string_print(arg1, ":")
+		call string_print(arg1, new_line)
+		call string_print(arg1, "dq ")
+		call printer_number(arg1, var6)
+		call string_print(arg1, ", ")
+		call printer_number(arg1, var6)
+
+		var4 = 0
+		loop {
+			call array_length(var2)
+			if (var4 == rax) {
+				break
+			}
+
+			call string_print(arg1, ", ")
+			call string_print(arg1, var3)
+			call string_print(arg1, "_")
+			call printer_number(arg1, var4)
+
+			var4++
+		}
+		call string_print(arg1, new_line)
+
+		var1++
+	}
 
 	return
 }
