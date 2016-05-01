@@ -189,3 +189,26 @@ func string_from_number(2, 1) {
 
 	return
 }
+
+func string_hash(1, 0) {
+	# Load string
+	rcx = arg1
+	r12 = rcx[0]
+	rcx += 16
+
+	# Load hash constants
+	rax = 14695981039346656037
+	rbx = 1099511628211
+	loop {
+		if (r12 == 0) {
+			break
+		}
+		nasm("xor al, BYTE[rcx]
+		mul rbx
+		")
+		rcx++
+		r12--
+	}
+
+	return
+}
