@@ -98,6 +98,7 @@ func fun_decl(0, 2) {
 			call string_from_number(var1, var2)
 			call string_join("]", var2)
 
+			call token_load()
 			call string_clone(token)
 			call map_set(local_vars[0], rax, var2)
 			call token_consume(IDENTIFIER)
@@ -130,6 +131,7 @@ func fun_decl(0, 2) {
 			call string_from_number(var1, var2)
 			call string_join("]", var2)
 
+			call token_load()
 			call string_clone(token)
 			call map_set(local_vars[0], rax, var2)
 			call token_consume(IDENTIFIER)
@@ -416,6 +418,17 @@ func ariable(1, 0) {
 	call token_consume(VAR)
 	call token_load()
 	call map_get(local_vars[0], token)
+
+	if (rax < 0) {
+		call string_print(STDERR, "Error: undefined variable ")
+		call string_print(STDERR, token)
+		call printer_line(STDERR)
+		call string_print(STDERR, new_line)
+		call printer_stack(STDERR)
+
+		sys(60, 1)
+	}
+
 	call string_copy(rax, arg1)
 	call token_consume(IDENTIFIER)
 	return
@@ -433,7 +446,7 @@ func operation(0, 2) {
 	if (rax == 0) {return}
 
 	call operator(0)
-	if (rax == 0) {return}
+	if (rax == 0) {return 1}
 	var1 = rax
 
 	if (rax == INCREMENT) {
@@ -522,7 +535,7 @@ func operator(1, 0) {
 	return 0
 }
 
-func nt_include(0,4) {
+func nt_include(0,5) {
 	call token_consume(INCLUDE)
 
 	call token_load()
@@ -544,6 +557,11 @@ func nt_include(0,4) {
 	line_number[0] = 1
 	column_number[0] = 1
 
+	# Save old file name
+	rax = file_name[0]
+	var5 = rax
+	call string_clone(token)
+	file_name[0] = rax
 
 	# Open new in file
 	sys(2,token_image,0,511)
@@ -573,6 +591,10 @@ func nt_include(0,4) {
 	line_number[0] = rax
 	rax = var4
 	column_number[0] = rax
+
+	# Restore old file name
+	rax = var5
+	file_name[0] = rax
 
 	return
 }

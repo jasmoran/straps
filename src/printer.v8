@@ -9,6 +9,8 @@ func printer_line(1, 0) {
 	call printer_number(arg1, line_number[0])
 	call string_print(arg1, " column ")
 	call printer_number(arg1, column_number[0])
+	call string_print(arg1, " in ")
+	call string_print(arg1, file_name[0])
 	return
 }
 
