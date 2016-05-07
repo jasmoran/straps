@@ -1,0 +1,684 @@
+enum TOKEN {
+	NONE ARG BREAK CASE ELSE FOR FUNC IF LOOP NASM NEXT RETURN SWITCH SYS
+	VAR WHILE NUMBER IDENTIFIER STRING PAREN_OPEN PAREN_CLOSE COMMA
+	COMMENT CURLY_OPEN CURLY_CLOSE EQUAL NOT_EQUAL GREATER GREATER_EQ
+	LESS LESS_EQ ASSIGN CHARACTER INCLUDE NOT SHIFTL SHIFTR INCREMENT
+	ADD PLUS DECREMENT SUB MINUS SQUARE_OPEN SQUARE_CLOSE ENUM
+}
+
+func token_kee_char()(old_char_next) {
+	# Move char_next into image
+	rax = 0
+	nasm("mov al, BYTE[char_next]")
+	var old_char_next = rax
+	rbx = token_length[0]
+	rbx += token_image
+	nasm("mov BYTE[rbx], al")
+	token_length[0]++
+	column_number[0]++
+
+	# TODO: Check for length > 256
+	nasm("mov r12b, BYTE[char_next]
+	")
+	if (r12b == 10) {
+		line_number[0]++
+		column_number[0] = 1
+	}
+
+	if (r12b == 0) {
+		rax = 0
+	} else {
+		# Load new char_next from stdin
+		sys(0, in_file_fid[0], char_next, 1)
+
+		if (rax == 0) {
+			nasm("mov BYTE[char_next], 0
+			")
+		}
+
+		# Return old char_next
+		rax = var old_char_next
+	}
+
+	return
+}
+
+func token_eek_char()() {
+	rax = 0
+	nasm("mov al, BYTE[char_next]
+	")
+	return
+}
+
+func token_rint(out_stream)() {
+	string_print(var out_stream, token)
+	return
+}
+
+func token_load()() {
+	# Check previous token has been consumed
+	if (token_length[0] == 0) {
+		# Skip whitespace
+		loop {
+			token_kee_char()
+			if (rax == 0) {
+				token_tye[0] = 0
+				return
+			}
+			if (rax > ' ') {
+				break
+			} else {
+				token_length[0] = 0
+			}
+		}
+
+		if (rax == 'a') {
+			token_arg()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 'b') {
+			token_break()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 'c') {
+			token_case()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 'e') {
+			token_eek_char()
+
+			if (rax == 'l') {
+				token_else()
+				if (rax == 1) {return}
+			}
+
+			if (rax == 'n') {
+				token_enum()
+				if (rax == 1) {return}
+			}
+
+			rax = 0
+		}
+
+		if (rax == 'f') {
+			token_eek_char()
+
+			if (rax == 'o') {
+				token_for()
+				if (rax == 1) {return}
+			}
+
+			if (rax == 'u') {
+				token_func()
+				if (rax == 1) {return}
+			}
+
+			rax = 0
+		}
+
+		if (rax == 'i') {
+			token_eek_char()
+
+			if (rax == 'f') {
+				token_if()
+				if (rax == 1) {return}
+			}
+
+			if (rax == 'n') {
+				token_include()
+				if (rax == 1) {return}
+			}
+
+			rax = 0
+		}
+
+		if (rax == 'l') {
+			token_loo()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 'n') {
+			token_eek_char()
+
+			if (rax == 'a') {
+				token_nasm()
+				if (rax == 1) {return}
+			}
+
+			if (rax == 'e') {
+				token_next()
+				if (rax == 1) {return}
+			}
+
+			rax = 0
+		}
+
+		if (rax == 'r') {
+			token_return()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 's') {
+			token_eek_char()
+
+			if (rax == 'w') {
+				token_switch()
+				if (rax == 1) {return}
+			}
+
+			if (rax == 'y') {
+				token_sys()
+				if (rax == 1) {return}
+			}
+
+			rax = 0
+		}
+
+		if (rax == 'v') {
+			token_ar()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 'w') {
+			token_while()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 34) {
+			token_string()
+			if (rax == 1) {return}
+		}
+
+		if (rax == '#') {
+			token_comment()
+			if (rax == 1) {return}
+		}
+
+		if (rax == 39) {
+			token_character()
+			if (rax == 1) {return}
+		}
+
+		if (rax == '(') {
+			token_tye[0] = PAREN_OPEN
+			return
+		}
+
+		if (rax == ')') {
+			token_tye[0] = PAREN_CLOSE
+			return
+		}
+
+		if (rax == 123) {
+			token_tye[0] = CURLY_OPEN
+			return
+		}
+
+		if (rax == '}') {
+			token_tye[0] = CURLY_CLOSE
+			return
+		}
+
+		if (rax == '[') {
+			token_tye[0] = SQUARE_OPEN
+			return
+		}
+
+		if (rax == ']') {
+			token_tye[0] = SQUARE_CLOSE
+			return
+		}
+
+		if (rax == ',') {
+			token_tye[0] = COMMA
+			return
+		}
+
+		if (rax == '!') {
+			token_eek_char()
+
+			if (rax == '=') {
+				token_kee_char()
+				token_tye[0] = NOT_EQUAL
+			} else {
+				token_tye[0] = NOT
+			}
+			return
+		}
+
+		if (rax == 60) {
+			token_eek_char()
+
+			if (rax == 61) {
+				token_kee_char()
+				token_tye[0] = LESS_EQ
+				return
+			}
+
+			if (rax == 60) {
+				token_kee_char()
+				token_tye[0] = SHIFTL
+				return
+			}
+
+			token_tye[0] = LESS
+			return
+		}
+
+		if (rax == 61) {
+			token_eek_char()
+
+			if (rax == 61) {
+				token_kee_char()
+				token_tye[0] = EQUAL
+			} else {
+				token_tye[0] = ASSIGN
+			}
+			return
+		}
+
+		if (rax == 62) {
+			token_eek_char()
+
+			if (rax == 61) {
+				token_kee_char()
+				token_tye[0] = GREATER_EQ
+				return
+			}
+
+			if (rax == 62) {
+				token_kee_char()
+				token_tye[0] = SHIFTR
+				return
+			}
+
+			token_tye[0] = GREATER
+			return
+		}
+
+		if (rax == '+') {
+			token_eek_char()
+
+			if (rax == '+') {
+				token_kee_char()
+				token_tye[0] = INCREMENT
+				return
+			}
+
+			if (rax == '=') {
+				token_kee_char()
+				token_tye[0] = ADD
+				return
+			}
+
+			token_tye[0] = PLUS
+			return
+		}
+
+		if (rax == '-') {
+			token_eek_char()
+
+			if (rax == '-') {
+				token_kee_char()
+				token_tye[0] = DECREMENT
+				return
+			}
+
+			if (rax == '=') {
+				token_kee_char()
+				token_tye[0] = SUB
+				return
+			}
+
+			token_tye[0] = MINUS
+			return
+		}
+
+		if (rax >= '0') {
+			if (rax <= '9') {
+				token_number()
+				if (rax == 1) {return}
+			}
+		}
+
+		if (rax == 0) {
+			nasm("mov al, BYTE[token_image]
+			")
+		}
+
+		if (rax >= 'a') {
+			if (rax <= 'z') {
+				token_identifier()
+				if (rax == 1) {return}
+			}
+		}
+
+		if (rax >= 'A') {
+			if (rax <= 'Z') {
+				token_identifier()
+				if (rax == 1) {return}
+			}
+		}
+
+		string_print(STDERR, "Error: invalid character: ")
+		string_print(STDERR, quote)
+		token_rint(STDERR)
+		string_print(STDERR, quote)
+		printer_line(2)
+		string_print(STDERR, new_line)
+		printer_stack(STDERR)
+
+		sys(60,1)
+	} else {
+		return
+	}
+}
+
+func token_consume(expected_token)() {
+	token_load()
+	r12 = var expected_token
+	if (r12 == token_tye[0]) {
+		token_tye[0] = 0
+		token_length[0] = 0
+	} else {
+		string_print(STDERR, "Error: expected token ")
+		printer_number(STDERR, var expected_token)
+		string_print(STDERR, " got token ")
+		printer_number(STDERR, token_tye[0])
+		printer_line(STDERR)
+		string_print(STDERR, new_line)
+		printer_stack(STDERR)
+
+		sys(60, 1)
+	}
+
+	return
+}
+
+func token_arg()() {
+	token_eek_char() if (rax == 'r') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'g') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = ARG
+	return 1
+}
+
+func token_break()() {
+	token_eek_char() if (rax == 'r') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'e') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'a') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'k') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = BREAK
+	return 1
+}
+
+func token_case()() {
+	token_eek_char() if (rax == 'a') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 's') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'e') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = CASE
+	return 1
+}
+
+func token_else()() {
+	token_eek_char() if (rax == 'l') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 's') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'e') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = ELSE
+	return 1
+}
+
+func token_enum()() {
+	token_eek_char() if (rax == 'n') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'u') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'm') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = ENUM
+	return 1
+}
+
+func token_for()() {
+	token_eek_char() if (rax == 'o') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'r') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = FOR
+	return 1
+}
+
+func token_func()() {
+	token_eek_char() if (rax == 'u') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'n') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'c') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = FUNC
+	return 1
+}
+
+func token_if()() {
+	token_eek_char() if (rax == 'f') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = IF
+	return 1
+}
+
+func token_include()() {
+	token_eek_char() if (rax == 'n') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'c') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'l') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'u') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'd') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'e') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = INCLUDE
+	return 1
+}
+
+func token_loo()() {
+	token_eek_char() if (rax == 'o') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'o') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'p') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = LOOP
+	return 1
+}
+
+func token_nasm()() {
+	token_eek_char() if (rax == 'a') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 's') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'm') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = NASM
+	return 1
+}
+
+func token_next()() {
+	token_eek_char() if (rax == 'e') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'x') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 't') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = NEXT
+	return 1
+}
+
+func token_return()() {
+	token_eek_char() if (rax == 'e') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 't') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'u') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'r') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'n') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = RETURN
+	return 1
+}
+
+func token_switch()() {
+	token_eek_char() if (rax == 'w') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'i') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 't') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'c') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'h') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = SWITCH
+	return 1
+}
+
+func token_sys()() {
+	token_eek_char() if (rax == 'y') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 's') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = SYS
+	return 1
+}
+
+func token_ar()() {
+	token_eek_char() if (rax == 'a') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'r') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = VAR
+	return 1
+}
+
+func token_while()() {
+	token_eek_char() if (rax == 'h') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'i') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'l') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'e') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = WHILE
+	return 1
+}
+
+func token_number()() {
+	loop {
+		token_eek_char()
+
+		if (rax >= '0') {
+			if (rax <= '9') {
+				token_kee_char()
+				next
+			}
+		}
+
+		break
+	}
+
+	token_tye[0] = NUMBER
+	return 1
+}
+
+func token_identifier()() {
+	loop {
+		token_eek_char()
+
+		if (rax >= 'a') {
+			if (rax <= 'z') {
+				token_kee_char()
+				next
+			}
+		}
+
+		if (rax >= 'A') {
+			if (rax <= 'Z') {
+				token_kee_char()
+				next
+			}
+		}
+
+		if (rax >= '0') {
+			if (rax <= '9') {
+				token_kee_char()
+				next
+			}
+		}
+
+		if (rax == '_') {
+			token_kee_char()
+			next
+		}
+
+		break
+	}
+
+	token_tye[0] = IDENTIFIER
+	return 1
+}
+
+func token_string()() {
+	token_length[0] = 0
+
+	loop {
+		token_kee_char()
+
+		if (rax == 0) {
+			break
+		}
+
+		if (rax == 34) {
+			break
+		}
+
+		if (rax == 92) {
+			token_kee_char()
+		}
+	}
+
+	token_length[0]--
+
+	# Set NULL byte
+	rax = token_length[0]
+	rax += token_image
+	nasm("mov BYTE[rax], 0")
+
+	token_tye[0] = STRING
+	return 1
+}
+
+func token_comment()() {
+	token_length[0] = 0
+
+	loop {
+		token_kee_char()
+
+		if (rax == 0) {
+			break
+		}
+
+		if (rax == '#') {
+			break
+		}
+
+		if (rax == 10) {
+			break
+		}
+	}
+
+	token_length[0]--
+
+	token_tye[0] = COMMENT
+	return 1
+}
+
+func token_character()() {
+	token_kee_char()
+
+	if (rax == 92) {
+		token_kee_char()
+	}
+
+	token_kee_char()
+
+	if (rax == 39) {
+		token_tye[0] = CHARACTER
+		rax = 1
+	} else {
+		rax = 0
+	}
+
+	return
+}

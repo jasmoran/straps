@@ -1,0 +1,93 @@
+func array_new(size)(addr) {
+	# Allocate memory
+	rax = var size
+	rax << 3
+	rax += 16
+	var addr = allocate(rax)
+
+	# Set length and size
+	rax[0] = 0
+	rax[8] = var size
+
+	return var addr
+}
+
+func array_length(arr)() {
+	return var arr[0]
+}
+
+func array_size(arr)() {
+	return var arr[8]
+}
+
+func array_append(item, arr)() {
+	# TODO: check size is large enough
+
+	rax = var arr
+	rbx = rax[0]
+	rbx << 3
+	rax += rbx
+	rbx = var item
+	rax[16] = rbx
+
+	# Increment length
+	var arr[0]++
+
+	return
+}
+
+func array_get(index, arr)() {
+	rax = var arr
+	rbx = var index
+	rbx += 2
+	rbx << 3
+	rax += rbx
+	return rax[0]
+}
+
+func array_set(value, index, arr)() {
+	rax = var arr
+	rbx = var index
+	rbx += 2
+	rbx << 3
+	rax += rbx
+	rbx = var value
+	rax[0] = rbx
+	return
+}
+
+func array_find(match_func, val, arr)(len, index) {
+	var len = array_length(var arr)
+	var index = 0
+	loop {
+		# Detect end of array
+		rax = var len
+		if (rax == var index) {
+			nasm("mov rax, -1")
+			return rax
+		}
+
+		# Detect match
+		array_get(var arr, var index)
+		var match_func(var val, rax)
+		if (rax == 1) {
+			return var index
+		}
+
+		var index++
+	}
+}
+
+func array_clear(arr)() {
+	var arr[0] = 0
+	return
+}
+
+func int_equal(int1, int2)() {
+	rax = var int1
+	if (rax == var int2) {
+		return 1
+	} else {
+		return 0
+	}
+}

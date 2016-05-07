@@ -1,0 +1,46 @@
+func map_new(size)(addr) {
+	# Allocate memory
+	var addr = allocate(16)
+
+	# Allocate arrays
+	var addr[0] = array_new(var size)
+	var addr[8] = array_new(var size)
+
+	return var addr
+}
+
+func map_get(key, map)() {
+	rbx = var map
+	array_find(rbx[0], var key, string_equal)
+	if (rax < 0) {
+		return
+	}
+
+	rbx = var map
+	array_get(rbx[8], rax)
+	return
+}
+
+func map_set(value, key, map)() {
+	rbx = var map
+	array_find(rbx[0], var key, string_equal)
+	if (rax < 0) {
+		rbx = var map
+		array_append(rbx[0], var key)
+		rbx = var map
+		array_append(rbx[8], var value)
+	} else {
+		rbx = var map
+		array_set(rbx[8], rax, var value)
+	}
+
+	return
+}
+
+func map_clear(map)() {
+	rax = var map
+	array_clear(rax[0])
+	rax = var map
+	array_clear(rax[8])
+	return
+}

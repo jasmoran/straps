@@ -1,0 +1,90 @@
+nasm("
+%define FILE			-1
+%define STDOUT		1
+%define STDERR		2
+")
+
+func printer_line(out_stream)() {
+	string_print(var out_stream, " on line ")
+	printer_number(var out_stream, line_number[0])
+	string_print(var out_stream, " column ")
+	printer_number(var out_stream, column_number[0])
+	string_print(var out_stream, " in ")
+	string_print(var out_stream, file_name[0])
+	return
+}
+
+func printer_stack(out_stream)(curr_rbp, ret_addr, list_ptr) {
+	var curr_rbp = rbp
+	loop {
+		var ret_addr = var curr_rbp[8]
+
+		if (var ret_addr == 0) {
+			break
+		}
+
+		printer_number(var out_stream, var ret_addr)
+		string_print(var out_stream, ":")
+		string_print(var out_stream, new_line)
+
+		var list_ptr = fun_list
+		loop {
+			# Load function address
+			r14 = var list_ptr[0]
+			if (var ret_addr > r14) {
+				var list_ptr += 8
+				string_print(var out_stream, var list_ptr[0])
+				break
+			} else {
+				var list_ptr += 16
+			}
+		}
+
+		string_print(var out_stream, new_line)
+
+		# Load next rbp
+		rax = var curr_rbp
+		rax = rax[0]
+		var curr_rbp = rax
+	}
+	return
+}
+
+func printer_number(int_in, out_stream)(digit_count) {
+	string_clear(num_str)
+
+	rax = var int_in
+	rcx = 10
+	var digit_count = 0
+
+	loop {
+		rdx = 0
+		nasm("
+			div rcx
+			push rdx
+		")
+		var digit_count++
+
+		if (rax == 0) {
+			break
+		}
+	}
+
+	loop {
+		nasm("pop rax")
+		rax += '0'
+
+		string_append(num_str, rax)
+
+		var digit_count--
+
+		# Exit loop if count has reached 0
+		if (var digit_count == 0) {
+			break
+		}
+	}
+
+	string_print(var out_stream, num_str)
+
+	return
+}
