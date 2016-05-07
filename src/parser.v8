@@ -87,11 +87,13 @@ func fun_decl(0, 2) {
 	# Load arguments
 	call token_consume(PAREN_OPEN)
 	call token_load()
-	var1 = 16
+	var1 = 8
 	if (token_tye[0] == PAREN_CLOSE) {
 		call token_consume(PAREN_CLOSE)
 	} else {
 		loop {
+			var1 += 8
+
 			call string_new(16)
 			var2 = rax
 			call string_copy("QWORD[rbp+", var2)
@@ -109,7 +111,6 @@ func fun_decl(0, 2) {
 				break
 			}
 
-			var1 += 8
 			call token_consume(COMMA)
 		}
 	}
@@ -120,11 +121,13 @@ func fun_decl(0, 2) {
 	# Load variables
 	call token_consume(PAREN_OPEN)
 	call token_load()
-	var1 = 8
+	var1 = 0
 	if (token_tye[0] == PAREN_CLOSE) {
 		call token_consume(PAREN_CLOSE)
 	} else {
 		loop {
+			var1 += 8
+
 			call string_new(16)
 			var2 = rax
 			call string_copy("QWORD[rbp-", var2)
@@ -143,7 +146,6 @@ func fun_decl(0, 2) {
 				break
 			}
 
-			var1 += 8
 			call token_consume(COMMA)
 		}
 	}
