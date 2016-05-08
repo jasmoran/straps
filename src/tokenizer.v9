@@ -385,9 +385,11 @@ func token_consume(expected_token)() {
 		token_length[0] = 0
 	} else {
 		string_print(STDERR, "Error: expected token ")
-		printer_number(STDERR, var expected_token)
+		array_get(TOKEN, var expected_token)
+		string_print(STDERR, rax)
 		string_print(STDERR, " got token ")
-		printer_number(STDERR, token_tye[0])
+		array_get(TOKEN, token_tye[0])
+		string_print(STDERR, rax)
 		printer_line(STDERR)
 		string_print(STDERR, new_line)
 		printer_stack(STDERR)

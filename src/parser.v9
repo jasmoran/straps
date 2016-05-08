@@ -496,7 +496,8 @@ func comarison()() {
 	if (token_tye[0] == LESS_EQ) { return 1 }
 
 	string_print(STDERR, "Error: expected token COMPARISON got token ")
-	printer_number(STDERR, token_tye[0])
+	array_get(TOKEN, token_tye[0])
+	string_print(STDERR, rax)
 	printer_line(STDERR)
 	string_print(STDERR, new_line)
 	printer_stack(STDERR)
@@ -517,7 +518,8 @@ func operator(required)() {
 
 	if (var required == 1) {
 		string_print(STDERR, "Error: expected token OPERATOR got token ")
-		printer_number(STDERR, token_tye[0])
+		array_get(TOKEN, token_tye[0])
+		string_print(STDERR, rax)
 		printer_line(STDERR)
 		string_print(STDERR, new_line)
 		printer_stack(STDERR)
@@ -699,7 +701,8 @@ func statement(required)() {
 	# Throw error if no match and one is required
 	if (var required == 1) {
 		string_print(STDERR, "Error: expected token STATEMENT got token ")
-		printer_number(STDERR, token_tye[0])
+		array_get(TOKEN, token_tye[0])
+		string_print(STDERR, rax)
 		printer_line(STDERR)
 		string_print(STDERR, new_line)
 		printer_stack(STDERR)
@@ -745,7 +748,8 @@ func exression(out_str, reg_num)(type) {
 				# Throw error if no match and one is required
 				if (var out_str == 1) {
 					string_print(STDERR, "Error: expected token EXPRESSION got token")
-					printer_number(STDERR, token_tye[0])
+					array_get(TOKEN, token_tye[0])
+					string_print(STDERR, rax)
 					printer_line(STDERR)
 					string_print(STDERR, new_line)
 					printer_stack(STDERR)
@@ -788,7 +792,8 @@ func assignable(out_str, reg_num)(type) {
 				# Throw error if no match and one is required
 				if (var reg_num == 1) {
 					string_print(STDERR, "Error: expected token ASSIGNABLE got token")
-					printer_number(STDERR, token_tye[0])
+					array_get(TOKEN, token_tye[0])
+					string_print(STDERR, rax)
 					printer_line(STDERR)
 					string_print(STDERR, new_line)
 					printer_stack(STDERR)
