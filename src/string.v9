@@ -195,3 +195,29 @@ func string_equal(str2, str1)() {
 	")
 	return 0
 }
+
+func string_clone_nullterm(source)(addr, length) {
+	# Get string length
+	rdi = var source
+	rax = 0
+	rcx = 1000000
+	nasm("repne scasb
+	")
+	var length = 999999
+	var length -= rcx
+
+	var addr = string_new(var length)
+
+	# Copy main data
+	rsi = var source
+	rdi = var addr
+	rdi += 16
+	rcx = var length
+	nasm("rep movsb
+	")
+
+	# Set length of new string
+	var addr[0] = var length
+
+	return var addr
+}

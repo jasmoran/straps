@@ -127,6 +127,9 @@ func main()(in_file_name) {
 	array_append(registers[0], "r10,")
 	array_append(registers[0], "r8,")
 
+	# Store file name
+	file_name[0] = string_clone_nullterm(var in_file_name[0])
+
 	# Initialize tokenizer
 	nasm("mov BYTE[char_next], 1
 	")
