@@ -11,13 +11,16 @@ func string_new(size)(addr) {
 	return var addr
 }
 
-func string_length(str)() {	return var str[0]
+func string_length(str)() {
+	return var str[0]
 }
 
-func string_size(str)() {	return var str[8]
+func string_size(str)() {
+	return var str[8]
 }
 
-func string_data(str)() {	return var str[16]
+func string_data(str)() {
+	return var str[16]
 }
 
 func string_append(character, string)() {
