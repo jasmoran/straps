@@ -118,13 +118,17 @@ func nt_function(parent)(node, child) {
 	return var node
 }
 
-func nt_return(parent)() {
+func nt_return(parent)(node, expr) {
 	token_consume(RETURN)
-	return node_new(nRETURN, 0, var parent, 0)
+	var node = node_new(nRETURN, 0, var parent, 1)
+	var expr = nt_expression(var node)
+	node_children(var node)
+	array_append(rax, var expr)
+	return var node
 }
 
 func nt_comparison(parent)(node, expr) {
-	var node = node_new(nCOMPARISON, 0, var parent, 3)
+	var node = node_new(nCOMPARISON, 0, var parent, 2)
 
 	# Save LHS
 	var expr = nt_expression(var node)
@@ -132,7 +136,8 @@ func nt_comparison(parent)(node, expr) {
 	array_append(rax, var expr)
 
 	# Save comparitor
-	var node[8] = tc_comparitor(1)
+	tc_comparitor(1)
+	var node[8] = rax
 
 	# Save RHS
 	var expr = nt_expression(var node)

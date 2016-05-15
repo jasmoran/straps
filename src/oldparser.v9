@@ -7,10 +7,6 @@ func asm_literal()() {
 	token_consume(PAREN_CLOSE)
 	return
 }
-enum NODE {
-	nNASM nSYS nSTATEMENTS nPAREN_LIST nFUNCTION nRETURN nCOMPARISON nIF nNEXT nLOOP
-	nBREAK nIDENTIFIER nENUM nCOMMENT nCHARACTER nSTRING nNUMBER nINDEX nCALL nOPERATION
-}
 
 func kernel_call()(register_ix) {
 	token_consume(SYS)
@@ -67,6 +63,8 @@ func block()() {
 	return
 }
 
+
+
 func fun_decl()(offset, string) {
 	token_consume(FUNC)
 
@@ -119,7 +117,7 @@ func fun_decl()(offset, string) {
 	}
 	rax = var offset
 	rax -= 8
-	ret_size[0] = rax
+	 = rax
 
 	# Load variables
 	token_consume(PAREN_OPEN)
@@ -164,7 +162,6 @@ func fun_decl()(offset, string) {
 
 	return
 }
-
 
 func fun_ret()() {
 	token_consume(RETURN)
@@ -288,6 +285,7 @@ func nt_if()(block_num, jump_type) {
 	return
 }
 
+
 func loo_next()() {
 	token_consume(NEXT)
 
@@ -299,6 +297,7 @@ func loo_next()() {
 	string_print(FILE, new_line)
 	return
 }
+
 
 func loo()(block_num, old_block) {
 	token_consume(LOOP)
@@ -344,7 +343,6 @@ func loo()(block_num, old_block) {
 
 	return
 }
-
 func loo_break()() {
 	token_consume(BREAK)
 	# Write jump to stdout
