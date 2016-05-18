@@ -22,16 +22,12 @@ func map_get(key, map)() {
 }
 
 func map_set(value, key, map)() {
-	rbx = var map
-	array_find(rbx[0], var key, string_equal)
+	array_find(var map[0], var key, string_equal)
 	if (rax < 0) {
-		rbx = var map
-		array_append(rbx[0], var key)
-		rbx = var map
-		array_append(rbx[8], var value)
+		array_append(var map[0], var key)
+		array_append(var map[8], var value)
 	} else {
-		rbx = var map
-		array_set(rbx[8], rax, var value)
+		array_set(var map[8], rax, var value)
 	}
 
 	return

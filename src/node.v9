@@ -1,6 +1,6 @@
 func node_new(children_len, parent, data_len, type)(addr) {
 	# Allocate memory
-	var addr = allocate(32)
+	var addr = allocate(40)
 
 	# Set attributes
 	var addr[0] = var type

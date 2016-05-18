@@ -1,0 +1,113 @@
+func definition(node)(children, ix, new_child, sub_children, sub_child) {
+	var children = node_children(var node)
+	node_type(var node)
+
+	if (rax == nENUM) {
+		var ix = 0
+		loop {
+			if (var ix == array_length(var children)) { break }
+			var new_child = node_new(nNUMBER, 2, 0, 0)
+			node_data(var new_child)
+			string_from_number(var ix, rax)
+
+			array_get(var children, var ix)
+			var sub_child = rax
+			node_data(var sub_child)
+			map_set(global_vars[0], rax, var new_child)
+
+			var sub_child[0] = nNONE
+
+			var ix++
+		}
+
+		return
+	}
+
+	if (rax == nFUNCTION) {
+		node_data(var node)
+		map_set(global_vars[0], rax, rax)
+
+		map_new(100)
+		var node[32] = rax
+
+		# Get arguments
+		array_get(var children, 0)
+		var sub_children = node_children(rax)
+		var ix = 0
+		loop {
+			if (var ix == array_length(var sub_children)) { break }
+			rax = var ix
+			rax += 2
+			var new_child = new_variable(rax)
+
+			array_get(var sub_children, var ix)
+			var sub_child = rax
+			node_data(var sub_child)
+			map_set(var node[32], rax, var new_child)
+
+			var sub_child[0] = nNONE
+
+			var ix++
+		}
+
+		# Get variables
+		array_get(var children, 1)
+		var sub_children = node_children(rax)
+		var ix = 0
+		loop {
+			if (var ix == array_length(var sub_children)) { break }
+			nasm("mov rax, -1")
+			rax -= var ix
+			var new_child = new_variable(rax)
+
+			array_get(var sub_children, var ix)
+			var sub_child = rax
+			node_data(var sub_child)
+			map_set(var node[32], rax, var new_child)
+
+			var sub_child[0] = nNONE
+
+			var ix++
+		}
+
+		return
+	}
+
+	definition_children(var children)
+
+	return
+}
+
+func new_variable(offset)(node, children, child) {
+	var node = node_new(nMEM_ACCESS, 0, 0, 2)
+	var children = node_children(var node)
+
+	# Save register
+	var child = node_new(nREGISTER, 3, var node, 0)
+	node_data(var child)
+	string_copy("rbp", rax)
+	array_append(var children, var child)
+
+	# Save offset
+	var node[8] = var offset
+	#var child = node_new(nNUMBER, 2, var node, 0)
+	#node_data(var child)
+	#string_from_number(var ix, rax)
+	#array_append(var children, var child)
+
+	return var node
+}
+
+func definition_children(children)(ix) {
+	if (var children != 0) {
+		var ix = 0
+		loop {
+			if (var ix == array_length(var children)) { break }
+			array_get(var children, var ix)
+			definition(rax)
+			var ix++
+		}
+	}
+
+	return
+}

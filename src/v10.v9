@@ -45,7 +45,6 @@ section .bss
 	registers:		resq 1
 	enm_names:		resq 1
 	enm_items:		resq 1
-	local_vars:		resq 1
 	global_vars:	resq 1
 	jump_types:		resq 1
 	operations:		resq 1
@@ -72,6 +71,8 @@ include "src/token_class.v9"
 include "src/parser.v9"
 include "src/string.v9"
 include "src/map.v9"
+include "src/definition_visitor.v9"
+include "src/resolving_visitor.v9"
 include "src/dump_visitor.v9"
 
 func read_number()() {
@@ -122,26 +123,25 @@ func main()(in_file_name, node) {
 	enm_items[0] = array_new(10)
 
 	# Create map for local variables
-	local_vars[0] = map_new(100)
 	global_vars[0] = map_new(1024)
 
 	# Initialize 64 bit register globals
-	map_set(global_vars[0], "rax", "rax")
-	map_set(global_vars[0], "rbx", "rbx")
-	map_set(global_vars[0], "rcx", "rcx")
-	map_set(global_vars[0], "rdx", "rdx")
-	map_set(global_vars[0], "rbp", "rbp")
-	map_set(global_vars[0], "rsi", "rsi")
-	map_set(global_vars[0], "rdi", "rdi")
-	map_set(global_vars[0], "r11", "r11")
-	map_set(global_vars[0], "r12", "r12")
-	map_set(global_vars[0], "r13", "r13")
-	map_set(global_vars[0], "r14", "r14")
+	define_register("rax")
+	define_register("rbx")
+	define_register("rcx")
+	define_register("rdx")
+	define_register("rbp")
+	define_register("rsi")
+	define_register("rdi")
+	define_register("r11")
+	define_register("r12")
+	define_register("r13")
+	define_register("r14")
 
 	# Initialize 8 bit register globals
-	map_set(global_vars[0], "al", "al")
-	map_set(global_vars[0], "r11b", "r11b")
-	map_set(global_vars[0], "r12b", "r12b")
+	define_register("al")
+	define_register("r11b")
+	define_register("r12b")
 
 	# Initialize registers array
 	registers[0] = array_new(6)
@@ -184,6 +184,10 @@ func main()(in_file_name, node) {
 
 	var node = nt_statements(0)
 	node_print(STDOUT, var node, 0)
+	definition(var node)
+	resolving(var node)
+	string_print(STDOUT, new_line)
+	#node_print(STDOUT, var node, 0)
 	dump(STDOUT, var node)
 
 	# Write data section
@@ -199,4 +203,11 @@ func main()(in_file_name, node) {
 	pop rbp
 	")
 	sys(60,0)
+}
+
+func define_register(reg)(node) {
+	var node = node_new(nREGISTER, 4, 0, 0)
+	var node[8] = var reg
+	map_set(global_vars[0], var reg, var node)
+	return
 }

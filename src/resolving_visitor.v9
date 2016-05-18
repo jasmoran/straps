@@ -1,0 +1,68 @@
+func resolving(node)(children, scope, res) {
+	var children = node_children(var node)
+	node_type(var node)
+
+	if (rax == nIDENTIFIER) {
+		var scope = get_scope(var node)
+		node_data(var node)
+		var res = map_get(var scope, rax)
+
+		if (rax < 0) {
+			node_data(var node)
+			var res = map_get(global_vars[0], rax)
+		}
+
+		if (var res < 0) {
+			string_print(STDERR, "Error: Could not resolve ")
+			node_data(var node)
+			string_print(STDERR, rax)
+			string_print(STDERR, new_line)
+
+			sys(60,1)
+
+		} else {
+			node_type(var res)
+			var node[0] = rax
+			node_data(var res)
+			var node[8] = rax
+			node_children(var res)
+			var node[24] = rax
+		}
+
+		return
+	}
+
+	resolving_children(var children)
+
+	return
+}
+
+func get_scope(node)() {
+	loop {
+		if (var node == 0) {
+			return global_vars[0]
+		}
+
+		node_type(var node)
+		if (rax == nFUNCTION) {
+			return var node[32]
+		}
+
+		node_parent(var node)
+		var node = rax
+	}
+}
+
+func resolving_children(children)(ix) {
+	if (var children != 0) {
+		var ix = 0
+		loop {
+			if (var ix == array_length(var children)) { break }
+			array_get(var children, var ix)
+			resolving(rax)
+			var ix++
+		}
+	}
+
+	return
+}
