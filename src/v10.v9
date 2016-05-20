@@ -65,6 +65,7 @@ global main
 include "src/printer.v9"
 include "src/tokenizer.v9"
 include "src/array.v9"
+include "src/linkedlist.v9"
 include "src/memory.v9"
 include "src/node.v9"
 include "src/token_class.v9"

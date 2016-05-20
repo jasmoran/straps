@@ -1,0 +1,118 @@
+func ll_new()(addr) {
+	# Allocate memory
+	var addr = allocate(24)
+
+	# Set first, last and length
+	var addr[0] = 0
+	var addr[8] = 0
+	var addr[16] = 0
+
+	return var addr
+}
+
+func lln_new(payload)(addr) {
+	# Allocate memory
+	var addr = allocate(24)
+
+	# Set next, prev and payload
+	var addr[0] = 0
+	var addr[8] = 0
+	var addr[16] = var payload
+
+	return var addr
+}
+
+func ll_first(ll)() {
+	return var ll[0]
+}
+
+func ll_last(ll)() {
+	return var ll[8]
+}
+
+func ll_prepend(payload, ll)(new) {
+	var new = lln_new(var payload)
+
+	var new[0] = var ll[0]			# Set next
+	if (var ll[0] != 0) {
+		var ll[0][8] = var new		# Set first.prev
+	}
+	var ll[0] = var new					# Set first
+
+	# Set last if empty
+	if (var ll[8] == 0) {
+		var ll[8] = var new
+	}
+
+	var ll[16]++
+
+	return var new
+}
+
+func ll_append(payload, ll)(new) {
+	var new = lln_new(var payload)
+
+	var new[8] = var ll[8]			# Set prev
+	if (var ll[8] != 0) {
+		var ll[8][0] = var new		# Set last.next
+	}
+	var ll[8] = var new					# Set last
+
+	# Set first if empty
+	if (var ll[0] == 0) {
+		var ll[0] = var new
+	}
+
+	var ll[16]++
+
+	return var new
+}
+
+func ll_remove(ix, ll)(node) {
+	var node = ll_fetch_node(var ll, var ix)
+
+	if (var node[0] == 0) {
+		# last = prev
+		var ll[8] = var node[8]
+	} else {
+		# next.prev = prev
+		var node[0][8] = var node[8]
+	}
+
+	if (var node[8] == 0) {
+		# first = next
+		var ll[0] = var node[0]
+	} else {
+		# prev.next = next
+		var node[8][0] = var node[0]
+	}
+
+	var ll[16]--
+
+	return
+}
+
+func ll_fetch_node(ix, ll)(node) {
+	var node = var ll[0]
+	loop {
+		if (var node == 0) {
+			var node = var ll[0]
+		}
+
+		if (var ix == 0) {
+			return var node
+		}
+
+		var node = var node[0]
+		var ix--
+	}
+}
+
+func ll_get(ix, ll)() {
+	return ll_fetch_node(var ll, var ix)[16]
+}
+
+func ll_set(val, ix, ll)() {
+	ll_fetch_node(var ll, var ix)[16] = var val
+	return
+}
