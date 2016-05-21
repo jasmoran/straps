@@ -30,6 +30,10 @@ func ll_last(ll)() {
 	return var ll[8]
 }
 
+func ll_length(ll)() {
+	return var ll[16]
+}
+
 func ll_prepend(payload, ll)(new) {
 	var new = lln_new(var payload)
 

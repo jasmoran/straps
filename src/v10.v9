@@ -207,7 +207,7 @@ func main()(in_file_name, node) {
 }
 
 func define_register(reg)(node) {
-	var node = node_new(nREGISTER, 4, 0, 0)
+	var node = node_new(nREGISTER, 4, 0)
 	var node[8] = var reg
 	map_set(global_vars[0], var reg, var node)
 	return

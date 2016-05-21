@@ -14,13 +14,13 @@ func dump(node, out_stream)(children, ix) {
 		string_print(var out_stream, "cmp ")
 
 		# Print LHS
-		array_get(var children, 0)
+		ll_get(var children, 0)
 		dump(var out_stream, rax)
 
 		string_print(var out_stream, ", ")
 
 		# Print RHS
-		array_get(var children, 1)
+		ll_get(var children, 1)
 		dump(var out_stream, rax)
 
 		string_print(var out_stream, new_line)
@@ -51,22 +51,22 @@ func dump(node, out_stream)(children, ix) {
 		string_print(var out_stream, "sub rsp, ")
 
 		# Get number of arguments
-		array_get(var children, 0)
+		ll_get(var children, 0)
 		node_children(rax)
-		ret_size[0] = array_length(rax)
+		ret_size[0] = ll_length(rax)
 		ret_size[0]++
 		ret_size[0] << 3
 
 		# Get number of variables
-		array_get(var children, 1)
+		ll_get(var children, 1)
 		node_children(rax)
-		array_length(rax)
+		ll_length(rax)
 		rax << 3
 		printer_number(var out_stream, rax)
 		string_print(var out_stream, new_line)
 
 		# Dump statements
-		array_get(var children, 2)
+		ll_get(var children, 2)
 		dump(var out_stream, rax)
 
 		string_print(var out_stream, new_line)
@@ -80,7 +80,7 @@ func dump(node, out_stream)(children, ix) {
 	}
 
 	if (rax == nIF) {
-		array_get(var children, 0)
+		ll_get(var children, 0)
 		dump(var out_stream, rax)
 
 		# Write end if label
@@ -94,11 +94,11 @@ func dump(node, out_stream)(children, ix) {
 		string_print(var out_stream, new_line)
 
 		# Dump if block
-		array_get(var children, 1)
+		ll_get(var children, 1)
 		dump(var out_stream, rax)
 
 		# Detect else block
-		array_length(var children)
+		ll_length(var children)
 		if (rax > 2) {
 			string_print(var out_stream, "jmp .end_else_")
 			printer_number(var out_stream, var ix)
@@ -112,10 +112,10 @@ func dump(node, out_stream)(children, ix) {
 		string_print(var out_stream, new_line)
 
 		# Detect else block
-		array_length(var children)
+		ll_length(var children)
 		if (rax > 2) {
 			# Dump else block
-			array_get(var children, 2)
+			ll_get(var children, 2)
 			dump(var out_stream, rax)
 
 			# Write end else label
@@ -142,7 +142,7 @@ func dump(node, out_stream)(children, ix) {
 		string_print(var out_stream, ":")
 		string_print(var out_stream, new_line)
 
-		array_get(var children, 0)
+		ll_get(var children, 0)
 		dump(var out_stream, rax)
 
 		# Write jump
@@ -189,15 +189,15 @@ func dump(node, out_stream)(children, ix) {
 		string_print(var out_stream, rax)
 
 		# Print LHS
-		array_get(var children, 0)
+		ll_get(var children, 0)
 		dump(var out_stream, rax)
 
-		array_length(var children)
+		ll_length(var children)
 		if (rax == 2) {
 			string_print(var out_stream, ", ")
 
 			# Print RHS
-			array_get(var children, 1)
+			ll_get(var children, 1)
 			dump(var out_stream, rax)
 		}
 
@@ -207,11 +207,11 @@ func dump(node, out_stream)(children, ix) {
 	}
 
 	if (rax == nRETURN) {
-		array_length(var children)
+		ll_length(var children)
 
 		if (rax != 0) {
 			string_print(var out_stream, "mov rax, ")
-			array_get(var children, 0)
+			ll_get(var children, 0)
 			dump(var out_stream, rax)
 			string_print(var out_stream, new_line)
 		}
@@ -232,12 +232,12 @@ func dump(node, out_stream)(children, ix) {
 		if (var children != 0) {
 			var ix = 0
 			loop {
-				if (var ix == array_length(var children)) { break }
+				if (var ix == ll_length(var children)) { break }
 				string_print(var out_stream, "mov ")
 				array_get(registers[0], var ix)
 				string_print(var out_stream, rax)
 
-				array_get(var children, var ix)
+				ll_get(var children, var ix)
 				dump(var out_stream, rax)
 
 				string_print(var out_stream, new_line)
@@ -259,8 +259,8 @@ func dump_children(children, out_stream)(ix) {
 	if (var children != 0) {
 		var ix = 0
 		loop {
-			if (var ix == array_length(var children)) { break }
-			array_get(var children, var ix)
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
 			dump(var out_stream, rax)
 			var ix++
 		}

@@ -1,4 +1,4 @@
-func node_new(children_len, parent, data_len, type)(addr) {
+func node_new(parent, data_len, type)(addr) {
 	# Allocate memory
 	var addr = allocate(40)
 
@@ -12,12 +12,8 @@ func node_new(children_len, parent, data_len, type)(addr) {
 	}
 
 	var addr[16] = var parent
-
-	if (var children_len > 0) {
-		var addr[24] = array_new(var children_len)
-	} else {
-		var addr[24] = 0
-	}
+	ll_new()
+	var addr[24] = rax
 
 	return var addr
 }
@@ -40,7 +36,7 @@ func node_children(node)() {
 
 func node_adopt(new_parent, child_node)() {
 	var child_node[16] = var new_parent
-	array_append(var new_parent[24], var child_node)
+	ll_append(var new_parent[24], var child_node)
 
 	return
 }
@@ -72,8 +68,8 @@ func node_print(indent, node, out_stream)(ix, children, data) {
 		var indent++
 		var ix = 0
 		loop {
-			if (var ix == array_length(var children)) { break }
-			array_get(var children, var ix)
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
 			node_print(var out_stream, rax, var indent)
 			var ix++
 		}

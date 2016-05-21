@@ -11,7 +11,7 @@ func nt_nasm(parent)(node) {
 	# Save instruction string
 	token_load()
 	string_length(token)
-	var node = node_new(nNASM, rax, var parent, 0)
+	var node = node_new(nNASM, rax, var parent)
 	node_data(var node)
 	string_copy(token, rax)
 	token_consume(STRING)
@@ -24,11 +24,11 @@ func nt_sys(parent)(node, expr) {
 	token_consume(SYS)
 	token_consume(PAREN_OPEN)
 
-	var node = node_new(nSYS, 0, var parent, 6)
+	var node = node_new(nSYS, 0, var parent)
 	loop {
 		var expr = nt_expression(var node)
 		node_children(var node)
-		array_append(rax, var expr)
+		ll_append(rax, var expr)
 
 		token_load()
 		# Check for end of syscall
@@ -44,13 +44,13 @@ func nt_sys(parent)(node, expr) {
 }
 
 func nt_statements(parent)(node, expr) {
-	var node = node_new(nSTATEMENTS, 0, var parent, 1024)
+	var node = node_new(nSTATEMENTS, 0, var parent)
 	loop {
 		var expr = nt_statement(var node)
 		if (var expr == 0) { break }
 
 		node_children(var node)
-		array_append(rax, var expr)
+		ll_append(rax, var expr)
 	}
 
 	return var node
@@ -66,7 +66,7 @@ func nt_block(parent)(node) {
 func nt_paren_list(item_func, parent)(node, ident) {
 	token_consume(PAREN_OPEN)
 
-	var node = node_new(nPAREN_LIST, 0, var parent, 32)
+	var node = node_new(nPAREN_LIST, 0, var parent)
 
 	token_load()
 	if (token_tye[0] == PAREN_CLOSE) {
@@ -75,7 +75,7 @@ func nt_paren_list(item_func, parent)(node, ident) {
 		loop {
 			var ident = var item_func(var node)
 			node_children(var node)
-			array_append(rax, var ident)
+			ll_append(rax, var ident)
 
 			token_load()
 			if (token_tye[0] == PAREN_CLOSE) {
@@ -96,7 +96,7 @@ func nt_function(parent)(node, child) {
 	# Save function name
 	token_load()
 	string_length(token)
-	var node = node_new(nFUNCTION, rax, var parent, 3)
+	var node = node_new(nFUNCTION, rax, var parent)
 	node_data(var node)
 	string_copy(token, rax)
 	token_consume(IDENTIFIER)
@@ -104,37 +104,37 @@ func nt_function(parent)(node, child) {
 	# Save arguments
 	var child = nt_paren_list(var node, nt_identifier)
 	node_children(var node)
-	array_append(rax, var child)
+	ll_append(rax, var child)
 
 	# Save variables
 	var child = nt_paren_list(var node, nt_identifier)
 	node_children(var node)
-	array_append(rax, var child)
+	ll_append(rax, var child)
 
 	# Save block
 	var child = nt_block(var node)
 	node_children(var node)
-	array_append(rax, var child)
+	ll_append(rax, var child)
 
 	return var node
 }
 
 func nt_return(parent)(node, expr) {
 	token_consume(RETURN)
-	var node = node_new(nRETURN, 0, var parent, 1)
+	var node = node_new(nRETURN, 0, var parent)
 	var expr = nt_expression(var node)
 	node_children(var node)
-	array_append(rax, var expr)
+	ll_append(rax, var expr)
 	return var node
 }
 
 func nt_comparison(parent)(node, expr) {
-	var node = node_new(nCOMPARISON, 0, var parent, 2)
+	var node = node_new(nCOMPARISON, 0, var parent)
 
 	# Save LHS
 	var expr = nt_expression(var node)
 	node_children(var node)
-	array_append(rax, var expr)
+	ll_append(rax, var expr)
 
 	# Save comparitor
 	tc_comparitor(1)
@@ -143,7 +143,7 @@ func nt_comparison(parent)(node, expr) {
 	# Save RHS
 	var expr = nt_expression(var node)
 	node_children(var node)
-	array_append(rax, var expr)
+	ll_append(rax, var expr)
 
 	return var node
 }
@@ -151,19 +151,19 @@ func nt_comparison(parent)(node, expr) {
 func nt_if(parent)(node, child) {
 	token_consume(IF)
 
-	var node = node_new(nIF, 0, var parent, 3)
+	var node = node_new(nIF, 0, var parent)
 
 	# Save comparison
 	token_consume(PAREN_OPEN)
 	var child = nt_comparison(var node)
 	node_children(var node)
-	array_append(rax, var child)
+	ll_append(rax, var child)
 	token_consume(PAREN_CLOSE)
 
 	# Save IF block
 	var child = nt_block(var node)
 	node_children(var node)
-	array_append(rax, var child)
+	ll_append(rax, var child)
 
 	token_load()
 	if (token_tye[0] == ELSE) {
@@ -172,7 +172,7 @@ func nt_if(parent)(node, child) {
 		# Save ELSE block
 		var child = nt_block(var node)
 		node_children(var node)
-		array_append(rax, var child)
+		ll_append(rax, var child)
 	}
 
 	return var node
@@ -180,32 +180,32 @@ func nt_if(parent)(node, child) {
 
 func nt_next(parent)() {
 	token_consume(NEXT)
-	return node_new(nNEXT, 0, var parent, 0)
+	return node_new(nNEXT, 0, var parent)
 }
 
 func nt_loop(parent)(node, child) {
 	token_consume(LOOP)
 
-	var node = node_new(nLOOP, 0, var parent, 1)
+	var node = node_new(nLOOP, 0, var parent)
 
 	# Save block
 	var child = nt_block(var node)
 	node_children(var node)
-	array_append(rax, var child)
+	ll_append(rax, var child)
 
 	return var node
 }
 
 func nt_break(parent)() {
 	token_consume(BREAK)
-	return node_new(nBREAK, 0, var parent, 0)
+	return node_new(nBREAK, 0, var parent)
 }
 
 func nt_identifier(parent)(node) {
 	# Save identifier string
 	token_load()
 	string_length(token)
-	var node = node_new(nIDENTIFIER, rax, var parent, 0)
+	var node = node_new(nIDENTIFIER, rax, var parent)
 	node_data(var node)
 	string_copy(token, rax)
 	token_consume(IDENTIFIER)
@@ -292,7 +292,7 @@ func nt_enum(parent)(node, ident) {
 	# Save enum name string
 	token_load()
 	string_length(token)
-	var node = node_new(nENUM, rax, var parent, 99)
+	var node = node_new(nENUM, rax, var parent)
 	node_data(var node)
 	string_copy(token, rax)
 	token_consume(IDENTIFIER)
@@ -308,7 +308,7 @@ func nt_enum(parent)(node, ident) {
 
 		var ident = nt_identifier(var node)
 		node_children(var node)
-		array_append(rax, var ident)
+		ll_append(rax, var ident)
 	}
 
 	return var node
@@ -316,7 +316,7 @@ func nt_enum(parent)(node, ident) {
 
 func nt_comment(parent)() {
 	token_consume(COMMENT)
-	return node_new(nCOMMENT, 0, var parent, 0)
+	return node_new(nCOMMENT, 0, var parent)
 }
 
 func nt_character(parent)(node) {
@@ -325,7 +325,7 @@ func nt_character(parent)(node) {
 
 	# For escaped characters
 	string_length(token)
-	var node = node_new(nCHARACTER, rax, var parent, 0)
+	var node = node_new(nCHARACTER, rax, var parent)
 	node_data(var node)
 	string_copy(token, rax)
 	token_consume(CHARACTER)
@@ -337,7 +337,7 @@ func nt_string(parent)(node) {
 	# Save string
 	token_load()
 	string_length(token)
-	var node = node_new(nSTRING, rax, var parent, 0)
+	var node = node_new(nSTRING, rax, var parent)
 	node_data(var node)
 	string_copy(token, rax)
 	token_consume(STRING)
@@ -352,7 +352,7 @@ func nt_number(parent)(node) {
 	# Save identifier string
 	token_load()
 	string_length(token)
-	var node = node_new(nNUMBER, rax, var parent, 0)
+	var node = node_new(nNUMBER, rax, var parent)
 	node_data(var node)
 	string_copy(token, rax)
 	token_consume(NUMBER)
@@ -451,7 +451,7 @@ func nt_index(prev_node)(node, expr) {
 
 	# Create new node
 	node_parent(var prev_node)
-	var node = node_new(nINDEX, 0, rax, 2)
+	var node = node_new(nINDEX, 0, rax)
 
 	# Adopt prev_node
 	node_adopt(var prev_node, var node)
@@ -459,7 +459,7 @@ func nt_index(prev_node)(node, expr) {
 	token_consume(SQUARE_OPEN)
 	var expr = nt_number(var node)
 	node_children(var node)
-	array_append(rax, var expr)
+	ll_append(rax, var expr)
 	token_consume(SQUARE_CLOSE)
 
 	return var node
@@ -474,14 +474,14 @@ func nt_call(prev_node)(node, list) {
 
 	# Create new node
 	node_parent(var prev_node)
-	var node = node_new(nCALL, 0, rax, 2)
+	var node = node_new(nCALL, 0, rax)
 
 	# Adopt prev_node
 	node_adopt(var prev_node, var node)
 
 	var list = nt_paren_list(var node, nt_expression)
 	node_children(var node)
-	array_append(rax, var list)
+	ll_append(rax, var list)
 
 	return var node
 }
@@ -496,7 +496,7 @@ func nt_operation(prev_node)(node, operator, expr) {
 
 	# Create new node
 	node_parent(var prev_node)
-	var node = node_new(nOPERATION, 0, rax, 2)
+	var node = node_new(nOPERATION, 0, rax)
 
 	# Adopt prev_node
 	node_adopt(var prev_node, var node)
@@ -509,7 +509,7 @@ func nt_operation(prev_node)(node, operator, expr) {
 			# Save RHS
 			var expr = nt_expression(var node)
 			node_children(var node)
-			array_append(rax, var expr)
+			ll_append(rax, var expr)
 		}
 	}
 
