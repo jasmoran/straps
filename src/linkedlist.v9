@@ -34,23 +34,51 @@ func ll_length(ll)() {
 	return var ll[16]
 }
 
-func ll_prepend(payload, ll)(new) {
+func lln_next(lln)() {
+	return var lln[0]
+}
+
+func lln_prev(lln)() {
+	return var lln[8]
+}
+
+func lln_payload(lln)() {
+	return var lln[16]
+}
+
+func ll_insert_before(payload, lln, ll)(new) {
 	var new = lln_new(var payload)
 
-	var new[0] = var ll[0]			# Set next
-	if (var ll[0] != 0) {
-		var ll[0][8] = var new		# Set first.prev
-	}
-	var ll[0] = var new					# Set first
+	if (var lln != 0) {
+		# Set up new
+		var new[0] = var lln				# new.next = lln
+		var new[8] = var lln[8]			# new.prev = lln.prev
 
-	# Set last if empty
+		if (var lln[8] != 0) {
+			# Update lln.prev
+			var lln[8][0] = var new		# lln.prev.next = new
+		}
+
+		# Update lln
+		var lln[8] = var new				# lln.prev = new
+	}
+
+	# Update ll
+	rax = var lln
+	if (var ll[0] == rax) {
+		var ll[0] = var new					# Set first
+	}
 	if (var ll[8] == 0) {
-		var ll[8] = var new
+		var ll[8] = var new					# Set last
 	}
-
 	var ll[16]++
 
 	return var new
+}
+
+func ll_prepend(payload, ll)() {
+	ll_insert_before(var ll, var ll[0], var payload)
+	return rax
 }
 
 func ll_append(payload, ll)(new) {
@@ -74,7 +102,11 @@ func ll_append(payload, ll)(new) {
 
 func ll_remove(ix, ll)(node) {
 	var node = ll_fetch_node(var ll, var ix)
+	ll_remove_node(var ll, var node)
+	return
+}
 
+func ll_remove_node(node, ll)(node) {
 	if (var node[0] == 0) {
 		# last = prev
 		var ll[8] = var node[8]
@@ -109,6 +141,24 @@ func ll_fetch_node(ix, ll)(node) {
 
 		var node = var node[0]
 		var ix--
+	}
+}
+
+func ll_fetch_by_data(data, ll)(node) {
+	var node = var ll[0]
+	loop {
+		if (var node == 0) {
+			rax = 0
+			rax--
+			return
+		}
+
+		rax = var data
+		if (var node[16] == rax) {
+			return var node
+		}
+
+		var node = var node[0]
 	}
 }
 
