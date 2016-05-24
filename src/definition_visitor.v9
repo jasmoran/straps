@@ -20,6 +20,11 @@ func definition(node)(children, ix, new_child, sub_children, sub_child) {
 			var ix++
 		}
 
+		node_parent(var node)
+		var children = node_children(rax)
+		ll_fetch_by_data(var children, var node)
+		ll_remove_node(var children, rax)
+
 		return
 	}
 
@@ -98,15 +103,15 @@ func new_variable(offset)(node, children, child) {
 	return var node
 }
 
-func definition_children(children)(ix) {
-	if (var children != 0) {
-		var ix = 0
-		loop {
-			if (var ix == ll_length(var children)) { break }
-			ll_get(var children, var ix)
-			definition(rax)
-			var ix++
+func definition_children(children)(node) {
+	var node = ll_first(var children)
+	loop {
+		if (var node == 0) {
+			return
 		}
+		lln_payload(var node)
+		definition(rax)
+		var node = lln_next(var node)
 	}
 
 	return
