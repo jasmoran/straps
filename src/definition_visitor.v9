@@ -94,11 +94,10 @@ func new_variable(offset)(node, children, child) {
 	ll_append(var children, var child)
 
 	# Save offset
-	var node[8] = var offset
-	#var child = node_new(nNUMBER, 2, var node)
-	#node_data(var child)
-	#string_from_number(var ix, rax)
-	#ll_append(var children, var child)
+	var child = node_new(nNUMBER, 4, var node)
+	node_data(var child)
+	string_from_number(var offset, rax)
+	ll_append(var children, var child)
 
 	return var node
 }

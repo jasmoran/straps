@@ -118,6 +118,12 @@ func string_from_number(str_out, int_in)(digit_count) {
 	rcx = 10
 	var digit_count = 0
 
+	if (rax < 0) {
+		string_append(var str_out, '-')
+		rax = 0
+		rax -= var int_in
+	}
+
 	loop {
 		rdx = 0
 		nasm("
