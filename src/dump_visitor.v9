@@ -10,6 +10,21 @@ func dump(node, out_stream)(children, ix) {
 		return
 	}
 
+	if (rax == nCALL) {
+		string_print(var out_stream, "call ")
+		dump_children(var out_stream, var children)
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nCOMMENT) {
+		string_print(var out_stream, ";")
+		node_data(var node)
+		string_print(var out_stream, rax)
+		string_print(var out_stream, new_line)
+		return
+	}
+
 	if (rax == nCOMPARISON) {
 		string_print(var out_stream, "cmp ")
 
@@ -162,6 +177,13 @@ func dump(node, out_stream)(children, ix) {
 		return
 	}
 
+	if (rax == nMEM_ACCESS) {
+		string_print(var out_stream, "QWORD[")
+		dump_children(var out_stream, var children)
+		string_print(var out_stream, "]")
+		return
+	}
+
 	if (rax == nNASM) {
 		node_data(var node)
 		string_print(var out_stream, rax)
@@ -173,6 +195,10 @@ func dump(node, out_stream)(children, ix) {
 		string_print(var out_stream, "jmp .loop_")
 		printer_number(var out_stream, enclosing_loo[0])
 		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nNONE) {
 		return
 	}
 
@@ -203,6 +229,26 @@ func dump(node, out_stream)(children, ix) {
 
 		string_print(var out_stream, new_line)
 
+		return
+	}
+
+	if (rax == nPOP) {
+		string_print(var out_stream, "pop ")
+		dump_children(var out_stream, var children)
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nPUSH) {
+		string_print(var out_stream, "push ")
+		dump_children(var out_stream, var children)
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nREGISTER) {
+		node_data(var node)
+		string_print(var out_stream, rax)
 		return
 	}
 
