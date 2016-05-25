@@ -30,7 +30,7 @@ func definition(node)(children, ix, new_child, sub_children, sub_child) {
 
 	if (rax == nFUNCTION) {
 		node_data(var node)
-		map_set(global_vars[0], rax, rax)
+		map_set(global_vars[0], rax, 0)
 
 		map_new(100)
 		var node[32] = rax

@@ -21,12 +21,14 @@ func resolving(node)(children, scope, res) {
 			sys(60,1)
 
 		} else {
-			node_type(var res)
-			var node[0] = rax
-			node_data(var res)
-			var node[8] = rax
-			node_children(var res)
-			var node[24] = rax
+			if (var res != 0) {
+				node_type(var res)
+				var node[0] = rax
+				node_data(var res)
+				var node[8] = rax
+				node_children(var res)
+				var node[24] = rax
+			}
 		}
 
 		return
