@@ -38,6 +38,27 @@ func string_append(character, string)() {
 	return
 }
 
+func string_prepend(character, string)() {
+	# Copy main data
+	rsi = var string
+	rsi += 16
+	rdi = rsi
+	rdi++
+	rcx = var string[0]
+	nasm("rep movsb
+	")
+
+	rax = var string
+	rax += 16
+	rbx = var character
+	nasm("mov BYTE[rax], bl
+	")
+
+	var string[0]++
+
+	return
+}
+
 func string_print(str, out_stream)() {
 	if (var out_stream == FILE) {
 		rax = out_file_fid[0]
@@ -113,15 +134,19 @@ func string_join(dest, source)() {
 
 }
 
-func string_from_number(str_out, int_in)(digit_count) {
-	rax = var int_in
+func string_from_number(plus, str_out, int_in)(digit_count) {
 	rcx = 10
 	var digit_count = 0
 
-	if (rax < 0) {
+	if (var int_in < 0) {
 		string_append(var str_out, '-')
 		rax = 0
 		rax -= var int_in
+	} else {
+		if (var plus == 1) {
+			string_append(var str_out, '+')
+		}
+		rax = var int_in
 	}
 
 	loop {

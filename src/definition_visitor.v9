@@ -6,9 +6,9 @@ func definition(node)(children, ix, new_child, sub_children, sub_child) {
 		var ix = 0
 		loop {
 			if (var ix == ll_length(var children)) { break }
-			var new_child = node_new(nNUMBER, 2, 0)
+			var new_child = node_new(nNUMBER, 4, 0)
 			node_data(var new_child)
-			string_from_number(var ix, rax)
+			string_from_number(var ix, rax, 0)
 
 			ll_get(var children, var ix)
 			var sub_child = rax
@@ -96,7 +96,7 @@ func new_variable(offset)(node, children, child) {
 	# Save offset
 	var child = node_new(nNUMBER, 4, var node)
 	node_data(var child)
-	string_from_number(var offset, rax)
+	string_from_number(var offset, rax, 1)
 	ll_append(var children, var child)
 
 	return var node
