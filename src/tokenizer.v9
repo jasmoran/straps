@@ -3,7 +3,7 @@ enum TOKEN {
 	VAR WHILE NUMBER IDENTIFIER STRING PAREN_OPEN PAREN_CLOSE COMMA
 	COMMENT CURLY_OPEN CURLY_CLOSE EQUAL NOT_EQUAL GREATER GREATER_EQ
 	LESS LESS_EQ CHARACTER INCLUDE NOT INCREMENT DECREMENT ADD SUB SHIFTL SHIFTR
-	ASSIGN PLUS MINUS SQUARE_OPEN SQUARE_CLOSE ENUM
+	ASSIGN PLUS MINUS SQUARE_OPEN SQUARE_CLOSE ENUM CLASS
 }
 
 func token_kee_char()(old_char_next) {
@@ -83,8 +83,19 @@ func token_load()() {
 		}
 
 		if (rax == 'c') {
-			token_case()
-			if (rax == 1) {return}
+			token_eek_char()
+
+			if (rax == 'a') {
+				token_case()
+				if (rax == 1) {return}
+			}
+
+			if (rax == 'l') {
+				token_class()
+				if (rax == 1) {return}
+			}
+
+			rax = 0
 		}
 
 		if (rax == 'e') {
@@ -424,6 +435,16 @@ func token_case()() {
 	token_eek_char() if (rax == 'e') { token_kee_char() } else { return 0 }
 
 	token_tye[0] = CASE
+	return 1
+}
+
+func token_class()() {
+	token_eek_char() if (rax == 'l') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'a') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 's') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 's') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = CLASS
 	return 1
 }
 
