@@ -1,7 +1,7 @@
 enum NODE {
 	nNONE nNASM nSYS nSTATEMENTS nPAREN_LIST nFUNCTION nRETURN nCOMPARISON nIF
 	nNEXT nLOOP nBREAK nIDENTIFIER nENUM nCOMMENT nCHARACTER nSTRING nNUMBER
-	nINDEX nCALL nOPERATION nMEM_ACCESS nREGISTER nPUSH nPOP nCLASS
+	nINDEX nCALL nOPERATION nMEM_ACCESS nREGISTER nPUSH nPOP nCLASS nFIELD
 }
 
 func nt_nasm(parent)(node) {
@@ -210,6 +210,12 @@ func nt_identifier(parent)(node) {
 	string_copy(token, rax)
 	token_consume(IDENTIFIER)
 
+	return var node
+}
+
+func nt_variable(parent)(node) {
+	var node = nt_identifier(var parent)
+
 	# Check for indexes and calls
 	loop {
 		token_load()
@@ -220,6 +226,10 @@ func nt_identifier(parent)(node) {
 		}
 		if (token_tye[0] == PAREN_OPEN) {
 			var node = nt_call(var node)
+			next
+		}
+		if (token_tye[0] == DOT) {
+			var node = nt_field(var node)
 			next
 		}
 		break
@@ -419,7 +429,7 @@ func nt_statement(parent)() {
 	}
 
 	if (token_tye[0] == IDENTIFIER) {
-		return nt_identifier(var parent)
+		return nt_variable(var parent)
 	}
 
 	if (token_tye[0] == IF) {
@@ -465,7 +475,7 @@ func nt_expression(parent)() {
 	}
 
 	if (token_tye[0] == IDENTIFIER) {
-		return nt_identifier(var parent)
+		return nt_variable(var parent)
 	}
 
 	if (token_tye[0] == STRING) {
@@ -519,6 +529,28 @@ func nt_call(prev_node)(node, list) {
 	var list = nt_paren_list(var node, nt_expression)
 	node_children(var node)
 	ll_append(rax, var list)
+
+	return var node
+}
+
+func nt_field(prev_node)(node, expr) {
+	token_load()
+
+	if (token_tye[0] != DOT) {
+		return var prev_node
+	}
+
+	# Create new node
+	node_parent(var prev_node)
+	var node = node_new(nFIELD, 0, rax)
+
+	# Adopt prev_node
+	node_adopt(var prev_node, var node)
+
+	token_consume(DOT)
+	var expr = nt_identifier(var node)
+	node_children(var node)
+	ll_append(rax, var expr)
 
 	return var node
 }
