@@ -102,12 +102,12 @@ func nt_function(parent)(node, child) {
 	token_consume(IDENTIFIER)
 
 	# Save arguments
-	var child = nt_paren_list(var node, nt_identifier)
+	var child = nt_paren_list(var node, nt_decl_pair)
 	node_children(var node)
 	ll_append(rax, var child)
 
 	# Save variables
-	var child = nt_paren_list(var node, nt_identifier)
+	var child = nt_paren_list(var node, nt_decl_pair)
 	node_children(var node)
 	ll_append(rax, var child)
 
@@ -379,10 +379,17 @@ func nt_class(parent)(node, child) {
 	token_consume(IDENTIFIER)
 
 	# Save fields
-	var child = nt_paren_list(var node, nt_identifier)
+	var child = nt_paren_list(var node, nt_decl_pair)
 	node_children(var node)
 	ll_append(rax, var child)
 
+	return var node
+}
+
+func nt_decl_pair(parent)(node, type) {
+	var type = nt_identifier(0)
+	var node = nt_identifier(var parent)
+	var node[40] = var type
 	return var node
 }
 

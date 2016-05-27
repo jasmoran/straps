@@ -49,6 +49,7 @@ section .bss
 	jump_types:		resq 1
 	operations:		resq 1
 	scratch_reg:	resq 1
+	types:				resq 1
 
 section .data
 	new_line:
@@ -73,6 +74,7 @@ include "src/token_class.v9"
 include "src/parser.v9"
 include "src/string.v9"
 include "src/map.v9"
+include "src/typing_visitor.v9"
 include "src/definition_visitor.v9"
 include "src/resolving_visitor.v9"
 include "src/dump_visitor.v9"
@@ -125,8 +127,11 @@ func main()(in_file_name, node) {
 	enm_names[0] = array_new(10)
 	enm_items[0] = array_new(10)
 
-	# Create map for local variables
+	# Create map for global variables
 	global_vars[0] = map_new(1024)
+
+	# Create map for types
+	types[0] = map_new(1024)
 
 	# Initialize 64 bit register globals
 	define_register("rax")
@@ -189,6 +194,7 @@ func main()(in_file_name, node) {
 
 	var node = nt_statements(0)
 	node_print(STDOUT, var node, 0)
+	typing(var node)
 	definition(var node)
 	resolving(var node)
 	string_print(STDOUT, new_line)
