@@ -86,6 +86,7 @@ func definition(node)(children, ix, new_child, sub_children, sub_child, data) {
 			if (var ix == ll_length(var sub_children)) { break }
 			rax = var ix
 			rax += 2
+			rax << 3
 			var new_child = new_variable(rax)
 
 			ll_get(var sub_children, var ix)
@@ -108,6 +109,7 @@ func definition(node)(children, ix, new_child, sub_children, sub_child, data) {
 			if (var ix == ll_length(var sub_children)) { break }
 			nasm("mov rax, -1")
 			rax -= var ix
+			rax << 3
 			var new_child = new_variable(rax)
 
 			ll_get(var sub_children, var ix)
