@@ -73,6 +73,15 @@ func resolving(node)(children, scope, res, name) {
 		return
 	}
 
+	if (rax == nCALL) {
+		resolving_children(var children)
+
+		ll_get(var children, 0)
+		node_class(rax)
+		var node[40] = rax
+		return
+	}
+
 	resolving_children(var children)
 
 	return

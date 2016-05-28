@@ -1,4 +1,4 @@
-func definition(node)(children, ix, new_child, sub_children, sub_child) {
+func definition(node)(children, ix, new_child, sub_children, sub_child, data) {
 	var children = node_children(var node)
 	node_type(var node)
 
@@ -16,7 +16,7 @@ func definition(node)(children, ix, new_child, sub_children, sub_child) {
 			node_data(var new_child)
 			rbx = var ix
 			rbx << 3
-			string_from_number(rbx, rax, 0)
+			string_from_number(rbx, rax, 1)
 
 			ll_get(var sub_children, var ix)
 			var sub_child = rax
@@ -66,8 +66,14 @@ func definition(node)(children, ix, new_child, sub_children, sub_child) {
 	}
 
 	if (rax == nFUNCTION) {
-		node_data(var node)
-		map_set(global_vars[0], rax, 0)
+		var data = node_data(var node)
+		string_length(var data)
+		var new_child = node_new(nIDENTIFIER, rax, 0)
+		node_data(var new_child)
+		string_copy(var data, rax)
+		resolve_type(var node)
+		var new_child[40] = rax
+		map_set(global_vars[0], var data, var new_child)
 
 		map_new(100)
 		var node[32] = rax

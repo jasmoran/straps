@@ -83,9 +83,6 @@ func index_call(node)(children, new, new_child, sub_child) {
 		index_call(rax)
 
 		var node[0] = nMEM_ACCESS
-		ll_get(var children, 1)
-		node_data(rax)
-		string_prepend(rax, '+')
 
 		node_type(var new_child)
 		if (rax == nMEM_ACCESS) {
@@ -104,6 +101,12 @@ func index_call(node)(children, new, new_child, sub_child) {
 			index_call_prepend(var node, var new)
 
 			ll_set(var children, 0, var new_child)
+
+			node_parent(var node)
+			node_type(rax)
+			if (rax == nSTATEMENTS) {
+				var node[0] = nNONE
+			}
 		}
 
 		return

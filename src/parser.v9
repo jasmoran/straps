@@ -90,8 +90,11 @@ func nt_paren_list(item_func, parent)(node, ident) {
 	return var node
 }
 
-func nt_function(parent)(node, child) {
+func nt_function(parent)(node, child, type) {
 	token_consume(FUNC)
+
+	# Get return type
+	var type = nt_identifier(0)
 
 	# Save function name
 	token_load()
@@ -100,6 +103,9 @@ func nt_function(parent)(node, child) {
 	node_data(var node)
 	string_copy(token, rax)
 	token_consume(IDENTIFIER)
+
+	# Save return type
+	var node[40] = var type
 
 	# Save arguments
 	var child = nt_paren_list(var node, nt_decl_pair)
@@ -508,6 +514,9 @@ func nt_index(prev_node)(node, expr) {
 	node_children(var node)
 	ll_append(rax, var expr)
 	token_consume(SQUARE_CLOSE)
+
+	node_data(var expr)
+	string_prepend(rax, '+')
 
 	return var node
 }
