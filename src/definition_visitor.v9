@@ -16,7 +16,7 @@ func definition(node)(children, ix, new_child, sub_children, sub_child) {
 			node_data(var new_child)
 			rbx = var ix
 			rbx << 3
-			string_from_number(rbx, rax, 1)
+			string_from_number(rbx, rax, 0)
 
 			ll_get(var sub_children, var ix)
 			var sub_child = rax

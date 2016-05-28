@@ -1,21 +1,19 @@
-func resolving(node)(children, scope, res) {
+func resolving(node)(children, scope, res, name) {
 	var children = node_children(var node)
 	node_type(var node)
 
 	if (rax == nIDENTIFIER) {
 		var scope = get_scope(var node)
-		node_data(var node)
+		var name = node_data(var node)
 		var res = map_get(var scope, rax)
 
 		if (rax < 0) {
-			node_data(var node)
-			var res = map_get(global_vars[0], rax)
+			var res = map_get(global_vars[0], var name)
 		}
 
 		if (var res < 0) {
 			string_print(STDERR, "Error: Could not resolve variable ")
-			node_data(var node)
-			string_print(STDERR, rax)
+			string_print(STDERR, var name)
 			string_print(STDERR, new_line)
 
 			sys(60,1)
@@ -31,6 +29,45 @@ func resolving(node)(children, scope, res) {
 				node_class(var res)
 				var node[40] = rax
 			}
+		}
+
+		return
+	}
+
+	if (rax == nFIELD) {
+		ll_get(var children, 0)
+		resolving(rax)
+
+		ll_get(var children, 0)
+		node_class(rax)
+
+		if (rax == 0) {
+			string_print(STDERR, "Error: No type information for:")
+			string_print(STDERR, new_line)
+			ll_get(var children, 0)
+			node_print(STDERR, rax)
+
+			sys(60,1)
+		}
+
+		var scope = node_scope(rax)
+
+		ll_get(var children, 1)
+		var name = node_data(rax)
+		var res = map_get(var scope, rax)
+
+		if (var res < 0) {
+			string_print(STDERR, "Error: Could not resolve field ")
+			string_print(STDERR, var name)
+			string_print(STDERR, new_line)
+
+			sys(60,1)
+
+		} else {
+			var node[0] = nINDEX
+			ll_set(var children, 1, var res)
+			node_class(var res)
+			var node[40] = rax
 		}
 
 		return
