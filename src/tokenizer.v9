@@ -1,9 +1,9 @@
 enum TOKEN {
-	NONE ARG BREAK CASE ELSE FOR FUNC IF LOOP NASM NEXT RETURN SWITCH SYS
-	VAR WHILE NUMBER IDENTIFIER STRING PAREN_OPEN PAREN_CLOSE COMMA
+	NONE BREAK CASE ELSE FOR FUNC IF LOOP NASM NEXT RETURN SWITCH SYS
+	WHILE NUMBER IDENTIFIER STRING PAREN_OPEN PAREN_CLOSE COMMA
 	COMMENT CURLY_OPEN CURLY_CLOSE EQUAL NOT_EQUAL GREATER GREATER_EQ
 	LESS LESS_EQ CHARACTER INCLUDE NOT INCREMENT DECREMENT ADD SUB SHIFTL SHIFTR
-	ASSIGN PLUS MINUS SQUARE_OPEN SQUARE_CLOSE ENUM CLASS DOT
+	ASSIGN PLUS MINUS SQUARE_OPEN SQUARE_CLOSE ENUM CLASS DOT GLOBAL
 }
 
 func token_kee_char()(old_char_next) {
@@ -72,11 +72,6 @@ func token_load()() {
 			}
 		}
 
-		if (rax == 'a') {
-			token_arg()
-			if (rax == 1) {return}
-		}
-
 		if (rax == 'b') {
 			token_break()
 			if (rax == 1) {return}
@@ -128,6 +123,11 @@ func token_load()() {
 			}
 
 			rax = 0
+		}
+
+		if (rax == 'g') {
+			token_global()
+			if (rax == 1) {return}
 		}
 
 		if (rax == 'i') {
@@ -186,11 +186,6 @@ func token_load()() {
 			}
 
 			rax = 0
-		}
-
-		if (rax == 'v') {
-			token_ar()
-			if (rax == 1) {return}
 		}
 
 		if (rax == 'w') {
@@ -416,14 +411,6 @@ func token_consume(expected_token)() {
 	return
 }
 
-func token_arg()() {
-	token_eek_char() if (rax == 'r') { token_kee_char() } else { return 0 }
-	token_eek_char() if (rax == 'g') { token_kee_char() } else { return 0 }
-
-	token_tye[0] = ARG
-	return 1
-}
-
 func token_break()() {
 	token_eek_char() if (rax == 'r') { token_kee_char() } else { return 0 }
 	token_eek_char() if (rax == 'e') { token_kee_char() } else { return 0 }
@@ -485,6 +472,17 @@ func token_func()() {
 	token_eek_char() if (rax == 'c') { token_kee_char() } else { return 0 }
 
 	token_tye[0] = FUNC
+	return 1
+}
+
+func token_global()() {
+	token_eek_char() if (rax == 'l') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'o') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'b') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'a') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'l') { token_kee_char() } else { return 0 }
+
+	token_tye[0] = GLOBAL
 	return 1
 }
 
@@ -561,14 +559,6 @@ func token_sys()() {
 	token_eek_char() if (rax == 's') { token_kee_char() } else { return 0 }
 
 	token_tye[0] = SYS
-	return 1
-}
-
-func token_ar()() {
-	token_eek_char() if (rax == 'a') { token_kee_char() } else { return 0 }
-	token_eek_char() if (rax == 'r') { token_kee_char() } else { return 0 }
-
-	token_tye[0] = VAR
 	return 1
 }
 

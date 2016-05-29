@@ -82,6 +82,10 @@ func resolving(node)(children, scope, res, name) {
 		return
 	}
 
+	if (rax == nGLOBAL) {
+		return
+	}
+
 	resolving_children(var children)
 
 	return

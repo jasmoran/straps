@@ -107,6 +107,29 @@ func dump(node, out_stream)(children, ix) {
 		return
 	}
 
+	if (rax == nGLOBAL) {
+		string_print(var out_stream, "section .bss")
+		string_print(var out_stream, new_line)
+
+		ll_get(var children, 0)
+		node_children(rax)
+		var children = rax
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			dump(var out_stream, rax)
+			string_print(var out_stream, ": resq 1")
+			string_print(var out_stream, new_line)
+			var ix++
+		}
+
+		string_print(var out_stream, "section .text")
+		string_print(var out_stream, new_line)
+
+		return
+	}
+
 	if (rax == nIDENTIFIER) {
 		node_data(var node)
 		string_print(var out_stream, rax)

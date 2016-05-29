@@ -127,6 +127,28 @@ func definition(node)(children, ix, new_child, sub_children, sub_child, data) {
 		return
 	}
 
+	if (rax == nGLOBAL) {
+		# Get variables
+		ll_get(var children, 0)
+		var sub_children = node_children(rax)
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var sub_children)) { break }
+
+			ll_get(var sub_children, var ix)
+			var sub_child = rax
+			var new_child = new_global(var sub_child)
+			node_data(var sub_child)
+			map_set(global_vars[0], rax, var new_child)
+			resolve_type(var sub_child)
+			var new_child[40] = rax
+
+			var ix++
+		}
+
+		return
+	}
+
 	definition_children(var children)
 
 	return
@@ -162,6 +184,22 @@ func new_variable(offset)(node, children, child) {
 	var child = node_new(nNUMBER, 4, var node)
 	node_data(var child)
 	string_from_number(var offset, rax, 1)
+	ll_append(var children, var child)
+
+	return var node
+}
+
+func new_global(identifier)(node, children, child) {
+	var node = node_new(nMEM_ACCESS, 0, 0)
+	var children = node_children(var node)
+
+	# Save name
+	ll_append(var children, var identifier)
+
+	# Save offset
+	var child = node_new(nNUMBER, 4, var node)
+	node_data(var child)
+	string_copy("+0", rax)
 	ll_append(var children, var child)
 
 	return var node

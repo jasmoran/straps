@@ -1,7 +1,7 @@
 enum NODE {
 	nNONE nNASM nSYS nSTATEMENTS nPAREN_LIST nFUNCTION nRETURN nCOMPARISON nIF
 	nNEXT nLOOP nBREAK nIDENTIFIER nENUM nCOMMENT nCHARACTER nSTRING nNUMBER
-	nINDEX nCALL nOPERATION nMEM_ACCESS nREGISTER nPUSH nPOP nCLASS nFIELD
+	nINDEX nCALL nOPERATION nMEM_ACCESS nREGISTER nPUSH nPOP nCLASS nFIELD nGLOBAL
 }
 
 func nt_nasm(parent)(node) {
@@ -402,6 +402,19 @@ func nt_class(parent)(node, child) {
 	return var node
 }
 
+func nt_global(parent)(node, child) {
+	token_consume(GLOBAL)
+
+	# Save fields
+	var node = node_new(nGLOBAL, 0, var parent)
+	var child = nt_paren_list(var node, nt_decl_pair)
+	node_children(var node)
+	ll_append(rax, var child)
+
+	return var node
+}
+
+
 func nt_decl_pair(parent)(node, type) {
 	var type = nt_identifier(0)
 	var node = nt_identifier(var parent)
@@ -432,6 +445,10 @@ func nt_statement(parent)() {
 
 	if (token_tye[0] == FUNC) {
 		return nt_function(var parent)
+	}
+
+	if (token_tye[0] == GLOBAL) {
+		return nt_global(var parent)
 	}
 
 	if (token_tye[0] == IDENTIFIER) {
