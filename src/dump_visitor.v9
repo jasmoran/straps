@@ -54,6 +54,38 @@ func dump(node, out_stream)(children, ix, data) {
 		return
 	}
 
+	if (rax == nENUM) {
+		string_print(var out_stream, "section .data")
+		string_print(var out_stream, new_line)
+		node_data(var node)
+		string_print(var out_stream, rax)
+		string_print(var out_stream, ":")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "dq ")
+		ll_length(var children)
+		printer_number(var out_stream, rax)
+		string_print(var out_stream, ", ")
+		ll_length(var children)
+		printer_number(var out_stream, rax)
+
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			var data = node_data(rax)
+
+			string_print(var out_stream, ", ")
+			string_print(var out_stream, var data)
+
+			var ix++
+		}
+
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "section .text")
+		string_print(var out_stream, new_line)
+		return
+	}
+
 	if (rax == nFUNCTION) {
 		node_data(var node)
 		string_print(var out_stream, rax)
@@ -343,6 +375,8 @@ func dump(node, out_stream)(children, ix, data) {
 			var ix++
 		}
 
+		string_print(var out_stream, "section .text")
+		string_print(var out_stream, new_line)
 		return
 	}
 

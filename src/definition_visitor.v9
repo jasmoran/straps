@@ -52,15 +52,10 @@ func definition(node)(children, ix, new_child, sub_children, sub_child, data) {
 			node_data(var sub_child)
 			map_set(global_vars[0], rax, var new_child)
 
-			var sub_child[0] = nNONE
+			var sub_child[0] = nSTRING
 
 			var ix++
 		}
-
-		node_parent(var node)
-		var children = node_children(rax)
-		ll_fetch_by_data(var children, var node)
-		ll_remove_node(var children, rax)
 
 		return
 	}
