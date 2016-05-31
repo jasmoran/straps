@@ -79,6 +79,7 @@ include "src/definition_visitor.v9"
 include "src/resolving_visitor.v9"
 include "src/dump_visitor.v9"
 include "src/index_call_visitor.v9"
+include "src/string_visitor.v9"
 
 func read_number()() {
 	rax = 0
@@ -200,6 +201,7 @@ func main()(in_file_name, node) {
 	string_print(STDOUT, new_line)
 	#node_print(STDOUT, var node, 0)
 	index_call(var node)
+	lit_string(var node)
 	dump(STDOUT, var node)
 
 	# Write data section

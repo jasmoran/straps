@@ -1,4 +1,4 @@
-func dump(node, out_stream)(children, ix) {
+func dump(node, out_stream)(children, ix, data) {
 	var children = node_children(var node)
 
 	node_type(var node)
@@ -312,6 +312,37 @@ func dump(node, out_stream)(children, ix) {
 
 	if (rax == nSTATEMENTS) {
 		dump_children(var out_stream, var children)
+		return
+	}
+
+	if (rax == nSTRINGS) {
+		string_print(var out_stream, "section .data")
+		string_print(var out_stream, new_line)
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			var data = node_data(rax)
+
+			string_print(var out_stream, "string_")
+			printer_number(var out_stream, var ix)
+			string_print(var out_stream, ":")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "dq ")
+			string_length(var data)
+			printer_number(var out_stream, rax)
+			string_print(var out_stream, ", ")
+			string_length(var data)
+			printer_number(var out_stream, rax)
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "db `")
+			string_print(var out_stream, var data)
+			string_print(var out_stream, "`")
+			string_print(var out_stream, new_line)
+
+			var ix++
+		}
+
 		return
 	}
 
