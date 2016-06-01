@@ -1,4 +1,4 @@
-func typing(node)(children, ix, new_child, sub_children, sub_child) {
+func typing(node)(children) {
 	var children = node_children(var node)
 	node_type(var node)
 

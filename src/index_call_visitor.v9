@@ -176,10 +176,6 @@ func index_call_prepend(new, child)(parent, list) {
 	return
 }
 
-func index_call_move()() {
-	return
-}
-
 func index_call_children(children)(node) {
 	var node = ll_first(var children)
 	loop {
