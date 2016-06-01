@@ -384,7 +384,7 @@ func nt_number(parent)(node) {
 	return var node
 }
 
-func nt_class(parent)(node, child) {
+func nt_class(parent)(node, child, method) {
 	token_consume(CLASS)
 
 	# Save class name
@@ -397,6 +397,11 @@ func nt_class(parent)(node, child) {
 
 	# Save fields
 	var child = nt_paren_list(var node, nt_decl_pair)
+	node_children(var node)
+	ll_append(rax, var child)
+
+	# Save methods
+	var child = nt_block(var node)
 	node_children(var node)
 	ll_append(rax, var child)
 

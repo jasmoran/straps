@@ -3,8 +3,7 @@ func definition(node)(children, ix, new_child, sub_children, sub_child, data) {
 	node_type(var node)
 
 	if (rax == nCLASS) {
-		map_new(100)
-		var node[32] = rax
+		# Scope is created in method_visitor
 
 		# Get fields
 		ll_get(var children, 1)

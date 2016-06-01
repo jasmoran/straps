@@ -1,4 +1,4 @@
-func resolving(node)(children, scope, res, name) {
+func resolving(node)(children, scope, res, name, child) {
 	var children = node_children(var node)
 	node_type(var node)
 
@@ -64,8 +64,25 @@ func resolving(node)(children, scope, res, name) {
 			sys(60,1)
 
 		} else {
-			var node[0] = nINDEX
-			ll_set(var children, 1, var res)
+			node_type(var res)
+			if (rax == nNUMBER) {
+				var node[0] = nINDEX
+				ll_set(var children, 1, var res)
+			} else {
+				var child = ll_get(var children, 0)
+				node_parent(var node)
+				node_children(rax)
+				ll_get(rax, 1)
+				node_children(rax)
+				ll_prepend(rax, var child)
+
+				# Resolve method name
+				var node[0] = nIDENTIFIER
+				node_data(var res)
+				var node[8] = rax
+				node_children(var node)
+				ll_empty(rax)
+			}
 			node_class(var res)
 			var node[40] = rax
 		}

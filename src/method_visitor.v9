@@ -1,0 +1,84 @@
+func method(node)(children, ix, methods, method, method_name, class_name, cnl, new_name, this_ident, method_args) {
+	var children = node_children(var node)
+	node_type(var node)
+
+	if (rax == nCLASS) {
+		var class_name = node_data(var node)
+		var cnl = string_length(var class_name)
+		var cnl += 2
+
+		map_new(100)
+		var node[32] = rax
+
+		ll_get(var children, 1)
+		var methods = node_children(rax)
+
+		if (var methods != 0) {
+			var ix = 0
+			loop {
+				if (var ix == ll_length(var methods)) { break }
+				var method = ll_get(var methods, var ix)
+				var method_name = node_data(var method)
+
+				# Construct and save new method name
+				string_length(var method_name)
+				rax += var cnl
+				var new_name = string_new(rax)
+				string_append(var new_name, '_')
+				string_join(var class_name, var new_name)
+				string_append(var new_name, '_')
+				string_join(var method_name, var new_name)
+				var method[8] = var new_name
+
+				# Get method arguments
+				node_children(var method)
+				var method_args = ll_get(rax, 0)
+
+				# Create new 'this' argument
+				var this_ident = node_new(nIDENTIFIER, 0, var method_args)
+				var this_ident[8] = "this"
+				var this_ident[40] = var node
+
+				# Add 'this' to arguments
+				node_children(var method_args)
+				ll_prepend(rax, var this_ident)
+
+				# Add moved functions name to the classes scope
+				node_new(nIDENTIFIER, 0, 0)
+				rax[8] = var new_name
+				map_set(var node[32], var method_name, rax)
+
+				var ix++
+			}
+		}
+
+		# Move methods to enclosing statements
+		var methods = ll_get(var children, 1)
+		node_parent(var node)
+		node_children(rax)
+		ll_append(rax, var methods)
+		ll_remove(var children, 1)
+
+		return
+	}
+
+	method_children(var children)
+
+	return
+}
+
+func method_children(children)(ix) {
+	if (var children != 0) {
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			method(rax)
+			#string_print(STDERR, "c")
+			#printer_number(STDERR, var ix)
+			var ix++
+		}
+	}
+
+	return
+}

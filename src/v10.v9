@@ -80,6 +80,7 @@ include "src/resolving_visitor.v9"
 include "src/dump_visitor.v9"
 include "src/index_call_visitor.v9"
 include "src/string_visitor.v9"
+include "src/method_visitor.v9"
 
 func read_number()() {
 	rax = 0
@@ -195,6 +196,7 @@ func main()(in_file_name, node) {
 
 	var node = nt_statements(0)
 	node_print(STDOUT, var node, 0)
+	method(var node)
 	typing(var node)
 	definition(var node)
 	resolving(var node)
