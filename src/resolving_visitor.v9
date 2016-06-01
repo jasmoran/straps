@@ -45,7 +45,7 @@ func resolving(node)(children, scope, res, name, child) {
 			string_print(STDERR, "Error: No type information for:")
 			string_print(STDERR, new_line)
 			ll_get(var children, 0)
-			node_print(STDERR, rax)
+			node_print(STDERR, rax, 0)
 
 			sys(60,1)
 		}

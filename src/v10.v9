@@ -196,8 +196,8 @@ func main()(in_file_name, node) {
 
 	var node = nt_statements(0)
 	node_print(STDOUT, var node, 0)
-	method(var node)
 	typing(var node)
+	method(var node)
 	definition(var node)
 	resolving(var node)
 	string_print(STDOUT, new_line)

@@ -1,4 +1,4 @@
-func method(node)(children, ix, methods, method, method_name, class_name, cnl, new_name, this_ident, method_args) {
+func method(node)(children, ix, methods, method, method_name, class_name, cnl, new_name, ident, method_args) {
 	var children = node_children(var node)
 	node_type(var node)
 
@@ -35,18 +35,21 @@ func method(node)(children, ix, methods, method, method_name, class_name, cnl, n
 				var method_args = ll_get(rax, 0)
 
 				# Create new 'this' argument
-				var this_ident = node_new(nIDENTIFIER, 0, var method_args)
-				var this_ident[8] = "this"
-				var this_ident[40] = var node
+				var ident = node_new(nIDENTIFIER, 0, var method_args)
+				var ident[8] = "this"
+				var ident[40] = var node
 
 				# Add 'this' to arguments
 				node_children(var method_args)
-				ll_prepend(rax, var this_ident)
+				ll_prepend(rax, var ident)
 
-				# Add moved functions name to the classes scope
-				node_new(nIDENTIFIER, 0, 0)
-				rax[8] = var new_name
-				map_set(var node[32], var method_name, rax)
+				# Add method name to the classes scope
+				var ident = node_new(nIDENTIFIER, 0, 0)
+				var ident[8] = var new_name
+				resolve_type(var method)
+				var ident[40] = rax
+
+				map_set(var node[32], var method_name, var ident)
 
 				var ix++
 			}
