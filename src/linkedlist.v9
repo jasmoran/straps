@@ -177,3 +177,25 @@ func ll_empty(ll)() {
 	var ll[16] = 0
 	return
 }
+
+func ll_remove_last(ll)() {
+	ll_remove_node(var ll, var ll[8])
+	return
+}
+
+func ll_print(sep, stream, ll)(node) {
+	var node = var ll[0]
+	if (var node != 0) {
+		loop {
+			string_print(var stream, var node[16])
+
+			var node = var node[0]
+
+			if (var node == 0) {
+				return
+			}
+
+			string_print(var stream, var sep)
+		}
+	}
+}
