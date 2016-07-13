@@ -1,0 +1,13 @@
+#-Hodor World
+#-
+
+include "src/stdlib.v10"
+
+func void main()(String str) {
+	str = "Hello World\n"
+	str.set(1, str.get(7))
+	str.set(2, 'd')
+	str.set(3, str.get(1))
+	str.set(4, str.get(8))
+	str.print(STDOUT)
+}

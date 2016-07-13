@@ -1,0 +1,10 @@
+#-17
+#-14
+
+include "src/stdlib.v10"
+
+func void main()(String str) {
+	str = "Hello World\\n\\n\\n"
+	str.length.toString(false).println(STDOUT)
+	str.unescaped_length().toString(false).print(STDOUT)
+}

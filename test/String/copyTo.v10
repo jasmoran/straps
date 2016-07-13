@@ -1,0 +1,11 @@
+#-Hello World
+#-
+
+include "src/stdlib.v10"
+
+func void main()(String str1, String str2) {
+	str1 = "Hello World\n"
+	str2 = String_new(12)
+	str1.copyTo(str2)
+	str2.print(STDOUT)
+}

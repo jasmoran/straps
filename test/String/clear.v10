@@ -1,0 +1,9 @@
+#-
+
+include "src/stdlib.v10"
+
+func void main()(String str) {
+	str = "Hello World\n"
+	str.clear()
+	str.print(STDOUT)
+}

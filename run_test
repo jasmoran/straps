@@ -1,0 +1,84 @@
+#!/usr/bin/env ruby
+require 'colored'
+
+def run(program, leave_asm, leave_bin)
+	bin = 'bin/' + program.gsub(/.*\//, '').gsub(/\.v10$/, '')
+	asm = bin + '.asm'
+	o = bin + '.o'
+
+	# Execution
+	res = `./bin/v10 #{program} #{asm} 2>&1`
+	if $?.to_i == 256
+		puts "Failed to compile #{program}:\n#{res}".red_on_black
+		return
+	end
+
+	res = `nasm -f elf64 -o #{o} #{asm} 2>&1`
+	if $?.to_i == 1
+		puts "Failed to assemble #{asm}:\n#{res}".red_on_black
+		return
+	end
+
+	res = `ld -o #{bin} #{o} 2>&1`
+	if $?.to_i == 1
+		puts "Failed to link #{o}:\n#{res}".red_on_black
+		return
+	end
+
+	output = `#{bin} 2>&1`
+
+	# Cleanup
+	File.delete(bin) unless leave_bin
+	File.delete(asm) unless leave_asm
+	File.delete(o)
+
+	return output
+end
+
+def test(program, leave_asm, leave_bin)
+	data = File.open(program).read
+	lines = data.split("\n")
+	header = []
+	lines.each do |l|
+		break if l[0..1] != '#-'
+		header << l[2..-1]
+	end
+	expected = header.join("\n")
+	actual = run(program, leave_asm, leave_bin)
+
+	if expected == actual
+		{
+			passed: true,
+			message: "#{program} - PASSED"
+		}
+	else
+		{
+			passed: false,
+			message: "#{program} - FAILED",
+			details: "EXPECTED:\n#{expected}\nACTUAL:\n#{actual}\n"
+		}
+	end
+end
+
+files = ARGV.select {|f| f[-4..-1] == '.v10'}
+quiet = ARGV[0].include? 'q'
+verbose = ARGV[0].include? 'v'
+leave_asm = ARGV[0].include? 'a'
+leave_bin = ARGV[0].include? 'b'
+
+passed = 0
+
+files.each do |f|
+	res = test(f, leave_asm, leave_bin)
+
+	if res[:passed]
+		passed += 1
+		puts res[:message].blue unless quiet
+	else
+		puts res[:message].red_on_black
+		puts res[:details] if verbose
+	end
+end
+
+failed = files.length - passed
+puts "PASSED: #{passed}, FAILED: #{failed}".blue_on_black.bold unless quiet && failed == 0
