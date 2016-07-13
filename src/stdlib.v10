@@ -1,0 +1,6 @@
+include "src/Boolean.v10"
+include "src/Memory.v10"
+include "src/Number.v10"
+include "src/String.v10"
+
+class void () {}

@@ -1,0 +1,209 @@
+func String String_new(Number size)(String str, void data) {
+	# Allocate memory
+	str = allocate(24)
+	data = allocate(size)
+
+	# Set length and size
+	str.length = 0
+	str.size = size
+	str.data = data
+
+	return str
+}
+
+func String String_fromTerminated(void source)(String addr, Number length) {
+	# Get string length
+	rdi = source
+	rax = 0
+	rcx = 1000000
+	nasm("repne scasb
+	")
+	length = 999999
+	length -= rcx
+
+	addr = String_new(length)
+
+	# Copy main data
+	rsi = source
+	rdi = addr
+	rdi += 24
+	rcx = length
+	nasm("rep movsb
+	")
+
+	# Set length of new string
+	addr.length = length
+
+	return addr
+}
+
+class Character (void data) {}
+class Stream (void data) {}
+enum STREAMS {
+	STDIN STDOUT STDERR
+}
+
+class String (Number length, Number size, void data) {
+	func Character get(Number ix)() {
+		rax = this.data
+		rax += ix
+		rbx = 0
+		nasm("mov bl, BYTE[rax]
+		")
+
+		return rbx
+	}
+
+	func void set(Number ix, Character character)() {
+		rax = this.data
+		rax += ix
+		rbx = character
+		nasm("mov BYTE[rax], bl
+		")
+	}
+
+	func String append(Character character)() {
+		# TODO: check size is large enough
+
+		this.set(this.length, character)
+		this.length++
+
+		return this
+	}
+
+	func String prepend(Character character)() {
+		# Copy main data
+		rsi = this.data
+		rdi = rsi
+		rdi++
+		rcx = this.length
+		nasm("rep movsb
+		")
+
+		this.set(0, character)
+
+		this.length++
+
+		return this
+
+		this.set(0, character)
+		this.length++
+
+		return this
+	}
+
+	func void print(Stream out)() {
+		sys(1, out, this.data, this.length)
+	}
+
+	func void println(Stream out)(String new_line) {
+		this.print(out)
+		new_line = "\n"
+		new_line.print(out)
+	}
+
+	func void copyTo(String dest)() {
+		# Copy main data
+		rsi = this.data
+		rdi = dest.data
+		rcx = this.length
+		nasm("rep movsb
+		")
+
+		# Set length of destination
+		dest.length = this.length
+	}
+
+	func String clone()(String str) {
+		str = String_new(this.length)
+		this.copyTo(str)
+		return str
+	}
+
+	func void clear()() {
+		this.length = 0
+	}
+
+	func String join(String source)() {
+		# Copy main data
+		rsi = source.data
+		rdi = this.data
+		rdi += this.length
+		rcx = source.length
+		nasm("rep movsb
+		")
+
+		# Set length of destination
+		this.length += source.length
+
+		return this
+	}
+
+	func Number hash()() {
+		# Load string
+		r12 = this.length
+		rcx = this.data
+
+		# Load hash constants
+		rax = 14695981039346656037
+		rbx = 1099511628211
+		loop {
+			if (r12 == 0) {
+				break
+			}
+			nasm("xor al, BYTE[rcx]
+			mul rbx")
+			rcx++
+			r12--
+		}
+
+		return rax
+	}
+
+	func Boolean equal(String other)() {
+		# Compare addresses
+		if (this == other) {
+			return true
+		}
+
+		# Compare lengths
+		rbx = this.length
+		rcx = other.length
+		if (rbx != rcx) {
+			return false
+		}
+
+		rsi = this.data
+		rdi = other.data
+
+		# Compare byte by byte
+		nasm("repe cmpsb
+		jne .str_not_eq
+		")
+		return true
+		nasm(".str_not_eq:
+		")
+		return false
+	}
+
+	func Number unescaped_length()(Number ix, Number escaped) {
+		escaped = 0
+		ix = 0
+		loop {
+			if (ix >= this.length) { break }
+
+			# Backslash
+			if (this.get(ix) == 92) {
+				# Skip next character
+				ix++
+				escaped++
+			}
+
+			ix++
+		}
+
+		rax = this.length
+		rax -= escaped
+		return rax
+	}
+}
