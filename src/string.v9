@@ -255,3 +255,32 @@ func string_clone_nullterm(source)(addr, length) {
 
 	return var addr
 }
+
+func string_unescaped_length(str)(ix, escaped) {
+	var escaped = 0
+	var ix = 0
+	loop {
+		if (var ix == string_length(var str)) { break }
+
+		# Get character
+		rax = var str
+		rax += 16
+		rax += var ix
+		rbx = 0
+		nasm("mov bl, BYTE[rax]
+		")
+
+		# Backslash
+		if (rbx == 92) {
+			# Skip next character
+			var ix++
+			var escaped++
+		}
+
+		var ix++
+	}
+
+	string_length(var str)
+	rax -= var escaped
+	return rax
+}
