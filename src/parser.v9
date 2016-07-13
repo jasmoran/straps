@@ -220,7 +220,7 @@ func nt_identifier(parent)(node) {
 	return var node
 }
 
-func nt_variable(parent)(node) {
+func nt_variable(parent)(node, original_node) {
 	var node = nt_identifier(var parent)
 
 	# Check for indexes and calls
@@ -244,6 +244,16 @@ func nt_variable(parent)(node) {
 
 	# Check for operators
 	var node = nt_operation(var node)
+
+	# If variable hasnt been used in some way
+	node_type(var node)
+	if (rax == nIDENTIFIER) {
+		node_parent(var node)
+		node_type(rax)
+		if (rax == nSTATEMENTS) {
+			var node[0] = nNONE
+		}
+	}
 
 	return var node
 }
@@ -366,8 +376,34 @@ func nt_string(parent)(node) {
 	string_copy(token, rax)
 	token_consume(STRING)
 
-	# Check for indexes
-	var node = nt_index(var node)
+	# Check for indexes and calls
+	loop {
+		token_load()
+
+		if (token_tye[0] == SQUARE_OPEN) {
+			var node = nt_index(var node)
+			next
+		}
+		if (token_tye[0] == PAREN_OPEN) {
+			var node = nt_call(var node)
+			next
+		}
+		if (token_tye[0] == DOT) {
+			var node = nt_field(var node)
+			next
+		}
+		break
+	}
+
+	# If string hasnt been used in some way
+	node_type(var node)
+	if (rax == nSTRING) {
+		node_parent(var node)
+		node_type(rax)
+		if (rax == nSTATEMENTS) {
+			var node[0] = nNONE
+		}
+	}
 
 	return var node
 }
@@ -380,6 +416,31 @@ func nt_number(parent)(node) {
 	node_data(var node)
 	string_copy(token, rax)
 	token_consume(NUMBER)
+
+	# Check for calls
+	loop {
+		token_load()
+
+		if (token_tye[0] == PAREN_OPEN) {
+			var node = nt_call(var node)
+			next
+		}
+		if (token_tye[0] == DOT) {
+			var node = nt_field(var node)
+			next
+		}
+		break
+	}
+
+	# If number hasnt been used in some way
+	node_type(var node)
+	if (rax == nNUMBER) {
+		node_parent(var node)
+		node_type(rax)
+		if (rax == nSTATEMENTS) {
+			var node[0] = nNONE
+		}
+	}
 
 	return var node
 }
@@ -481,8 +542,16 @@ func nt_statement(parent)() {
 		return nt_next(var parent)
 	}
 
+	if (token_tye[0] == NUMBER) {
+		return nt_number(var parent)
+	}
+
 	if (token_tye[0] == RETURN) {
 		return nt_return(var parent)
+	}
+
+	if (token_tye[0] == STRING) {
+		return nt_string(var parent)
 	}
 
 	# TODO: add SWITCH/CASE
