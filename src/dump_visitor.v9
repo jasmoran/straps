@@ -88,7 +88,15 @@ func dump(node, out_stream)(children, ix, data) {
 
 	if (rax == nFUNCTION) {
 		node_data(var node)
-		string_print(var out_stream, rax)
+		string_equal(rax, "main")
+		if (rax == 1) {
+			string_print(var out_stream, "_start")
+			var ix = 1
+		} else {
+			node_data(var node)
+			string_print(var out_stream, rax)
+			var ix = 0
+		}
 		string_print(var out_stream, ":")
 		string_print(var out_stream, new_line)
 		string_print(var out_stream, "push rbp")
@@ -101,7 +109,6 @@ func dump(node, out_stream)(children, ix, data) {
 		ll_get(var children, 0)
 		node_children(rax)
 		ret_size[0] = ll_length(rax)
-		ret_size[0]++
 		ret_size[0] << 3
 
 		# Get number of variables
@@ -125,17 +132,26 @@ func dump(node, out_stream)(children, ix, data) {
 
 		string_print(var out_stream, ".ret:")
 		string_print(var out_stream, new_line)
-		string_print(var out_stream, "pop r13")
-		string_print(var out_stream, new_line)
-		string_print(var out_stream, "pop r12")
-		string_print(var out_stream, new_line)
-		string_print(var out_stream, "mov rsp, rbp")
-		string_print(var out_stream, new_line)
-		string_print(var out_stream, "pop rbp")
-		string_print(var out_stream, new_line)
-		string_print(var out_stream, "ret ")
-		printer_number(var out_stream, ret_size[0])
-		string_print(var out_stream, new_line)
+		if (var ix == 1) {
+			string_print(var out_stream, "mov rax, 60")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "mov rdi, 0")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "syscall")
+			string_print(var out_stream, new_line)
+		} else {
+			string_print(var out_stream, "pop r13")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "pop r12")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "mov rsp, rbp")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "pop rbp")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "ret ")
+			printer_number(var out_stream, ret_size[0])
+			string_print(var out_stream, new_line)
+		}
 		return
 	}
 

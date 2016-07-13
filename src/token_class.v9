@@ -7,7 +7,7 @@ func tc_comparitor(required)() {
 	}
 	if (token_tye[0] == NOT_EQUAL) {
 		token_consume(NOT_EQUAL)
-		return EQUAL
+		return NOT_EQUAL
 	}
 	if (token_tye[0] == GREATER) {
 		token_consume(GREATER)

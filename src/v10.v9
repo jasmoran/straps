@@ -195,6 +195,12 @@ func main()(in_file_name, node) {
 	column_number[0] = 1
 
 	var node = nt_statements(0)
+
+	string_print(FILE, "section .text")
+	string_print(FILE, new_line)
+	string_print(FILE, "global _start")
+	string_print(FILE, new_line)
+
 	node_print(STDOUT, var node, 0)
 	typing(var node)
 	method(var node)
