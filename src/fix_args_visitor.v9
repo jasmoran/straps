@@ -61,6 +61,7 @@ func fix_args(node)(children, sub_child, sub_node, new_name) {
 		ll_get(var children, 0)
 		rax[8] = var new_name
 
+		fix_args_children(var children)
 		return
 	}
 

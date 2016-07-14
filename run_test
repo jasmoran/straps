@@ -14,13 +14,13 @@ def run(program, leave_asm, leave_bin)
 	end
 
 	res = `nasm -f elf64 -o #{o} #{asm} 2>&1`
-	if $?.to_i == 1
+	if $?.to_i == 256
 		puts "Failed to assemble #{asm}:\n#{res}".red_on_black
 		return
 	end
 
 	res = `ld -o #{bin} #{o} 2>&1`
-	if $?.to_i == 1
+	if $?.to_i == 256
 		puts "Failed to link #{o}:\n#{res}".red_on_black
 		return
 	end

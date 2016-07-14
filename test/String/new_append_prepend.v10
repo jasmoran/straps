@@ -3,7 +3,8 @@
 
 include "src/stdlib.v10"
 
-func void main()(String str) {
+func void main()(String str, Character nl) {
 	str = String_new(6)
-	str.append('l').append('l').prepend('o').append('e').append('H').append(10).print(STDOUT)
+	nl = 10
+	str.append('l').append('l').prepend('o').append('e').append('H').append(nl).print(STDOUT)
 }
