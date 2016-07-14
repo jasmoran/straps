@@ -46,6 +46,10 @@ func definition(node)(children, ix, new_child, sub_children, sub_child, data) {
 			node_data(var new_child)
 			string_from_number(var ix, rax, 0)
 
+			rax = var node
+			var new_child[40] = rax
+			resolve_type(var new_child)
+
 			ll_get(var children, var ix)
 			var sub_child = rax
 			node_data(var sub_child)

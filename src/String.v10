@@ -25,8 +25,7 @@ func String String_fromTerminated(void source)(String addr, Number length) {
 
 	# Copy main data
 	rsi = source
-	rdi = addr
-	rdi += 24
+	rdi = addr.data
 	rcx = length
 	nasm("rep movsb
 	")
@@ -39,7 +38,7 @@ func String String_fromTerminated(void source)(String addr, Number length) {
 
 class Character (void data) {}
 class Stream (void data) {}
-enum STREAMS {
+enum Stream {
 	STDIN STDOUT STDERR
 }
 
