@@ -1,5 +1,5 @@
 class Number (void data) {
-	func String toString(Boolean plus)(String str, Number digit_count) {
+	func String toString(Boolean plus)(String str, Number digit_count, Character chr) {
 		rax = this
 		rcx = 10
 		digit_count = 0
@@ -41,7 +41,8 @@ class Number (void data) {
 			nasm("pop rax")
 			rax += '0'
 
-			str.append(rax)
+			chr = rax
+			str.append(chr)
 
 			digit_count--
 

@@ -91,8 +91,16 @@ class String (Number length, Number size, void data) {
 		return this
 	}
 
+	func void print()() {
+		this.print(STDOUT)
+	}
+
 	func void print(Stream out)() {
 		sys(1, out, this.data, this.length)
+	}
+
+	func void println()() {
+		this.println(STDOUT)
 	}
 
 	func void println(Stream out)(String new_line) {
