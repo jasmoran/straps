@@ -1,0 +1,12 @@
+enum Stream {
+	STDIN STDOUT STDERR
+}
+
+class Stream (Number s) {
+	func Character get()() {
+		nasm("push 0")
+		sys(0, this, rsp, 1)
+		nasm("pop rax")
+		return rax
+	}
+}

@@ -1,0 +1,41 @@
+func ReversibleStream ReversibleStream_new(Stream stream, Number size)(ReversibleStream rs) {
+	# Allocate memory
+	rs = allocate(24)
+
+	rs.stream = stream
+	rs.buffer = String_new(size)
+	rs.point = 0
+	rs.point--
+
+	return rs
+}
+
+class ReversibleStream (Stream stream, String buffer, Number point) {
+	func Character get()() {
+		this.point++
+
+		# Get a character from the underlying Stream if necessary
+		if (this.point == this.buffer.length) {
+			this.buffer.append(this.stream.get())
+		}
+
+		return this.buffer.get(this.point)
+	}
+
+	func void rewind(Number amount)() {
+		# Rewind specified amount of characters
+		this.point -= amount
+	}
+
+	func void rewind()() {
+		# Reverse to beginning of buffer
+		this.point = 0
+		this.point--
+	}
+
+	func void flush()() {
+		this.point++
+		this.buffer.shift_left(this.point)
+		this.rewind()
+	}
+}

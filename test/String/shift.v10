@@ -1,0 +1,19 @@
+#-Hi
+#-HiHi
+#-Hioi
+#-ioi
+#-
+
+include "src/stdlib/stdlib.v10"
+
+func void main()(String str, Character nl) {
+	str = String_new(6)
+	"Hi".copyTo(str)
+	str.println()
+	str.shift_right(2)
+	str.println()
+	str.set(2, 'o')
+	str.println()
+	str.shift_left(1)
+	str.println()
+}

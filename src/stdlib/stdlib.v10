@@ -1,10 +1,12 @@
 include "src/stdlib/Boolean.v10"
 include "src/stdlib/Memory.v10"
 include "src/stdlib/Number.v10"
+include "src/stdlib/Stream.v10"
 include "src/stdlib/String.v10"
 include "src/stdlib/Array.v10"
 include "src/stdlib/LinkedList.v10"
 include "src/stdlib/Map.v10"
+include "src/stdlib/ReversibleStream.v10"
 
 class void () {}
 class Any (Any deref) {}

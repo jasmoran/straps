@@ -149,6 +149,7 @@ func main()(in_file_name, node) {
 	define_register("r12")
 	define_register("r13")
 	define_register("r14")
+	define_register("rsp")
 
 	# Initialize 8 bit register globals
 	define_register("al")
