@@ -1,8 +1,9 @@
-include "src/Boolean.v10"
-include "src/Memory.v10"
-include "src/Number.v10"
-include "src/String.v10"
-include "src/Array.v10"
+include "src/stdlib/Boolean.v10"
+include "src/stdlib/Memory.v10"
+include "src/stdlib/Number.v10"
+include "src/stdlib/String.v10"
+include "src/stdlib/Array.v10"
+include "src/stdlib/LinkedList.v10"
 
 class void () {}
 class Any (Any deref) {}
