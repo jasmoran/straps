@@ -1,0 +1,44 @@
+func Map Map_new(Number size)(Map addr) {
+	# Allocate memory
+	addr = allocate(16)
+
+	# Allocate arrays
+	addr.keys = Array_new(size)
+	addr.values = Array_new(size)
+
+	return addr
+}
+
+class Map (Array keys, Array values) {
+	func Any get(String key)(Number ix, Any a, Function f) {
+		a = key
+		nasm("mov rax, _String_equal_String_String")
+		f = rax
+		ix = this.keys.find(a, f)
+
+		if (ix < 0) {
+			return ix
+		}
+
+		return this.values.get(ix)
+	}
+
+	func void set(String key, Any value)(Number ix, Any a, Function f) {
+		a = key
+		nasm("mov rax, _String_equal_String_String")
+		f = rax
+		ix = this.keys.find(a, f)
+
+		if (ix < 0) {
+			this.keys.append(a)
+			this.values.append(value)
+		} else {
+			this.values.set(ix, value)
+		}
+	}
+
+	func void clear()() {
+		this.keys.clear()
+		this.values.clear()
+	}
+}

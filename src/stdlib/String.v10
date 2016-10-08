@@ -36,6 +36,10 @@ func String String_fromTerminated(void source)(String addr, Number length) {
 	return addr
 }
 
+func Boolean String_equal(String a, String b)() {
+	return a.equal(b)
+}
+
 class Character (void data) {}
 class Stream (void data) {}
 enum Stream {
