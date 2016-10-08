@@ -5,6 +5,15 @@ func fix_args(node)(children, sub_child, sub_node, new_name) {
 	if (rax == nFUNCTION) {
 		var new_name = string_new(64)
 		node_data(var node)
+
+		# Leave main function alone
+		string_equal(rax, "main")
+		if (rax == 1) {
+			fix_args_children(var children)
+			return
+		}
+
+		node_data(var node)
 		string_join(rax, var new_name)
 
 		# Get arguments
