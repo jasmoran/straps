@@ -4,7 +4,7 @@
 #-false
 #-
 
-include "src/stdlib.v10"
+include "src/stdlib/stdlib.v10"
 
 func void main()(String str1, String str2, String str3, String str4) {
 	str1 = "Hello"

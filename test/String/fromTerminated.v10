@@ -2,7 +2,7 @@
 #-test_str
 #-8
 
-include "src/stdlib.v10"
+include "src/stdlib/stdlib.v10"
 
 func void main()(String str1, String str2, Character null) {
 	str1 = "test_str "

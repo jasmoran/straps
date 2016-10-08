@@ -1,7 +1,7 @@
 #-Hello World
 #-
 
-include "src/stdlib.v10"
+include "src/stdlib/stdlib.v10"
 
 func void main()(String str) {
 	str = String_new(12)

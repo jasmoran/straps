@@ -1,7 +1,7 @@
 #-olleH
 #-
 
-include "src/stdlib.v10"
+include "src/stdlib/stdlib.v10"
 
 func void main()(String str, Character nl) {
 	str = String_new(6)
