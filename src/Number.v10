@@ -1,3 +1,11 @@
+func Boolean Number_equal(Any int1, Any int2)() {
+	if (int1 == int2) {
+		return true
+	} else {
+		return false
+	}
+}
+
 class Number (void data) {
 	func String toString(Boolean plus)(String str, Number digit_count, Character chr) {
 		rax = this

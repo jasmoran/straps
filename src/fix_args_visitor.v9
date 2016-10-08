@@ -35,6 +35,12 @@ func fix_args(node)(children, sub_child, sub_node, new_name) {
 		var new_name = string_new(64)
 		ll_get(var children, 0)
 		node_data(rax)
+
+		# Occurs if a function pointer is stored in a variable
+		if (rax == 0) {
+			fix_args_children(var children)
+			return
+		}
 		string_join(rax, var new_name)
 
 		# Get arguments
