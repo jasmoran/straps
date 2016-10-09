@@ -1,4 +1,6 @@
-func String String_new(Number size)(String str, void data) {
+class CharArr(void data) {}
+
+func String String_new(Number size)(String str, CharArr data) {
 	# Allocate memory
 	str = allocate(24)
 	data = allocate(size)
@@ -11,7 +13,7 @@ func String String_new(Number size)(String str, void data) {
 	return str
 }
 
-func String String_fromTerminated(void source)(String addr, Number length) {
+func String String_fromTerminated(CharArr source)(String addr, Number length) {
 	# Get string length
 	rdi = source
 	rax = 0
@@ -42,7 +44,7 @@ func Boolean String_equal(String a, String b)() {
 
 class Character (void data) {}
 
-class String (Number length, Number size, void data) {
+class String (Number length, Number size, CharArr data) {
 	func Character get(Number ix)() {
 		rax = this.data
 		rax += ix

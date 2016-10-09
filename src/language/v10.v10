@@ -1,19 +1,11 @@
 include "src/stdlib/stdlib.v10"
 
-func void main(Any comp, Any in_path, Any out_path)(Stream input, Stream output) {
+func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, Stream output) {
 	# Open input file
-	sys(2, in_path, 0, 511)
-	input = rax
-	if (input < 0) {
-		"Could not open input file".println(STDERR)
-		return 1
-	}
+	input = File_open(in_path)
+	if (input < 0) { return 1 }
 
 	# Open output file
-	sys(85, out_path, 511)
-	output = rax
-	if (output < 0) {
-		"Could not open output file".println(STDERR)
-		return 1
-	}
+	output = File_create(out_path)
+	if (output < 0) { return 1 }
 }

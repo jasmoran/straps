@@ -1,0 +1,29 @@
+func Stream File_open(CharArr path)(Stream file) {
+	sys(2, path, 0, 511)
+	file = rax
+	if (file < 0) {
+		"Could not open file: \"".print(STDERR)
+		sys(1, STDERR, path, 16)
+		"\"\n".print(STDERR)
+	}
+	return file
+}
+
+func Stream File_create(CharArr path)(Stream file) {
+	sys(85, path, 511)
+	file = rax
+	if (file < 0) {
+		"Could not create file: \"".print(STDERR)
+		sys(1, STDERR, path, 16)
+		"\"\n".print(STDERR)
+	}
+	return file
+}
+
+func Stream File_open(String path)() {
+	return File_open(path.data)
+}
+
+func Stream File_create(String path)() {
+	return File_create(path.data)
+}
