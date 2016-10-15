@@ -18,6 +18,7 @@ func fix_args(node)(children, sub_child, sub_node, new_name) {
 
 		# Get arguments
 		ll_get(var children, 0)
+		node_parent(rax)
 		node_children(rax)
 		var sub_node = ll_first(rax)
 		loop {

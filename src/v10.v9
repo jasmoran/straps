@@ -74,6 +74,7 @@ include "src/token_class.v9"
 include "src/parser.v9"
 include "src/string.v9"
 include "src/map.v9"
+include "src/constructor_visitor.v9"
 include "src/typing_visitor.v9"
 include "src/definition_visitor.v9"
 include "src/resolving_visitor.v9"
@@ -205,6 +206,7 @@ func main()(in_file_name, node) {
 	string_print(FILE, new_line)
 
 	#node_print(STDOUT, var node, 0)
+	constructor(var node)
 	typing(var node)
 	method(var node)
 	definition(var node)

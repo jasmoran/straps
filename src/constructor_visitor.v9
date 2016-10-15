@@ -1,0 +1,134 @@
+func constructor(node)(children, class_name, parent, new_node, fields, obj, paren_list, statements, allocate, call, num_args, field, item) {
+	var children = node_children(var node)
+	node_type(var node)
+
+	if (rax == nCLASS) {
+		# Create new method node
+		var parent = node_parent(var node)
+		var class_name = node_data(var node)
+		string_length(var class_name)
+		rax += 4
+		var new_node = node_new(nFUNCTION, rax, var parent)
+
+		# Add method to AST
+		node_children(var parent)
+		ll_append(rax, var new_node)
+
+		# Save function name
+		node_data(var new_node)
+		string_copy(var class_name, rax)
+		node_data(var new_node)
+		string_join("_new", rax)
+
+		# Save return type
+		var new_node[40] = var node
+
+		# Save arguments
+		var fields = ll_get(var children, 0)
+		node_children(var new_node)
+		ll_append(rax, var fields)
+
+		# Get argument count
+		node_children(var fields)
+		var num_args = ll_length(rax)
+
+		# Create 'obj' identifier
+		var obj = node_new(nIDENTIFIER, 3, var new_node)
+		node_data(var obj)
+		string_copy("obj", rax)
+		var obj[40] = var node
+
+		# Create and attach var PAREN_LIST
+		var paren_list = node_new(nPAREN_LIST, 0, var new_node)
+		node_children(var new_node)
+		ll_append(rax, var paren_list)
+		node_children(var paren_list)
+		ll_append(rax, var obj)
+
+		# Create and attach STATEMENTS body
+		var statements = node_new(nSTATEMENTS, 0, var new_node)
+		node_children(var new_node)
+		ll_append(rax, var statements)
+
+		# Create allocate call
+		var call = node_new(nCALL, 0, 0)
+		var allocate = node_new(nIDENTIFIER, 8, var call)
+		node_data(var allocate)
+		string_copy("allocate", rax)
+		node_children(var call)
+		ll_append(rax, var allocate)
+		var paren_list = node_new(nPAREN_LIST, 0, var call)
+		node_children(var call)
+		ll_append(rax, var paren_list)
+		var allocate = node_new(nNUMBER, 4, var paren_list)
+		node_data(var allocate)
+		rbx = var num_args
+		rbx << 3
+		string_from_number(rbx, rax, 0)
+		node_children(var paren_list)
+		ll_append(rax, var allocate)
+
+		# Assign allocation
+		create_assignment(var obj, var call, var statements)
+		var call[16] = rax
+
+		# Assign each field
+		node_children(var fields)
+		var fields = ll_first(rax)
+		loop {
+			if (var fields == 0) { break }
+			var item = lln_payload(var fields)
+			var item[16] = var statements
+
+			# Create field access
+			var field = node_new(nFIELD, 0, 0)
+			node_children(var field)
+			ll_append(rax, var obj)
+			node_children(var field)
+			ll_append(rax, var item)
+			create_assignment(var field, var item, var statements)
+			var field[16] = rax
+
+			var fields = lln_next(var fields)
+		}
+
+		# Create return statement
+		var field = node_new(nRETURN, 0, var call)
+		node_children(var field)
+		ll_append(rax, var obj)
+		node_children(var statements)
+		ll_append(rax, var field)
+
+		return
+	}
+
+	constructor_children(var children)
+
+	return
+}
+
+func create_assignment(statements, right, left)(operation) {
+	var operation = node_new(nOPERATION, 0, var statements)
+	var operation[8] = 38
+	node_children(var operation)
+	ll_append(rax, var left)
+	node_children(var operation)
+	ll_append(rax, var right)
+	node_children(var statements)
+	ll_append(rax, var operation)
+	return var operation
+}
+
+func constructor_children(children)(node) {
+	var node = ll_first(var children)
+	loop {
+		if (var node == 0) {
+			return
+		}
+		lln_payload(var node)
+		constructor(rax)
+		var node = lln_next(var node)
+	}
+
+	return
+}
