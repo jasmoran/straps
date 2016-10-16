@@ -1,12 +1,5 @@
-func Map Map_new(Number size)(Map addr) {
-	# Allocate memory
-	addr = allocate(16)
-
-	# Allocate arrays
-	addr.keys = Array_new(size)
-	addr.values = Array_new(size)
-
-	return addr
+func Map Map_new(Number size)() {
+	return Map_new(Array_new(size), Array_new(size))
 }
 
 class Map (Array keys, Array values) {

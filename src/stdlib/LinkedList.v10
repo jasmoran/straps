@@ -1,25 +1,11 @@
-func LinkedList LinkedList_new()(LinkedList addr) {
-	# Allocate memory
-	addr = allocate(24)
-
-	# Set first, last and length
-	addr.first = 0
-	addr.last = 0
-	addr.length = 0
-
-	return addr
+func LinkedList LinkedList_new()(LinkedListNode n) {
+	n = 0
+	return LinkedList_new(n, n, 0)
 }
 
-func LinkedListNode LinkedListNode_new(Any payload)(LinkedListNode addr) {
-	# Allocate memory
-	addr = allocate(24)
-
-	# Set fwrd, back and payload
-	addr.fwrd = 0
-	addr.back = 0
-	addr.payload = payload
-
-	return addr
+func LinkedListNode LinkedListNode_new(Any payload)(LinkedListNode n) {
+	n = 0
+	return LinkedListNode_new(n, n, payload)
 }
 
 class LinkedListNode (LinkedListNode fwrd, LinkedListNode back, Any payload) {}

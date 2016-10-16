@@ -1,16 +1,8 @@
 class CharArr(void data) {}
 
-func String String_new(Number size)(String str, CharArr data) {
-	# Allocate memory
-	str = allocate(24)
+func String String_new(Number size)(CharArr data) {
 	data = allocate(size)
-
-	# Set length and size
-	str.length = 0
-	str.size = size
-	str.data = data
-
-	return str
+	return String_new(0, size, data)
 }
 
 func String String_fromTerminated(CharArr source)(String addr, Number length) {

@@ -1,13 +1,7 @@
-func ReversibleStream ReversibleStream_new(Stream stream, Number size)(ReversibleStream rs) {
-	# Allocate memory
-	rs = allocate(24)
-
-	rs.stream = stream
-	rs.buffer = String_new(size)
-	rs.point = 0
-	rs.point--
-
-	return rs
+func ReversibleStream ReversibleStream_new(Stream stream, Number size)(Number point) {
+	point = 0
+	point--
+	return ReversibleStream_new(stream, String_new(size), point)
 }
 
 class ReversibleStream (Stream stream, String buffer, Number point) {

@@ -1,15 +1,7 @@
-func Array Array_new(Number size)(Array arr) {
-	# Allocate memory
-	arr = allocate(24)
-
-	# Set length and size
-	arr.length = 0
-	arr.size = size
-
-	size << 3
-	arr.data = allocate(size)
-
-	return arr
+func Array Array_new(Number size)(Number byte_size) {
+	byte_size = size
+	byte_size << 3
+	return Array_new(0, size, allocate(byte_size))
 }
 
 class Array (Number length, Number size, void data) {
