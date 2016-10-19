@@ -1,0 +1,291 @@
+enum Token {
+	NONE BREAK CASE ELSE FOR FUNC IF LOOP NASM NEXT
+	RETURN SWITCH SYS WHILE NUMBER IDENTIFIER STRING PAREN_OPEN PAREN_CLOSE COMMA
+	COMMENT CURLY_OPEN CURLY_CLOSE EQUAL NOT_EQUAL GREATER GREATER_EQ LESS LESS_EQ CHARACTER
+	INCLUDE NOT INCREMENT DECREMENT ADD SUB SHIFTL SHIFTR ASSIGN PLUS
+	MINUS SQUARE_OPEN SQUARE_CLOSE ENUM CLASS DOT GLOBAL ASTERISK FWD_SLASH AND
+	OR
+}
+class Token(void type){}
+
+func Tokenizer Tokenizer_new(Stream s)(Token t) {
+	t = 0
+	return Tokenizer_new(ReversibleStream_new(s, 1024), t, String_new(1024))
+}
+
+class Tokenizer(ReversibleStream rs, Token type, String image) {
+	func Token peek()() {
+		if (this.type == 0) {
+			this.type = this.load()
+		}
+		return this.type
+	}
+
+	func String consume()(String copy) {
+		copy = 0
+		if (this.image.length > 0) {
+			copy = this.image.clone()
+		}
+
+		this.type = 0
+		this.image.clear()
+
+		return copy
+	}
+
+	func String consume(Token type)(Number n) {
+		n = this.peek()
+		if (n != type) {
+			"Error: unexpected token (Got: ".print(STDERR)
+			n.toString(false).print(STDERR)
+			", Wanted: ".print(STDERR)
+			n = type
+			n.toString(false).print(STDERR)
+			")\n".print(STDERR)
+			sys(60, 1)
+		}
+		return this.consume()
+	}
+
+	func Boolean match(String token)(Number ix, Character c) {
+		ix = 0
+		loop {
+			# Check for end of string
+			if (ix == token.length) { break }
+
+			# Rewind if characters dont match
+			c = this.rs.get()
+			if (c != token.get(ix)) {
+				this.rs.rewind()
+				return false
+			}
+
+			ix++
+		}
+
+		# Flush and return true if string matched
+		this.rs.flush()
+		return true
+	}
+
+	func Boolean match_number()(Character c) {
+		c = this.rs.get()
+
+		# Must have at least one digit
+		if (c < '0') {
+			this.rs.rewind()
+			return false
+		}
+		if (c > '9') {
+			this.rs.rewind()
+			return false
+		}
+
+		loop {
+			this.image.append(c)
+			c = this.rs.get()
+			if (c < '0') { break }
+			if (c > '9') { break }
+		}
+
+		this.rs.rewind(1)
+		this.rs.flush()
+		return true
+	}
+
+	func Boolean match_identifier()(Character c) {
+		loop {
+			c = this.rs.get()
+
+			if (c >= 'a') {
+				if (c <= 'z') {
+					this.image.append(c)
+					next
+				}
+			}
+
+			if (c >= 'A') {
+				if (c <= 'Z') {
+					this.image.append(c)
+					next
+				}
+			}
+
+			if (c >= '0') {
+				if (c <= '9') {
+					this.image.append(c)
+					next
+				}
+			}
+
+			if (c == '_') {
+				this.image.append(c)
+				next
+			}
+
+			break
+		}
+
+		this.rs.rewind(1)
+		this.rs.flush()
+
+		if (this.image.length > 0) {
+			return true
+		} else {
+			return false
+		}
+	}
+
+	func Boolean match_string()(Character c) {
+		if (this.rs.get() != '"') {
+			this.rs.rewind()
+			return false
+		}
+
+		loop {
+			c = this.rs.get()
+
+			if (c == 0) { break }
+			if (c == '"') { break }
+
+			# 92 = backslash
+			if (rax == 92) {
+				this.image.append(c)
+				c = this.rs.get()
+			}
+
+			this.image.append(c)
+		}
+
+		this.rs.flush()
+		return true
+	}
+
+	func Boolean match_comment()(Character c) {
+		c = this.rs.get()
+		if (c == '/') {
+			if (this.rs.get() != '/') {
+				this.rs.rewind()
+				return false
+			}
+		} else {
+			if (c != '#') {
+				this.rs.rewind()
+				return false
+			}
+		}
+
+		loop {
+			c = this.rs.get()
+
+			if (rax == 0) { break }
+			if (rax == 10) { break }
+
+			this.image.append(c)
+		}
+
+		this.rs.flush()
+		return true
+	}
+
+	func Boolean match_character()(Character c) {
+		if (this.rs.get() != 39) {
+			this.rs.rewind()
+			return false
+		}
+
+		c = this.rs.get()
+		this.image.append(c)
+
+		# Handle backslashes
+		if (c == 92) {
+			this.image.append(this.rs.get())
+		}
+
+		if (this.rs.get() != 39) {
+			this.rs.rewind()
+			return false
+		}
+
+		this.rs.flush()
+		return true
+	}
+
+	func Token load()(Character c) {
+		# Skip whitespace
+		loop {
+			c = this.rs.get()
+			if (c == 0) { return NONE }
+			if (c > ' ') { break }
+		}
+		this.rs.rewind(1)
+		this.rs.flush()
+
+		if (this.match("break") == true) { return BREAK }
+		if (this.match("case") == true) { return CASE }
+		if (this.match("class") == true) { return CLASS }
+		if (this.match("else") == true) { return ELSE }
+		if (this.match("enum") == true) { return ENUM }
+		if (this.match("for") == true) { return FOR }
+		if (this.match("func") == true) { return FUNC }
+		if (this.match("global") == true) { return GLOBAL }
+		if (this.match("if") == true) { return IF }
+		if (this.match("include") == true) { return INCLUDE }
+		if (this.match("loop") == true) { return LOOP }
+		if (this.match("nasm") == true) { return NASM }
+		if (this.match("next") == true) { return NEXT }
+		if (this.match("return") == true) { return RETURN }
+		if (this.match("switch") == true) { return SWITCH }
+		if (this.match("sys") == true) { return SYS }
+		if (this.match("while") == true) { return WHILE }
+
+		if (this.match("(") == true) { return PAREN_OPEN }
+		if (this.match(")") == true) { return PAREN_CLOSE }
+		if (this.match("{") == true) { return CURLY_OPEN }
+		if (this.match("}") == true) { return CURLY_CLOSE }
+		if (this.match("[") == true) { return SQUARE_OPEN }
+		if (this.match("]") == true) { return SQUARE_CLOSE }
+
+		if (this.match(",") == true) { return COMMA }
+		if (this.match(".") == true) { return DOT }
+
+		if (this.match("!=") == true) { return NOT_EQUAL }
+		if (this.match("!") == true) { return NOT }
+
+		if (this.match("<=") == true) { return LESS_EQ }
+		if (this.match("<<") == true) { return SHIFTL }
+		if (this.match("<") == true) { return LESS }
+
+		if (this.match(">=") == true) { return GREATER_EQ }
+		if (this.match(">>") == true) { return SHIFTR }
+		if (this.match(">") == true) { return GREATER }
+
+		if (this.match("==") == true) { return EQUAL }
+		if (this.match("=") == true) { return ASSIGN }
+
+		if (this.match("+=") == true) { return ADD }
+		if (this.match("++") == true) { return INCREMENT }
+		if (this.match("+") == true) { return PLUS }
+
+		if (this.match("-=") == true) { return SUB }
+		if (this.match("--") == true) { return DECREMENT }
+		if (this.match("-") == true) { return MINUS }
+
+		if (this.match("*") == true) { return ASTERISK }
+		if (this.match("/") == true) { return FWD_SLASH }
+		if (this.match("&&") == true) { return AND }
+		if (this.match("||") == true) { return OR }
+
+		if (this.match_number() == true) { return NUMBER }
+		if (this.match_string() == true) { return STRING }
+		if (this.match_character() == true) { return CHARACTER }
+		if (this.match_identifier() == true) { return IDENTIFIER }
+		if (this.match_comment() == true) { return this.load() }
+
+		"Error: invalid character: '".print(STDERR)
+		this.image.append(this.rs.get()).print(STDERR)
+		"'\n".print(STDERR)
+
+		return NONE
+	}
+}

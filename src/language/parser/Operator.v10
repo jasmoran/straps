@@ -1,0 +1,81 @@
+func Number Operator_prec(Token op)() {
+	if (op == DOT) { return 6 }
+
+	if (op == ASTERISK) { return 5 }
+	if (op == FWD_SLASH) { return 5 }
+
+	if (op == PLUS) { return 4 }
+	if (op == MINUS) { return 4 }
+
+	if (op == EQUAL) { return 3 }
+	if (op == NOT_EQUAL) { return 3 }
+	if (op == GREATER) { return 3 }
+	if (op == GREATER_EQ) { return 3 }
+	if (op == LESS) { return 3 }
+	if (op == LESS_EQ) { return 3 }
+
+	if (op == AND) { return 2 }
+	if (op == OR) { return 2 }
+
+	if (op == ASSIGN) { return 1 }
+	if (op == ADD) { return 1 }
+	if (op == SUB) { return 1 }
+	if (op == SHIFTL) { return 1 }
+	if (op == SHIFTR) { return 1 }
+
+	return 0
+}
+
+func Boolean Operator_left_assoc(Token op)() {
+	if (op == ASSIGN) { return false }
+	if (op == ADD) { return false }
+	if (op == SUB) { return false }
+	if (op == SHIFTL) { return false }
+	if (op == SHIFTR) { return false }
+
+	return true
+}
+
+func Boolean Operator_unary_left(Token op)() {
+	if (op == ASTERISK) { return true }
+	if (op == PLUS) { return true }
+	if (op == MINUS) { return true }
+	if (op == NOT) { return true }
+	if (op == INCREMENT) { return true }
+	if (op == DECREMENT) { return true }
+
+	return false
+}
+
+func Boolean Operator_unary_right(Token op)() {
+	if (op == INCREMENT) { return true }
+	if (op == DECREMENT) { return true }
+
+	return false
+}
+
+func String Operator_toString(Token op)() {
+	if (op == DOT) { return "." }
+	if (op == ASTERISK) { return "*" }
+	if (op == FWD_SLASH) { return "/" }
+	if (op == PLUS) { return "+" }
+	if (op == MINUS) { return "-" }
+	if (op == EQUAL) { return "==" }
+	if (op == NOT_EQUAL) { return "!=" }
+	if (op == GREATER) { return ">" }
+	if (op == GREATER_EQ) { return ">=" }
+	if (op == LESS) { return "<" }
+	if (op == LESS_EQ) { return "<=" }
+	if (op == AND) { return "&&" }
+	if (op == OR) { return "||" }
+	if (op == ASSIGN) { return "=" }
+	if (op == ADD) { return "+=" }
+	if (op == SUB) { return "-=" }
+	if (op == SHIFTL) { return "<<" }
+	if (op == SHIFTR) { return ">>" }
+	if (op == NOT) { return "!" }
+	if (op == INCREMENT) { return "++" }
+	if (op == DECREMENT) { return "--" }
+
+	return "Unknown Operand"
+}

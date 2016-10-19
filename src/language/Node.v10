@@ -1,0 +1,261 @@
+enum NodeType {
+	nNONE nNASM nSYS nBLOCK nPAREN_LIST nFUNCTION nRETURN nCOMPARISON nIF
+	nNEXT nLOOP nBREAK nIDENTIFIER nENUM nCOMMENT nCHARACTER nSTRING nNUMBER
+	nINDEX nCALL nOPERATION nMEM_ACCESS nREGISTER nPUSH nPOP nCLASS nFIELD nGLOBAL
+	nSTRINGS nBINARYOP nUNARYOP nLIST
+}
+class NodeType(){}
+
+func void pi(Number indent)(Number i) {
+	i = indent loop { if (i <= 0) { break } "  ".print() i-- }
+}
+
+func Node Node_new(NodeType type)(void m_print) {
+	nasm("mov rax, _Node_print_Node_Number")
+	m_print = rax
+	return Node_new(type, m_print)
+}
+
+class Node(NodeType type, void m_print){
+	func void print(Number indent)() {
+		"Node".print()
+	}
+}
+
+
+
+func BinaryOperationNode BinaryOperationNode_new(Token op, Node lhs, Node rhs)(void m_print) {
+	nasm("mov rax, _BinaryOperationNode_print_BinaryOperationNode_Number")
+	m_print = rax
+	return BinaryOperationNode_new(nBINARYOP, m_print, op, lhs, rhs)
+}
+
+class BinaryOperationNode(NodeType type, void m_print, Token op, Node lhs, Node rhs) {
+	func void print(Number indent)(Node n) {
+		pi(indent)
+		"BinaryOperationNode(".print()
+		Operator_toString(this.op).print()
+		")\n".print()
+
+		indent++
+		n = this.lhs
+		n.m_print(indent)
+		n = this.rhs
+		n.m_print(indent)
+		indent--
+	}
+}
+
+
+
+func UnaryOperationNode UnaryOperationNode_new(Token op, Node expr, Boolean left)(void m_print) {
+	nasm("mov rax, _UnaryOperationNode_print_UnaryOperationNode_Number")
+	m_print = rax
+	return UnaryOperationNode_new(nUNARYOP, m_print, op, expr, left)
+}
+
+class UnaryOperationNode(NodeType type, void m_print, Token op, Node expr, Boolean left) {
+	func void print(Number indent)(Node n) {
+		pi(indent)
+		"UnaryOperationNode(".print()
+		Operator_toString(this.op).print()
+		", ".print()
+		if (this.left == true) {
+			"left".print()
+		} else {
+			"right".print()
+		}
+		")\n".print()
+
+		indent++
+		n = this.expr
+		n.m_print(indent)
+		indent--
+	}
+}
+
+
+
+func StringNode StringNode_new(NodeType type, String ret_type, String string)(void m_print) {
+	nasm("mov rax, _StringNode_print_StringNode_Number")
+	m_print = rax
+	return StringNode_new(type, m_print, ret_type, string)
+}
+
+class StringNode(NodeType type, void m_print, String ret_type, String string) {
+	func void print(Number indent)() {
+		pi(indent)
+		"StringNode(\"".print()
+		this.string.print()
+		"\")".println()
+	}
+}
+
+
+
+func Node ClassNode_new(String name, ListNode fields, ListNode block)(void m_print) {
+	nasm("mov rax, _ClassNode_print_ClassNode_Number")
+	m_print = rax
+	return ClassNode_new(nCLASS, m_print, name, fields, block)
+}
+
+class ClassNode(NodeType type, void m_print, String name, ListNode fields, ListNode block) {
+	func void print(Number indent)(Node n) {
+		pi(indent)
+		"ClassNode(".print()
+		this.name.print()
+		")\n".print()
+
+		indent++
+		n = this.fields
+		n.m_print(indent)
+		n = this.block
+		n.m_print(indent)
+		indent--
+	}
+}
+
+
+
+func Node FunctionNode_new(String ret_type, String name, ListNode args, ListNode vars, ListNode block)(void m_print) {
+	nasm("mov rax, _FunctionNode_print_FunctionNode_Number")
+	m_print = rax
+	return FunctionNode_new(nFUNCTION, m_print, ret_type, name, args, vars, block)
+}
+
+class FunctionNode(NodeType type, void m_print, String ret_type, String name, ListNode args, ListNode vars, ListNode block) {
+	func void print(Number indent)(Node n) {
+		pi(indent)
+		"FunctionNode(".print()
+		this.ret_type.print()
+		" - ".print()
+		this.name.print()
+		")\n".print()
+
+		indent++
+		n = this.args
+		n.m_print(indent)
+		n = this.vars
+		n.m_print(indent)
+		n = this.block
+		n.m_print(indent)
+		indent--
+	}
+}
+
+
+
+func Node ListNode_new(NodeType type, LinkedList children)(void m_print) {
+	nasm("mov rax, _ListNode_print_ListNode_Number")
+	m_print = rax
+	return ListNode_new(type, m_print, children)
+}
+func Node ListNode_new(NodeType type)() {
+	return ListNode_new(type, LinkedList_new())
+}
+
+class ListNode(NodeType type, void m_print, LinkedList children) {
+	func void print(Number indent)(Node n, LinkedListNode lln) {
+		pi(indent)
+		"ListNode\n".print()
+
+		indent++
+		lln = this.children.first
+		loop {
+			if (lln == 0) { break }
+			n = lln.payload
+			n.m_print(indent)
+			lln = lln.fwrd
+		}
+		indent--
+	}
+}
+
+
+
+func Node IfNode_new(Node condition, ListNode block_if)(ListNode l, void m_print) {
+	l = 0
+	nasm("mov rax, _IfNode_print_IfNode_Number")
+	m_print = rax
+	return IfNode_new(nIF, m_print, condition, block_if, l)
+}
+
+class IfNode(NodeType type, void m_print, Node condition, ListNode block_if, ListNode block_else) {
+	func void print(Number indent)(Node n) {
+		pi(indent)
+		"IfNode\n".print()
+
+		indent++
+		n = this.condition
+		n.m_print(indent)
+		n = this.block_if
+		n.m_print(indent)
+		n = this.block_else
+		if (n != 0) {
+			n.m_print(indent)
+		}
+		indent--
+	}
+}
+
+
+
+func Node LoopNode_new(ListNode block)(void m_print) {
+	nasm("mov rax, _LoopNode_print_LoopNode_Number")
+	m_print = rax
+	return LoopNode_new(nLOOP, m_print, block)
+}
+
+class LoopNode(NodeType type, void m_print, ListNode block) {
+	func void print(Number indent)(Node n) {
+		pi(indent)
+		"LoopNode\n".print()
+
+		indent++
+		n = this.block
+		n.m_print(indent)
+		indent--
+	}
+}
+
+
+
+func Node ReturnNode_new(Node expr)(void m_print) {
+	nasm("mov rax, _ReturnNode_print_ReturnNode_Number")
+	m_print = rax
+	return ReturnNode_new(nRETURN, m_print, expr)
+}
+
+class ReturnNode(NodeType type, void m_print, Node expr) {
+	func void print(Number indent)(Node n) {
+		pi(indent)
+		"ReturnNode\n".print()
+
+		indent++
+		n = this.expr
+		n.m_print(indent)
+		indent--
+	}
+}
+
+
+
+func Node EnumNode_new(String name, ListNode values)(void m_print) {
+	nasm("mov rax, _EnumNode_print_EnumNode_Number")
+	m_print = rax
+	return EnumNode_new(nENUM, m_print, name, values)
+}
+
+class EnumNode(NodeType type, void m_print, String name, ListNode values) {
+	func void print(Number indent)(Node n) {
+		pi(indent)
+		"EnumNode(".print()
+		this.name.print()
+		")\n".print()
+
+		indent++
+		n = this.values
+		n.m_print(indent)
+		indent--
+	}
+}
