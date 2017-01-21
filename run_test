@@ -65,6 +65,7 @@ quiet = ARGV[0].include? 'q'
 verbose = ARGV[0].include? 'v'
 leave_asm = ARGV[0].include? 'a'
 leave_bin = ARGV[0].include? 'b'
+force_finish = ARGV[0].include? 'f'
 
 passed = 0
 
@@ -77,6 +78,7 @@ files.each do |f|
 	else
 		puts res[:message].red_on_black
 		puts res[:details] if verbose
+		break unless force_finish
 	end
 end
 
