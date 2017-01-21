@@ -104,21 +104,20 @@ func read_number()() {
 	return
 }
 
-func main()(in_file_name, node) {
+nasm("global _start
+_start:
+")
+func main(compiler_path, in_file_name, out_file_name)(node) {
 	nasm("mov QWORD[rbp + 8], 0
 	")
 
 	# Open in file
-	rsi += 8
-	var in_file_name = rsi
-	rsi = rsi[0]
+	rsi =	var in_file_name
 	sys(2,rsi,0,511)
 	in_file_fid[0] = rax
 
 	# Create out file
-	rsi = var in_file_name
-	rsi += 8
-	rsi = rsi[0]
+	rsi = var out_file_name
 	sys(85,rsi,511)
 	out_file_fid[0] = rax
 
@@ -188,7 +187,7 @@ func main()(in_file_name, node) {
 	array_append(operations[0], "mov ")
 
 	# Store file name
-	file_name[0] = string_clone_nullterm(var in_file_name[0])
+	file_name[0] = string_clone_nullterm(var in_file_name)
 
 	# Initialize tokenizer
 	nasm("mov BYTE[char_next], 1

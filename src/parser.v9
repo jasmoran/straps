@@ -57,10 +57,19 @@ func nt_statements(parent)(node, expr) {
 	return var node
 }
 
-func nt_block(parent)(node) {
-	token_consume(CURLY_OPEN)
-	var node = nt_statements(var parent)
-	token_consume(CURLY_CLOSE)
+func nt_block(parent)(node, expr) {
+	token_load()
+	if (token_tye[0] == CURLY_OPEN) {
+		token_consume(CURLY_OPEN)
+		var node = nt_statements(var parent)
+		token_consume(CURLY_CLOSE)
+	} else {
+		var node = node_new(nSTATEMENTS, 0, var parent)
+		var expr = nt_statement(var node)
+		node_children(var node)
+		ll_append(rax, var expr)
+	}
+
 	return var node
 }
 
