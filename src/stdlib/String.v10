@@ -1,5 +1,9 @@
 class CharArr(void data) {}
 
+enum String {
+	NullString
+}
+
 func String String_new(Number size)(CharArr data) {
 	data = allocate(size)
 	return String_new(0, size, data)
@@ -213,5 +217,19 @@ class String (Number length, Number size, CharArr data) {
 		rax = this.length
 		rax -= escaped
 		return rax
+	}
+
+	func CharArr toTerminated()(Number len, CharArr c) {
+		len = this.length
+		len++
+		c = allocate(len)
+		rsi = this.data
+		rdi = c
+		rcx = this.length
+		nasm("rep movsb")
+		rax = c
+		rax += this.length
+		nasm("mov BYTE[rax], 0")
+		return c
 	}
 }
