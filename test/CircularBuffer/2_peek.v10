@@ -1,0 +1,34 @@
+#-A
+#-B
+#-C
+#-D
+#-
+
+include "src/stdlib/stdlib.v10"
+
+func void main()(CircularBuffer cb, Any a, String s, Number n) {
+	cb = CircularBuffer_new(4)
+	a = "A"
+	cb.push_front(a)
+	a = "B"
+	cb.push_front(a)
+	a = "C"
+	cb.push_front(a)
+	a = "D"
+	cb.push_front(a)
+	# cb = [D C B A]
+
+	s = cb.peek(3)
+	s.println()
+
+	s = cb.peek(10)
+	s.println()
+
+	n = 0
+	n -= 7
+	s = cb.peek(n)
+	s.println()
+
+	s = cb.peek()
+	s.println()
+}

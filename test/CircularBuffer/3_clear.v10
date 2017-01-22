@@ -1,0 +1,26 @@
+#-B
+#-Error: Attempted peek into an empty CircularBuffer
+#-
+
+include "src/stdlib/stdlib.v10"
+
+func void main()(CircularBuffer cb, Any a, String s) {
+	cb = CircularBuffer_new(2)
+	# cb = []
+
+	a = "A"
+	cb.push_front(a)
+	# cb = [A]
+
+	a = "B"
+	cb.push_front(a)
+	# cb = [B A]
+
+	s = cb.peek()
+	s.println()
+
+	cb.clear()
+	# cb = []
+
+	cb.peek()
+}

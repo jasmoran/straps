@@ -1,0 +1,36 @@
+#-D
+#-A
+#-B
+#-C
+#-D
+#-Error: Attempted to remove from an empty CircularBuffer
+#-
+
+include "src/stdlib/stdlib.v10"
+
+func void main()(CircularBuffer cb, Any a, String s) {
+	cb = CircularBuffer_new(4)
+	a = "A"
+	cb.push_front(a)
+	a = "B"
+	cb.push_front(a)
+	a = "C"
+	cb.push_front(a)
+	a = "D"
+	cb.push_front(a)
+	# cb = [D C B A]
+
+	s = cb.peek()
+	s.println()
+
+	s = cb.pop_back()
+	s.println()
+	s = cb.pop_back()
+	s.println()
+	s = cb.pop_back()
+	s.println()
+	s = cb.pop_back()
+	s.println()
+
+	cb.pop_back()
+}
