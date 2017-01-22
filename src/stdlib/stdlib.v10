@@ -12,3 +12,23 @@ include "src/stdlib/ReversibleStream.v10"
 class void () {}
 class Any (Any deref) {}
 class Function () {}
+
+func void exit(Number exit_code)() {
+	sys(60, exit_code)
+}
+func void exit()() exit(0)
+
+func void error(String s1, String s2, String s3, String s4, String s5)() {
+	"Error: ".print(STDERR)
+	if(s1 > 0) s1.print(STDERR)
+	if(s2 > 0) s2.print(STDERR)
+	if(s3 > 0) s3.print(STDERR)
+	if(s4 > 0) s4.print(STDERR)
+	if(s5 > 0) s5.println(STDERR)
+	exit(1)
+}
+func void error(String s1, String s2, String s3, String s4)() error(NullString, s1, s2, s3, s4)
+func void error(String s1, String s2, String s3)() error(NullString, NullString, s1, s2, s3)
+func void error(String s1, String s2)() error(NullString, NullString, NullString, s1, s2)
+func void error(String s1)() error(NullString, NullString, NullString, NullString, s1)
+func void error()() exit(1)
