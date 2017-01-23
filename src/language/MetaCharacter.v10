@@ -1,0 +1,39 @@
+func MetaCharacter MetaCharacter_new(Character chr, Number col, Number line)() {
+	rax = line
+
+	# Set column
+	rax << 8
+	rbx = col
+	nasm("and rbx, 0xFF")
+	nasm("or rax, rbx")
+
+	# Set Character
+	rax << 8
+	rbx = chr
+	nasm("and rbx, 0xFF")
+	nasm("or rax, rbx")
+
+	return rax
+}
+
+class MetaCharacter (void data) {
+	func Character get_character()() {
+		rax = this
+		nasm("and rax, 0xFF")
+		return rax
+	}
+
+	func Number get_column()() {
+		rax = this
+		rax >> 8
+		nasm("and rax, 0xFF")
+		return rax
+	}
+
+	func Number get_line()() {
+		rax = this
+		rax >> 16
+		nasm("and rax, 0xFFFF")
+		return rax
+	}
+}

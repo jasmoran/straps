@@ -1,0 +1,11 @@
+#-67176778
+
+include "src/language/MetaCharacter.v10"
+include "src/stdlib/stdlib.v10"
+
+func void main()(Number mc, Character c) {
+	c = 74
+	mc = MetaCharacter_new(c, 9, 1025)
+
+	mc.toString().print()
+}
