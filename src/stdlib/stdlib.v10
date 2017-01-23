@@ -7,7 +7,6 @@ include "src/stdlib/File.v10"
 include "src/stdlib/Array.v10"
 include "src/stdlib/LinkedList.v10"
 include "src/stdlib/Map.v10"
-include "src/stdlib/ReversibleStream.v10"
 include "src/stdlib/CircularBuffer.v10"
 
 class void () {}
