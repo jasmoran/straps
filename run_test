@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 require 'colored'
+require 'open3'
 
-def run(program, leave_asm, leave_bin)
+def run(program, leave_asm, leave_bin, input = [])
 	bin = 'bin/' + program.gsub(/.*\//, '').gsub(/\.v10$/, '')
 	asm = bin + '.asm'
 	o = bin + '.o'
@@ -25,26 +26,36 @@ def run(program, leave_asm, leave_bin)
 		return
 	end
 
-	output = `#{bin} 2>&1`
+	Open3.popen2e(bin) do |stdin, out|
+		input.each { |line| stdin.puts line }
+		output = out.read
 
-	# Cleanup
-	File.delete(bin) unless leave_bin
-	File.delete(asm) unless leave_asm
-	File.delete(o)
+		# Cleanup
+		File.delete(bin) unless leave_bin
+		File.delete(asm) unless leave_asm
+		File.delete(o)
 
-	return output
+		return output
+	end
 end
 
 def test(program, leave_asm, leave_bin)
 	data = File.open(program).read
 	lines = data.split("\n")
-	header = []
+	outputs = []
+	inputs = []
 	lines.each do |l|
-		break if l[0..1] != '#-'
-		header << l[2..-1]
+		case l[0..1]
+		when '#-'
+			outputs << l[2..-1]
+		when '#+'
+			inputs << l[2..-1]
+		else
+			break
+		end
 	end
-	expected = header.join("\n")
-	actual = run(program, leave_asm, leave_bin)
+	expected = outputs.join("\n")
+	actual = run(program, leave_asm, leave_bin, inputs)
 
 	if expected == actual
 		{
