@@ -67,6 +67,11 @@ func dump(node, out_stream)(children, ix, data) {
 		string_print(var out_stream, ", ")
 		ll_length(var children)
 		printer_number(var out_stream, rax)
+		string_print(var out_stream, ", 24+")
+		node_data(var node)
+		string_print(var out_stream, rax)
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "dq ")
 
 		var ix = 0
 		loop {
@@ -74,7 +79,7 @@ func dump(node, out_stream)(children, ix, data) {
 			ll_get(var children, var ix)
 			var data = node_data(rax)
 
-			string_print(var out_stream, ", ")
+			if (var ix > 0) { string_print(var out_stream, ", ") }
 			string_print(var out_stream, var data)
 
 			var ix++
