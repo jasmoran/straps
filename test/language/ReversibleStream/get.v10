@@ -1,0 +1,19 @@
+#+Hello World
+#-H
+#-e
+#-l
+#-l
+#-Error: Attempted to add to a full CircularBuffer
+#-
+
+include "src/stdlib/stdlib.v10"
+include "src/language/ReversibleStream.v10"
+
+func void main()(ReversibleStream rs) {
+	rs = ReversibleStream_new(STDIN, 4)
+	rs.get().get_character().toString().println()
+	rs.get().get_character().toString().println()
+	rs.get().get_character().toString().println()
+	rs.get().get_character().toString().println()
+	rs.get().get_character().toString().println()
+}
