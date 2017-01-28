@@ -84,6 +84,7 @@ include "src/string_visitor.v9"
 include "src/method_visitor.v9"
 include "src/literal_visitor.v9"
 include "src/fix_args_visitor.v9"
+include "src/backtrace_visitor.v9"
 
 func read_number()() {
 	rax = 0
@@ -213,6 +214,7 @@ func main(compiler_path, in_file_name, out_file_name)(node) {
 	resolving(var node)
 	fix_args(var node)
 	index_call(var node)
+	backtrace(var node)
 	lit_string(var node)
 	dump(FILE, var node)
 

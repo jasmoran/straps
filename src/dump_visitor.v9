@@ -162,6 +162,69 @@ func dump(node, out_stream)(children, ix, data) {
 		return
 	}
 
+	if (rax == nFUNCTIONS) {
+		string_print(var out_stream, "section .data")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "_FUNCTIONLIST:")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "dq ")
+		ll_length(var children)
+		printer_number(var out_stream, rax)
+		string_print(var out_stream, ", ")
+		ll_length(var children)
+		printer_number(var out_stream, rax)
+		string_print(var out_stream, ", 24+_FUNCTIONLIST")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "dq ")
+
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			var data = node_scope(rax)
+
+			if (var ix > 0) { string_print(var out_stream, ", ") }
+			string_equal(var data, "main")
+			if (rax == 1) {
+				string_print(var out_stream, "_start")
+			} else {
+				string_print(var out_stream, var data)
+			}
+
+			var ix++
+		}
+
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "_FUNCTIONNAMELIST:")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "dq ")
+		ll_length(var children)
+		printer_number(var out_stream, rax)
+		string_print(var out_stream, ", ")
+		ll_length(var children)
+		printer_number(var out_stream, rax)
+		string_print(var out_stream, ", 24+_FUNCTIONNAMELIST")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "dq ")
+
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			var data = node_data(rax)
+
+			if (var ix > 0) { string_print(var out_stream, ", ") }
+			string_print(var out_stream, var data)
+
+			var ix++
+		}
+
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "section .text")
+		string_print(var out_stream, new_line)
+		return
+	}
+
 	if (rax == nGLOBAL) {
 		string_print(var out_stream, "section .bss")
 		string_print(var out_stream, new_line)
