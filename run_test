@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'colored'
 require 'open3'
+require 'diffy'
 
 def run(program, leave_asm, leave_bin, input = [])
 	bin = 'bin/' + program.gsub(/.*\//, '').gsub(/\.v10$/, '')
@@ -27,7 +28,12 @@ def run(program, leave_asm, leave_bin, input = [])
 	end
 
 	Open3.popen2e(bin) do |stdin, out|
-		input.each { |line| stdin.puts line }
+		begin
+			input.each { |line| stdin.puts line }
+			stdin.close
+		rescue Errno::EPIPE
+			puts "Unable to feed given input to program".red_on_black
+		end
 		output = out.read
 
 		# Cleanup
@@ -42,22 +48,26 @@ end
 def test(program, leave_asm, leave_bin)
 	data = File.open(program).read
 	lines = data.split("\n")
-	outputs = []
+	pretty_out = ''
+	outputs = '^'
 	inputs = []
 	lines.each do |l|
 		case l[0..1]
 		when '#-'
-			outputs << l[2..-1]
+			outputs << Regexp.escape(l[2..-1]) + "\n"
+			pretty_out << l[2..-1] + "\n"
+		when '#*'
+			outputs << ".*\n"
 		when '#+'
 			inputs << l[2..-1]
 		else
 			break
 		end
 	end
-	expected = outputs.join("\n")
+	expected = Regexp.new(outputs[0..-2] + '$', Regexp::MULTILINE)
 	actual = run(program, leave_asm, leave_bin, inputs)
 
-	if expected == actual
+	if expected === actual
 		{
 			passed: true,
 			message: "#{program} - PASSED"
@@ -66,7 +76,8 @@ def test(program, leave_asm, leave_bin)
 		{
 			passed: false,
 			message: "#{program} - FAILED",
-			details: "EXPECTED:\n#{expected}\nACTUAL:\n#{actual}\n"
+			expected: pretty_out[0..-2],
+			actual: actual
 		}
 	end
 end
@@ -77,6 +88,7 @@ verbose = ARGV[0].include? 'v'
 leave_asm = ARGV[0].include? 'a'
 leave_bin = ARGV[0].include? 'b'
 force_finish = ARGV[0].include? 'f'
+diff = ARGV[0].include? 'd'
 
 passed = 0
 
@@ -88,7 +100,14 @@ files.each do |f|
 		puts res[:message].blue unless quiet
 	else
 		puts res[:message].red_on_black
-		puts res[:details] if verbose
+
+		if verbose
+			if diff
+				puts Diffy::Diff.new(res[:expected], res[:actual], context: 2).to_s(:color)
+			else
+				puts "EXPECTED:\n#{res[:expected]}\nACTUAL:\n#{res[:actual]}\n"
+			end
+		end
 		break unless force_finish
 	end
 end
