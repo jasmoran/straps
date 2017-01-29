@@ -1,9 +1,8 @@
 include "src/language/Node.v10"
 include "src/language/Tokenizer.v10"
-include "src/language/parser/Operator.v10"
 
-func Parser Parser_new(String name, Stream input)() {
-	return Parser_new(name, Tokenizer_new(input))
+func Parser Parser_new(String stream_name, Stream input)() {
+	return Parser_new(stream_name, Tokenizer_new(stream_name, input))
 }
 
 class Parser(String name, Tokenizer t) {
@@ -45,6 +44,7 @@ class Parser(String name, Tokenizer t) {
 		block_if = this.block(nBLOCK)
 		node = IfNode_new(expr, block_if)
 
+		this.skip_newlines()
 		if (this.t.peek() == ELSE) {
 			this.t.consume(ELSE)
 			node.block_else = this.block(nBLOCK)
@@ -78,7 +78,7 @@ class Parser(String name, Tokenizer t) {
 
 		loop {
 			expr = this.expression()
-			if (expr == 0) { break }
+			if (expr == EOF) { break }
 			l.children.append(expr)
 		}
 
@@ -87,12 +87,14 @@ class Parser(String name, Tokenizer t) {
 
 	func ListNode block(NodeType t)(ListNode l, Any expr) {
 		l = ListNode_new(t)
+		this.skip_newlines()
 
 		if (this.t.peek() == CURLY_OPEN) {
 			this.t.consume(CURLY_OPEN)
 
 			loop {
 				if (this.t.peek() == CURLY_CLOSE) { break }
+				if (this.t.peek() == EOF) { break }
 				expr = this.expression()
 				l.children.append(expr)
 			}
@@ -137,6 +139,7 @@ class Parser(String name, Tokenizer t) {
 			if (this.t.peek() == PAREN_CLOSE) { break }
 			expr = this.expression()
 			l.append(expr)
+			if (this.t.peek() != COMMA) { break }
 			this.t.consume(COMMA)
 		}
 
@@ -149,72 +152,131 @@ class Parser(String name, Tokenizer t) {
 
 
 
-
-
-	func Node expression()() {
-		return this.process_expression(this.primary_expression(), 1)
-	}
-
-	func Node process_expression(Node lhs, Number min_prec)(Token op, Token lookahead, Node rhs, Number lap) {
+	func void skip_newlines()() {
 		loop {
-			op = this.t.peek()
-			if (Operator_prec(op) < min_prec) { break }
-			this.t.consume()
-			rhs = this.primary_expression()
-
-			loop {
-				lookahead = this.t.peek()
-				lap = Operator_prec(lookahead)
-
-				# Right Unary operators
-				if (Operator_unary_right(lookahead) == true) {
-					this.t.consume(lookahead)
-					rhs = UnaryOperationNode_new(lookahead, rhs, false)
-					next
-				}
-				if (lookahead == PAREN_OPEN) {
-					rhs = ListNode_new(nCALL, this.expression_list())
-					rhs = UnaryOperationNode_new(PAREN_OPEN, rhs, false)
-					next
-				}
-
-				if (lap <= Operator_prec(op)) {
-					if (Operator_left_assoc(lookahead) == true) { break }
-					if (lap != Operator_prec(op)) { break }
-
-				}
-
-				rhs = this.process_expression(rhs, lap)
-			}
-
-			lhs = BinaryOperationNode_new(op, lhs, rhs)
+			if (this.t.peek() != NEW_LINE) break
+			this.t.consume(NEW_LINE)
 		}
-
-		return lhs
 	}
 
-	func Node primary_expression()(Token tk, Node expr, Number n) {
+	func Node expression()(Node node, Token tk) {
+		node = this.logic_expr()
+		loop {
+			tk = this.t.peek()
+			if (tk != ASSIGN)
+			if (tk != ADD)
+			if (tk != SUB)
+			if (tk != SHIFTL)
+			if (tk != SHIFTR) break
+			this.t.consume(tk)
+			node = BinaryOperationNode_new(tk, node, this.logic_expr())
+		}
+		return node
+	}
+
+	func Node logic_expr()(Node node, Token tk) {
+		node = this.comp_expr()
+		loop {
+			tk = this.t.peek()
+			if (tk != AND)
+			if (tk != OR) break
+			this.t.consume(tk)
+			node = BinaryOperationNode_new(tk, node, this.comp_expr())
+		}
+		return node
+	}
+
+	func Node comp_expr()(Node node, Token tk) {
+		node = this.add_expr()
+		loop {
+			tk = this.t.peek()
+			if (tk != EQUAL)
+			if (tk != NOT_EQUAL)
+			if (tk != GREATER)
+			if (tk != GREATER_EQ)
+			if (tk != LESS)
+			if (tk != LESS_EQ) break
+			this.t.consume(tk)
+			node = BinaryOperationNode_new(tk, node, this.add_expr())
+		}
+		return node
+	}
+
+	func Node add_expr()(Node node, Token tk) {
+		node = this.mult_expr()
+
+		loop {
+			tk = this.t.peek()
+			if (tk != PLUS)
+			if (tk != MINUS) break
+			this.t.consume(tk)
+			node = BinaryOperationNode_new(tk, node, this.mult_expr())
+		}
+		return node
+	}
+
+	func Node mult_expr()(Node node, Token tk) {
+		node = this.snd_expr()
+		loop {
+			tk = this.t.peek()
+			if (tk != ASTERISK)
+			if (tk != FWD_SLASH) break
+			this.t.consume(tk)
+			node = BinaryOperationNode_new(tk, node, this.snd_expr())
+		}
+		return node
+	}
+
+	func Node snd_expr()(Node node, Token tk) {
+		tk = this.t.peek()
+		if (tk != PLUS)
+		if (tk != MINUS)
+		if (tk != NOT)
+		if (tk != ASTERISK) return this.top_expr()
+
+		this.t.consume(tk)
+		return UnaryOperationNode_new(tk, this.snd_expr(), true)
+	}
+
+	func Node top_expr()(Node node, Node list, Token tk) {
+		node = this.value()
+		loop {
+			tk = this.t.peek()
+			if (tk == PAREN_OPEN) {
+				list = ListNode_new(nCALL, this.expression_list())
+				node = BinaryOperationNode_new(PAREN_OPEN, node, list)
+			} else if (tk == SQUARE_OPEN) {
+				this.t.consume(SQUARE_OPEN)
+				node = BinaryOperationNode_new(SQUARE_OPEN, node, this.expression())
+				this.t.consume(SQUARE_CLOSE)
+			} else if (tk == DOT) {
+				this.t.consume(DOT)
+				node = BinaryOperationNode_new(DOT, node, this.value())
+			} else if (tk == INCREMENT) {
+				this.t.consume(INCREMENT)
+				node = UnaryOperationNode_new(INCREMENT, node, false)
+			} else if (tk == DECREMENT) {
+				this.t.consume(DECREMENT)
+				node = UnaryOperationNode_new(DECREMENT, node, false)
+			} else break
+		}
+		return node
+	}
+
+	func Node value()(Token tk, Node node) {
+		this.skip_newlines()
+
 		tk = this.t.peek()
 
-		if (tk == NONE) {
-			return 0
-		}
-
-		# Parenthesised expression
+		# Bracketed expression
 		if (tk == PAREN_OPEN) {
 			this.t.consume(PAREN_OPEN)
-			expr = this.expression()
+			node = this.expression()
 			this.t.consume(PAREN_CLOSE)
-			return expr
+			return node
 		}
 
-		# Left Unary operators
-		if (Operator_unary_left(tk) == true) {
-			this.t.consume(tk)
-			return UnaryOperationNode_new(tk, this.primary_expression(), true)
-		}
-
-		# Values
+		if (tk == EOF) return EOF
 
 		if (tk == BREAK) {
 			this.t.consume(BREAK)
@@ -292,10 +354,6 @@ class Parser(String name, Tokenizer t) {
 
 		# TODO: add WHILE
 
-		n = tk
-		"Unknown value expression! (Token: ".print(STDERR)
-		n.toString(false).print(STDERR)
-		")\n".print(STDERR)
-		sys(60, 1)
+		error("Unknown value expression! (Token: ", tk.toString(), ")\n")
 	}
 }
