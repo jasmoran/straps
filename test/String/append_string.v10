@@ -5,5 +5,5 @@ include "src/stdlib/stdlib.v10"
 
 func void main()(String str) {
 	str = String_new(12)
-	str.join("Hello ").join("World\n").print(STDOUT)
+	str.append("Hello ").append("World\n").print(STDOUT)
 }

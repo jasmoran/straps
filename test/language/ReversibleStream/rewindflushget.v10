@@ -1,0 +1,16 @@
+#+ABCDEF
+#-ABCC
+
+include "src/stdlib/stdlib.v10"
+include "src/language/ReversibleStream.v10"
+
+func void main()(ReversibleStream rs, String s, Any a, CircularBuffer cb) {
+	rs = ReversibleStream_new(STDIN, 4)
+
+	rs.get().get_character().toString().print()
+	rs.get().get_character().toString().print()
+	rs.get().get_character().toString().print()
+	rs.rewind(1)
+	rs.flush()
+	rs.get().get_character().toString().print()
+}

@@ -1,6 +1,6 @@
 #-B
 #-Error: Attempted peek into an empty CircularBuffer
-#-
+#*
 
 include "src/stdlib/stdlib.v10"
 

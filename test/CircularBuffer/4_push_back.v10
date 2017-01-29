@@ -2,7 +2,7 @@
 #-B
 #-C
 #-Error: Attempted to add to a full CircularBuffer
-#-
+#*
 
 include "src/stdlib/stdlib.v10"
 

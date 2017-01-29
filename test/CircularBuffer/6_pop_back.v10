@@ -4,7 +4,7 @@
 #-C
 #-D
 #-Error: Attempted to remove from an empty CircularBuffer
-#-
+#*
 
 include "src/stdlib/stdlib.v10"
 

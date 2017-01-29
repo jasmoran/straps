@@ -3,7 +3,7 @@
 include "src/language/MetaCharacter.v10"
 include "src/stdlib/stdlib.v10"
 
-func void main()(MetaCharacter mc, Character c) {
+func void main()(MetaCharacter mc) {
 	# Character: J, Column: 9, Line: 1025
 	mc = 67176778
 

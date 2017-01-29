@@ -1,0 +1,39 @@
+#+  identifier  qqad123AB_D identifier2
+#+01234 56789
+#+		'\n'  '\1' '\''
+#+ "ghgh\"hg\nh\"gh"   "string"  67
+#+
+#-identifier
+#-qqad123AB_D
+#-identifier2
+#-01234
+#-56789
+#-\n
+#-\1
+#-\'
+#-ghgh\"hg\nh\"gh
+#-'string
+#-Error: Expected token STRING got NUMBER in stream STDIN Character: '6', Line: 4, Column: 32
+#*
+
+include "src/stdlib/stdlib.v10"
+include "src/language/Tokenizer.v10"
+
+func void main()(Tokenizer tk) {
+	tk = Tokenizer_new("STDIN", STDIN)
+	tk.consume().println()
+	tk.consume().println()
+	tk.consume(IDENTIFIER).println()
+	tk.consume(NEW_LINE)
+	tk.consume().println()
+	tk.consume(NUMBER).println()
+	tk.consume(NEW_LINE)
+	tk.consume().println()
+	tk.consume().println()
+	tk.consume(CHARACTER).println()
+	tk.consume(NEW_LINE)
+	tk.consume().println()
+	"'".print()
+	tk.consume(STRING).println()
+	tk.consume(STRING).println()
+}

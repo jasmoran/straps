@@ -1,8 +1,6 @@
 #-A
-#-B
-#-C
-#-D
-#-
+#-Error: Peek index too large for CircularBuffer
+#*
 
 include "src/stdlib/stdlib.v10"
 
@@ -22,13 +20,5 @@ func void main()(CircularBuffer cb, Any a, String s, Number n) {
 	s.println()
 
 	s = cb.peek(10)
-	s.println()
-
-	n = 0
-	n -= 7
-	s = cb.peek(n)
-	s.println()
-
-	s = cb.peek()
 	s.println()
 }

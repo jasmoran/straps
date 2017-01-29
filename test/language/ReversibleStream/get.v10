@@ -4,7 +4,7 @@
 #-l
 #-l
 #-Error: Attempted to add to a full CircularBuffer
-#-
+#*
 
 include "src/stdlib/stdlib.v10"
 include "src/language/ReversibleStream.v10"
