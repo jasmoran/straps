@@ -107,6 +107,7 @@ class String (Number length, Number size, CharArr data) {
 	}
 
 	func void print(Stream out)() {
+		if (this == NullString) { return this }
 		sys(1, out, this.data, this.length)
 	}
 
@@ -142,17 +143,17 @@ class String (Number length, Number size, CharArr data) {
 		this.length = 0
 	}
 
-	func String join(String source)() {
+	func String append(String string)() {
 		# Copy main data
-		rsi = source.data
+		rsi = string.data
 		rdi = this.data
 		rdi += this.length
-		rcx = source.length
+		rcx = string.length
 		nasm("rep movsb
 		")
 
 		# Set length of destination
-		this.length += source.length
+		this.length += string.length
 
 		return this
 	}
