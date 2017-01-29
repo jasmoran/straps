@@ -1,48 +1,65 @@
+include "src/language/ReversibleStream.v10"
+
 enum Token {
 	NONE BREAK CASE ELSE FOR FUNC IF LOOP NASM NEXT
 	RETURN SWITCH SYS WHILE NUMBER IDENTIFIER STRING PAREN_OPEN PAREN_CLOSE COMMA
 	COMMENT CURLY_OPEN CURLY_CLOSE EQUAL NOT_EQUAL GREATER GREATER_EQ LESS LESS_EQ CHARACTER
 	INCLUDE NOT INCREMENT DECREMENT ADD SUB SHIFTL SHIFTR ASSIGN PLUS
 	MINUS SQUARE_OPEN SQUARE_CLOSE ENUM CLASS DOT GLOBAL ASTERISK FWD_SLASH AND
-	OR
-}
-class Token(void type){}
-
-func Tokenizer Tokenizer_new(Stream s)(Token t) {
-	t = 0
-	return Tokenizer_new(ReversibleStream_new(s, 1024), t, String_new(1024))
+	OR NEW_LINE EOF
 }
 
-class Tokenizer(ReversibleStream rs, Token type, String image) {
+class Token(void type){
+		func String toString()(Array a, Number ix) {
+			nasm("mov rax, Token")
+			a = rax
+			ix = this
+			return a.get(ix)
+		}
+}
+
+func Tokenizer Tokenizer_new(String stream_name, Stream s)() {
+	return Tokenizer_new(stream_name, ReversibleStream_new(s, 1024), NONE, String_new(1024), MetaCharacter_new('?', 0, 0))
+}
+
+class Tokenizer(String stream_name, ReversibleStream rs, Token type, String image, MetaCharacter first_char) {
 	func Token peek()() {
-		if (this.type == 0) {
+		if (this.type == NONE) {
 			this.type = this.load()
 		}
 		return this.type
 	}
 
 	func String consume()(String copy) {
-		copy = 0
+		this.peek()
+
+		if (this.type == EOF) {
+			error("Attempting to read past end of file")
+		}
+
+		copy = NullString
 		if (this.image.length > 0) {
 			copy = this.image.clone()
 		}
 
-		this.type = 0
+		this.type = NONE
 		this.image.clear()
 
 		return copy
 	}
 
-	func String consume(Token type)(Number n) {
-		n = this.peek()
-		if (n != type) {
-			"Error: unexpected token (Got: ".print(STDERR)
-			n.toString(false).print(STDERR)
-			", Wanted: ".print(STDERR)
-			n = type
-			n.toString(false).print(STDERR)
-			")\n".print(STDERR)
-			sys(60, 1)
+	func String consume(Token type)(Token peek) {
+		peek = this.peek()
+		if (peek != type) {
+			"Error: Expected token ".print(STDERR)
+			type.toString().print(STDERR)
+			" got ".print(STDERR)
+			peek.toString().print(STDERR)
+			" in stream ".print(STDERR)
+			this.stream_name.print(STDERR)
+			" ".print(STDERR)
+			this.first_char.toString().println(STDERR)
+			error()
 		}
 		return this.consume()
 	}
@@ -54,7 +71,7 @@ class Tokenizer(ReversibleStream rs, Token type, String image) {
 			if (ix == token.length) { break }
 
 			# Rewind if characters dont match
-			c = this.rs.get()
+			c = this.rs.get().get_character()
 			if (c != token.get(ix)) {
 				this.rs.rewind()
 				return false
@@ -69,7 +86,7 @@ class Tokenizer(ReversibleStream rs, Token type, String image) {
 	}
 
 	func Boolean match_number()(Character c) {
-		c = this.rs.get()
+		c = this.rs.get().get_character()
 
 		# Must have at least one digit
 		if (c < '0') {
@@ -83,7 +100,7 @@ class Tokenizer(ReversibleStream rs, Token type, String image) {
 
 		loop {
 			this.image.append(c)
-			c = this.rs.get()
+			c = this.rs.get().get_character()
 			if (c < '0') { break }
 			if (c > '9') { break }
 		}
@@ -95,7 +112,7 @@ class Tokenizer(ReversibleStream rs, Token type, String image) {
 
 	func Boolean match_identifier()(Character c) {
 		loop {
-			c = this.rs.get()
+			c = this.rs.get().get_character()
 
 			if (c >= 'a') {
 				if (c <= 'z') {
@@ -137,13 +154,13 @@ class Tokenizer(ReversibleStream rs, Token type, String image) {
 	}
 
 	func Boolean match_string()(Character c) {
-		if (this.rs.get() != '"') {
+		if (this.rs.get().get_character() != '"') {
 			this.rs.rewind()
 			return false
 		}
 
 		loop {
-			c = this.rs.get()
+			c = this.rs.get().get_character()
 
 			if (c == 0) { break }
 			if (c == '"') { break }
@@ -151,7 +168,7 @@ class Tokenizer(ReversibleStream rs, Token type, String image) {
 			# 92 = backslash
 			if (rax == 92) {
 				this.image.append(c)
-				c = this.rs.get()
+				c = this.rs.get().get_character()
 			}
 
 			this.image.append(c)
@@ -162,9 +179,9 @@ class Tokenizer(ReversibleStream rs, Token type, String image) {
 	}
 
 	func Boolean match_comment()(Character c) {
-		c = this.rs.get()
+		c = this.rs.get().get_character()
 		if (c == '/') {
-			if (this.rs.get() != '/') {
+			if (this.rs.get().get_character() != '/') {
 				this.rs.rewind()
 				return false
 			}
@@ -176,12 +193,10 @@ class Tokenizer(ReversibleStream rs, Token type, String image) {
 		}
 
 		loop {
-			c = this.rs.get()
+			c = this.rs.get().get_character()
 
 			if (rax == 0) { break }
 			if (rax == 10) { break }
-
-			this.image.append(c)
 		}
 
 		this.rs.flush()
@@ -189,20 +204,20 @@ class Tokenizer(ReversibleStream rs, Token type, String image) {
 	}
 
 	func Boolean match_character()(Character c) {
-		if (this.rs.get() != 39) {
+		if (this.rs.get().get_character() != 39) {
 			this.rs.rewind()
 			return false
 		}
 
-		c = this.rs.get()
+		c = this.rs.get().get_character()
 		this.image.append(c)
 
 		# Handle backslashes
 		if (c == 92) {
-			this.image.append(this.rs.get())
+			this.image.append(this.rs.get().get_character())
 		}
 
-		if (this.rs.get() != 39) {
+		if (this.rs.get().get_character() != 39) {
 			this.rs.rewind()
 			return false
 		}
@@ -214,9 +229,11 @@ class Tokenizer(ReversibleStream rs, Token type, String image) {
 	func Token load()(Character c) {
 		# Skip whitespace
 		loop {
-			c = this.rs.get()
-			if (c == 0) { return NONE }
-			if (c > ' ') { break }
+			this.first_char = this.rs.get()
+			c = this.first_char.get_character()
+			if (c == 0) return EOF
+			if (c == 10) return NEW_LINE
+			if (c > ' ') break
 		}
 		this.rs.rewind(1)
 		this.rs.flush()
@@ -283,7 +300,7 @@ class Tokenizer(ReversibleStream rs, Token type, String image) {
 		if (this.match_comment() == true) { return this.load() }
 
 		"Error: invalid character: '".print(STDERR)
-		this.image.append(this.rs.get()).print(STDERR)
+		this.rs.get().get_character().toString().print(STDERR)
 		"'\n".print(STDERR)
 
 		return NONE
