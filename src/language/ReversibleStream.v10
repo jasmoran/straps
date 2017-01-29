@@ -1,7 +1,7 @@
 include "src/language/MetaCharacter.v10"
 
 func ReversibleStream ReversibleStream_new(Stream stream, Number size)() {
-	return ReversibleStream_new(stream, CircularBuffer_new(size), 0, 0, 0)
+	return ReversibleStream_new(stream, CircularBuffer_new(size), 0, 0, 1)
 }
 
 class ReversibleStream (Stream stream, CircularBuffer buffer, Number nxt_pos, Number col, Number line) {

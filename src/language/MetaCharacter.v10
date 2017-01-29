@@ -36,4 +36,15 @@ class MetaCharacter (void data) {
 		nasm("and rax, 0xFFFF")
 		return rax
 	}
+
+	func String toString()(String s) {
+		s = String_new(42)
+		s.append("Character: '")
+		s.append(this.get_character())
+		s.append("', Line: ")
+		s.append(this.get_line().toString())
+		s.append(", Column: ")
+		s.append(this.get_column().toString())
+		return s
+	}
 }
