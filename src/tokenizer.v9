@@ -29,11 +29,43 @@ func token_kee_char()(old_char_next) {
 		rax = 0
 	} else {
 		# Load new char_next from stdin
-		sys(0, in_file_fid[0], char_next, 1)
+		rax = 0
+		rbx = macro_curr[0]
+		if (rbx != 0) {
+			nasm("mov al, BYTE[rbx]
+			")
+		}
+
+		if (rax == 0) {
+			sys(0, in_file_fid[0], char_next, 1)
+		} else {
+			nasm("mov BYTE[char_next], al
+			")
+			macro_curr[0]++
+		}
 
 		if (rax == 0) {
 			nasm("mov BYTE[char_next], 0
 			")
+		}
+
+		# Handle macro selection
+		nasm("mov r12b, BYTE[char_next]
+		")
+		if (r12b == '?') {
+			sys(0, in_file_fid[0], char_next, 1)
+			nasm("mov al, BYTE[char_next]
+			")
+			rax << 3
+			rax += macro_strs
+			rax = rax[0]
+			#string_print(STDOUT, rax)
+			rax += 16
+			macro_curr[0] = rax
+			nasm("mov bl, BYTE[rax]
+mov BYTE[char_next], bl
+			")
+			macro_curr[0]++
 		}
 
 		# Return old char_next
@@ -47,6 +79,26 @@ func token_eek_char()() {
 	rax = 0
 	nasm("mov al, BYTE[char_next]
 	")
+	return
+}
+
+func print_macros(out_stream)(ix, addr) {
+	var ix = 0
+	var addr = macro_strs
+
+	loop {
+		if (var addr[0] != 0) {
+			printer_number(var out_stream, var ix)
+			string_print(var out_stream, " - ")
+			string_print(var out_stream, var addr[0])
+			string_print(var out_stream, new_line)
+		}
+
+		var ix++
+		var addr += 8
+		if (var ix >= 256) { break }
+	}
+
 	return
 }
 
@@ -91,6 +143,11 @@ func token_load()() {
 			}
 
 			rax = 0
+		}
+
+		if (rax == 'd') {
+			token_define()
+			if (rax == 1) {return}
 		}
 
 		if (rax == 'e') {
@@ -437,6 +494,39 @@ func token_class()() {
 	token_eek_char() if (rax == 's') { token_kee_char() } else { return 0 }
 
 	token_tye[0] = CLASS
+	return 1
+}
+
+func token_define()(ix, addr) {
+	token_eek_char() if (rax == 'e') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'f') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'i') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'n') { token_kee_char() } else { return 0 }
+	token_eek_char() if (rax == 'e') { token_kee_char() } else { return 0 }
+	token_tye[0] = 0
+	token_length[0] = 0
+
+	# Save define name
+	token_load()
+	nasm("mov al, BYTE[token_image]")
+	rax << 3
+	rax += macro_strs
+	var ix = rax
+	token_tye[0] = 0
+	token_length[0] = 0
+
+	# Save define value
+	token_load()
+	string_append(token, 0)
+	string_clone(token)
+	rbx = var ix
+	rbx[0] = rax
+	token_tye[0] = 0
+	token_length[0] = 0
+
+	# Fetch an actual token
+	token_load()
+
 	return 1
 }
 

@@ -50,6 +50,8 @@ section .bss
 	operations:		resq 1
 	scratch_reg:	resq 1
 	types:				resq 1
+	macro_strs:		resq 256
+	macro_curr:		resq 1
 
 section .data
 	new_line:
