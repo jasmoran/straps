@@ -1,5 +1,6 @@
 include "src/stdlib/stdlib.v10"
 include "src/language/parser/Parser.v10"
+include "src/language/visitors/Visitor.v10"
 
 func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, Stream output, Parser parser, Node root) {
 	# Open input file

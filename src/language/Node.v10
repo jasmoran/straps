@@ -4,37 +4,53 @@ enum NodeType {
 	nINDEX nCALL nOPERATION nMEM_ACCESS nREGISTER nPUSH nPOP nCLASS nFIELD nGLOBAL
 	nSTRINGS nBINARYOP nUNARYOP nLIST
 }
-class NodeType(){}
+
+class NodeType() {
+	func String toString()(Array a, Number ix) {
+		nasm("mov rax, NodeType")
+		a = rax
+		ix = this
+		return a.get(ix)
+	}
+}
 
 func void pi(Number indent)(Number i) {
 	i = indent loop { if (i <= 0) { break } "  ".print() i-- }
 }
 
-func Node Node_new(NodeType type)(void m_print) {
-	nasm("mov rax, _Node_print_Node_Number")
-	m_print = rax
-	return Node_new(type, m_print)
+func Node Node_new(NodeType type)(void m_print, void m_visit) {
+	define N Node
+	include "src/language/nodes/init.v10"
+	return Node_new(type, m_print, m_visit)
 }
 
-class Node(NodeType type, void m_print){
+class Node(NodeType type, void m_print, void m_visit){
 	func void print(Number indent)() {
-		"Node".print()
+		pi(indent)
+		this.type.toString().println()
 	}
+
+	func void visit(Visitor v)() {
+		v.m_visit_Node(this)
+	}
+
+	func void visit_children(Visitor v)() {}
 }
 
 
 
-func BinaryOperationNode BinaryOperationNode_new(Token op, Node lhs, Node rhs)(void m_print) {
-	nasm("mov rax, _BinaryOperationNode_print_BinaryOperationNode_Number")
-	m_print = rax
-	return BinaryOperationNode_new(nBINARYOP, m_print, op, lhs, rhs)
+func BinaryOperationNode BinaryOperationNode_new(Token op, Node lhs, Node rhs)(void m_print, void m_visit) {
+	define N BinaryOperationNode
+	include "src/language/nodes/init.v10"
+	return BinaryOperationNode_new(nBINARYOP, m_print, m_visit, op, lhs, rhs)
 }
 
-class BinaryOperationNode(NodeType type, void m_print, Token op, Node lhs, Node rhs) {
+class BinaryOperationNode(NodeType type, void m_print, void m_visit, Token op, Node lhs, Node rhs) {
 	func void print(Number indent)(Node n) {
 		pi(indent)
-		"BinaryOperationNode(".print()
-		Operator_toString(this.op).print()
+		this.type.toString().print()
+		"(".print()
+		this.op.toString().print()
 		")\n".print()
 
 		indent++
@@ -44,21 +60,33 @@ class BinaryOperationNode(NodeType type, void m_print, Token op, Node lhs, Node 
 		n.m_print(indent)
 		indent--
 	}
+
+	func void visit(Visitor v)() {
+		v.m_visit_BinaryOperationNode(this)
+	}
+
+	func void visit_children(Visitor v)(Node n) {
+		n = this.lhs
+		n.m_visit(v)
+		n = this.rhs
+		n.m_visit(v)
+	}
 }
 
 
 
-func UnaryOperationNode UnaryOperationNode_new(Token op, Node expr, Boolean left)(void m_print) {
-	nasm("mov rax, _UnaryOperationNode_print_UnaryOperationNode_Number")
-	m_print = rax
-	return UnaryOperationNode_new(nUNARYOP, m_print, op, expr, left)
+func UnaryOperationNode UnaryOperationNode_new(Token op, Node expr, Boolean left)(void m_print, void m_visit) {
+	define N UnaryOperationNode
+	include "src/language/nodes/init.v10"
+	return UnaryOperationNode_new(nUNARYOP, m_print, m_visit, op, expr, left)
 }
 
-class UnaryOperationNode(NodeType type, void m_print, Token op, Node expr, Boolean left) {
+class UnaryOperationNode(NodeType type, void m_print, void m_visit, Token op, Node expr, Boolean left) {
 	func void print(Number indent)(Node n) {
 		pi(indent)
-		"UnaryOperationNode(".print()
-		Operator_toString(this.op).print()
+		this.type.toString().print()
+		"(".print()
+		this.op.toString().print()
 		", ".print()
 		if (this.left == true) {
 			"left".print()
@@ -72,37 +100,56 @@ class UnaryOperationNode(NodeType type, void m_print, Token op, Node expr, Boole
 		n.m_print(indent)
 		indent--
 	}
-}
 
+	func void visit(Visitor v)() {
+		v.m_visit_UnaryOperationNode(this)
+	}
 
-
-func StringNode StringNode_new(NodeType type, String ret_type, String string)(void m_print) {
-	nasm("mov rax, _StringNode_print_StringNode_Number")
-	m_print = rax
-	return StringNode_new(type, m_print, ret_type, string)
-}
-
-class StringNode(NodeType type, void m_print, String ret_type, String string) {
-	func void print(Number indent)() {
-		pi(indent)
-		"StringNode(\"".print()
-		this.string.print()
-		"\")".println()
+	func void visit_children(Visitor v)(Node n) {
+		n = this.expr
+		n.m_visit(v)
 	}
 }
 
 
 
-func Node ClassNode_new(String name, ListNode fields, ListNode block)(void m_print) {
-	nasm("mov rax, _ClassNode_print_ClassNode_Number")
-	m_print = rax
-	return ClassNode_new(nCLASS, m_print, name, fields, block)
+func StringNode StringNode_new(NodeType type, String ret_type, String string)(void m_print, void m_visit) {
+	define N StringNode
+	include "src/language/nodes/init.v10"
+	return StringNode_new(type, m_print, m_visit, ret_type, string)
 }
 
-class ClassNode(NodeType type, void m_print, String name, ListNode fields, ListNode block) {
+class StringNode(NodeType type, void m_print, void m_visit, String ret_type, String string) {
+	func void print(Number indent)() {
+		pi(indent)
+		this.type.toString().print()
+		"(".print()
+		this.ret_type.print()
+		": \"".print()
+		this.string.print()
+		"\")".println()
+	}
+
+	func void visit(Visitor v)() {
+		v.m_visit_StringNode(this)
+	}
+
+	func void visit_children(Visitor v)() {}
+}
+
+
+
+func Node ClassNode_new(String name, ListNode fields, ListNode block)(void m_print, void m_visit) {
+	define N ClassNode
+	include "src/language/nodes/init.v10"
+	return ClassNode_new(nCLASS, m_print, m_visit, name, fields, block)
+}
+
+class ClassNode(NodeType type, void m_print, void m_visit, String name, ListNode fields, ListNode block) {
 	func void print(Number indent)(Node n) {
 		pi(indent)
-		"ClassNode(".print()
+		this.type.toString().print()
+		"(".print()
 		this.name.print()
 		")\n".print()
 
@@ -113,22 +160,34 @@ class ClassNode(NodeType type, void m_print, String name, ListNode fields, ListN
 		n.m_print(indent)
 		indent--
 	}
+
+	func void visit(Visitor v)() {
+		v.m_visit_ClassNode(this)
+	}
+
+	func void visit_children(Visitor v)(Node n) {
+		n = this.fields
+		n.m_visit(v)
+		n = this.block
+		n.m_visit(v)
+	}
 }
 
 
 
-func Node FunctionNode_new(String ret_type, String name, ListNode args, ListNode vars, ListNode block)(void m_print) {
-	nasm("mov rax, _FunctionNode_print_FunctionNode_Number")
-	m_print = rax
-	return FunctionNode_new(nFUNCTION, m_print, ret_type, name, args, vars, block)
+func Node FunctionNode_new(String ret_type, String name, ListNode args, ListNode vars, ListNode block)(void m_print, void m_visit) {
+	define N FunctionNode
+	include "src/language/nodes/init.v10"
+	return FunctionNode_new(nFUNCTION, m_print, m_visit, ret_type, name, args, vars, block)
 }
 
-class FunctionNode(NodeType type, void m_print, String ret_type, String name, ListNode args, ListNode vars, ListNode block) {
+class FunctionNode(NodeType type, void m_print, void m_visit, String ret_type, String name, ListNode args, ListNode vars, ListNode block) {
 	func void print(Number indent)(Node n) {
 		pi(indent)
-		"FunctionNode(".print()
+		this.type.toString().print()
+		"(".print()
 		this.ret_type.print()
-		" - ".print()
+		": ".print()
 		this.name.print()
 		")\n".print()
 
@@ -141,23 +200,36 @@ class FunctionNode(NodeType type, void m_print, String ret_type, String name, Li
 		n.m_print(indent)
 		indent--
 	}
+
+	func void visit(Visitor v)() {
+		v.m_visit_FunctionNode(this)
+	}
+
+	func void visit_children(Visitor v)(Node n) {
+		n = this.args
+		n.m_visit(v)
+		n = this.vars
+		n.m_visit(v)
+		n = this.block
+		n.m_visit(v)
+	}
 }
 
 
 
-func Node ListNode_new(NodeType type, LinkedList children)(void m_print) {
-	nasm("mov rax, _ListNode_print_ListNode_Number")
-	m_print = rax
-	return ListNode_new(type, m_print, children)
+func Node ListNode_new(NodeType type, LinkedList children)(void m_print, void m_visit) {
+	define N ListNode
+	include "src/language/nodes/init.v10"
+	return ListNode_new(type, m_print, m_visit, children)
 }
 func Node ListNode_new(NodeType type)() {
 	return ListNode_new(type, LinkedList_new())
 }
 
-class ListNode(NodeType type, void m_print, LinkedList children) {
+class ListNode(NodeType type, void m_print, void m_visit, LinkedList children) {
 	func void print(Number indent)(Node n, LinkedListNode lln) {
 		pi(indent)
-		"ListNode\n".print()
+		this.type.toString().println()
 
 		indent++
 		lln = this.children.first
@@ -169,21 +241,35 @@ class ListNode(NodeType type, void m_print, LinkedList children) {
 		}
 		indent--
 	}
+
+	func void visit(Visitor v)() {
+		v.m_visit_ListNode(this)
+	}
+
+	func void visit_children(Visitor v)(Node n, LinkedListNode lln) {
+		lln = this.children.first
+		loop {
+			if (lln == 0) { break }
+			n = lln.payload
+			n.m_visit(v)
+			lln = lln.fwrd
+		}
+	}
 }
 
 
 
-func Node IfNode_new(Node condition, ListNode block_if)(ListNode l, void m_print) {
+func Node IfNode_new(Node condition, ListNode block_if)(ListNode l, void m_print, void m_visit) {
+	define N IfNode
+	include "src/language/nodes/init.v10"
 	l = 0
-	nasm("mov rax, _IfNode_print_IfNode_Number")
-	m_print = rax
-	return IfNode_new(nIF, m_print, condition, block_if, l)
+	return IfNode_new(nIF, m_print, m_visit, condition, block_if, l)
 }
 
-class IfNode(NodeType type, void m_print, Node condition, ListNode block_if, ListNode block_else) {
+class IfNode(NodeType type, void m_print, void m_visit, Node condition, ListNode block_if, ListNode block_else) {
 	func void print(Number indent)(Node n) {
 		pi(indent)
-		"IfNode\n".print()
+		this.type.toString().println()
 
 		indent++
 		n = this.condition
@@ -196,60 +282,94 @@ class IfNode(NodeType type, void m_print, Node condition, ListNode block_if, Lis
 		}
 		indent--
 	}
+
+	func void visit(Visitor v)() {
+		v.m_visit_IfNode(this)
+	}
+
+	func void visit_children(Visitor v)(Node n) {
+		n = this.condition
+		n.m_visit(v)
+		n = this.block_if
+		n.m_visit(v)
+		n = this.block_else
+		if (n != 0) {
+			n.m_visit(v)
+		}
+	}
 }
 
 
 
-func Node LoopNode_new(ListNode block)(void m_print) {
-	nasm("mov rax, _LoopNode_print_LoopNode_Number")
-	m_print = rax
-	return LoopNode_new(nLOOP, m_print, block)
+func Node LoopNode_new(ListNode block)(void m_print, void m_visit) {
+	define N LoopNode
+	include "src/language/nodes/init.v10"
+	return LoopNode_new(nLOOP, m_print, m_visit, block)
 }
 
-class LoopNode(NodeType type, void m_print, ListNode block) {
+class LoopNode(NodeType type, void m_print, void m_visit, ListNode block) {
 	func void print(Number indent)(Node n) {
 		pi(indent)
-		"LoopNode\n".print()
+		this.type.toString().println()
 
 		indent++
 		n = this.block
 		n.m_print(indent)
 		indent--
 	}
+
+	func void visit(Visitor v)() {
+		v.m_visit_LoopNode(this)
+	}
+
+	func void visit_children(Visitor v)(Node n) {
+		n = this.block
+		n.m_visit(v)
+	}
 }
 
 
 
-func Node ReturnNode_new(Node expr)(void m_print) {
-	nasm("mov rax, _ReturnNode_print_ReturnNode_Number")
-	m_print = rax
-	return ReturnNode_new(nRETURN, m_print, expr)
+func Node ReturnNode_new(Node expr)(void m_print, void m_visit) {
+	define N ReturnNode
+	include "src/language/nodes/init.v10"
+	return ReturnNode_new(nRETURN, m_print, m_visit, expr)
 }
 
-class ReturnNode(NodeType type, void m_print, Node expr) {
+class ReturnNode(NodeType type, void m_print, void m_visit, Node expr) {
 	func void print(Number indent)(Node n) {
 		pi(indent)
-		"ReturnNode\n".print()
+		this.type.toString().println()
 
 		indent++
 		n = this.expr
 		n.m_print(indent)
 		indent--
 	}
+
+	func void visit(Visitor v)() {
+		v.m_visit_ReturnNode(this)
+	}
+
+	func void visit_children(Visitor v)(Node n) {
+		n = this.expr
+		n.m_visit(v)
+	}
 }
 
 
 
-func Node EnumNode_new(String name, ListNode values)(void m_print) {
-	nasm("mov rax, _EnumNode_print_EnumNode_Number")
-	m_print = rax
-	return EnumNode_new(nENUM, m_print, name, values)
+func Node EnumNode_new(String name, ListNode values)(void m_print, void m_visit) {
+	define N EnumNode
+	include "src/language/nodes/init.v10"
+	return EnumNode_new(nENUM, m_print, m_visit, name, values)
 }
 
-class EnumNode(NodeType type, void m_print, String name, ListNode values) {
+class EnumNode(NodeType type, void m_print, void m_visit, String name, ListNode values) {
 	func void print(Number indent)(Node n) {
 		pi(indent)
-		"EnumNode(".print()
+		this.type.toString().print()
+		"(".print()
 		this.name.print()
 		")\n".print()
 
@@ -257,5 +377,14 @@ class EnumNode(NodeType type, void m_print, String name, ListNode values) {
 		n = this.values
 		n.m_print(indent)
 		indent--
+	}
+
+	func void visit(Visitor v)() {
+		v.m_visit_EnumNode(this)
+	}
+
+	func void visit_children(Visitor v)(Node n) {
+		n = this.values
+		n.m_visit(v)
 	}
 }
