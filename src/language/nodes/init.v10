@@ -1,4 +1,2 @@
-nasm("mov rax, _?N_print_?N_Number")
-m_print = rax
 nasm("mov rax, _?N_visit_?N_Visitor")
 m_visit = rax
