@@ -1,0 +1,136 @@
+func Printer Printer_new(Stream s)(?T) {
+	define V Printer
+	include "src/language/visitors/init.v10"
+	v = Printer_new(?U, 0, s)
+	v.v = v
+	return v
+}
+
+func Printer Printer_new()() {
+	return Printer_new(STDOUT)
+}
+
+class Printer(?T, Number indent, Stream s) {
+	func void pi()(Number i) {
+		i = this.indent loop { if (i <= 0) { break } "  ".print(this.s) i-- }
+	}
+
+	func void visit(Node n)() {
+		this.pi()
+		n.type.toString().println(this.s)
+	}
+
+	func void visit(BinaryOperationNode n)() {
+		this.pi()
+		n.type.toString().print(this.s)
+		"(".print(this.s)
+		n.op.toString().print(this.s)
+		")\n".print(this.s)
+
+		this.indent++
+		n.visit_children(this.v)
+		this.indent--
+	}
+
+	func void visit(UnaryOperationNode n)() {
+		this.pi()
+		n.type.toString().print(this.s)
+		"(".print(this.s)
+		n.op.toString().print(this.s)
+		", ".print(this.s)
+		if (n.left == true) {
+			"left".print(this.s)
+		} else {
+			"right".print(this.s)
+		}
+		")\n".print(this.s)
+
+		this.indent++
+		n.visit_children(this.v)
+		this.indent--
+	}
+
+	func void visit(StringNode n)() {
+		this.pi()
+		n.type.toString().print(this.s)
+		"(".print(this.s)
+		n.ret_type.print(this.s)
+		": \"".print(this.s)
+		n.string.print(this.s)
+		"\")".println(this.s)
+	}
+
+	func void visit(ClassNode n)() {
+		this.pi()
+		n.type.toString().print(this.s)
+		"(".print(this.s)
+		n.name.print(this.s)
+		")\n".print(this.s)
+
+		this.indent++
+		n.visit_children(this.v)
+		this.indent--
+	}
+
+	func void visit(FunctionNode n)() {
+		this.pi()
+		n.type.toString().print(this.s)
+		"(".print(this.s)
+		n.ret_type.print(this.s)
+		": ".print(this.s)
+		n.name.print(this.s)
+		")\n".print(this.s)
+
+		this.indent++
+		n.visit_children(this.v)
+		this.indent--
+	}
+
+	func void visit(ListNode n)() {
+		this.pi()
+		n.type.toString().println(this.s)
+
+		this.indent++
+		n.visit_children(this.v)
+		this.indent--
+	}
+
+	func void visit(IfNode n)() {
+		this.pi()
+		n.type.toString().println(this.s)
+
+		this.indent++
+		n.visit_children(this.v)
+		this.indent--
+	}
+
+	func void visit(LoopNode n)() {
+		this.pi()
+		n.type.toString().println(this.s)
+
+		this.indent++
+		n.visit_children(this.v)
+		this.indent--
+	}
+
+	func void visit(ReturnNode n)() {
+		this.pi()
+		n.type.toString().println(this.s)
+
+		this.indent++
+		n.visit_children(this.v)
+		this.indent--
+	}
+
+	func void visit(EnumNode n)() {
+		this.pi()
+		n.type.toString().print(this.s)
+		"(".print(this.s)
+		n.name.print(this.s)
+		")\n".print(this.s)
+
+		this.indent++
+		n.visit_children(this.v)
+		this.indent--
+	}
+}

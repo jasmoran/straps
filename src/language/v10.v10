@@ -2,7 +2,7 @@ include "src/stdlib/stdlib.v10"
 include "src/language/parser/Parser.v10"
 include "src/language/visitors/Visitor.v10"
 
-func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, Stream output, Parser parser, Node root) {
+func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, Stream output, Parser parser, Node root, Visitor v) {
 	# Open input file
 	input = File_open(in_path)
 	if (input < 0) { return 1 }
@@ -13,5 +13,7 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, St
 
 	parser = Parser_new(String_fromTerminated(in_path), input)
 	root = parser.parse()
-	root.m_print(0)
+
+	v = Printer_new()
+	root.m_visit(v)
 }
