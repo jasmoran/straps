@@ -19,7 +19,7 @@ class Token(void type){
 }
 
 func Tokenizer Tokenizer_new(String stream_name, Stream s)() {
-	return Tokenizer_new(stream_name, ReversibleStream_new(s, 1024), NONE, String_new(1024), MetaCharacter_new('?', 0, 0))
+	return Tokenizer_new(stream_name, ReversibleStream_new(s, 1024), NONE, String_new(1024), MetaCharacter_new(' ', 0, 0))
 }
 
 class Tokenizer(String stream_name, ReversibleStream rs, Token type, String image, MetaCharacter first_char) {

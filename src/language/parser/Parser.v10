@@ -97,6 +97,7 @@ class Parser(String name, Tokenizer t) {
 				if (this.t.peek() == EOF) { break }
 				expr = this.expression()
 				l.children.append(expr)
+				this.skip_newlines()
 			}
 
 			this.t.consume(CURLY_CLOSE)
@@ -307,7 +308,7 @@ class Parser(String name, Tokenizer t) {
 		}
 
 		if (tk == IDENTIFIER) {
-			return StringNode_new(nIDENTIFIER, "?", this.t.consume(IDENTIFIER))
+			return StringNode_new(nIDENTIFIER, "Unknown", this.t.consume(IDENTIFIER))
 		}
 
 		if (tk == IF) {
