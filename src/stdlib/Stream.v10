@@ -2,11 +2,29 @@ enum Stream {
 	STDIN STDOUT STDERR
 }
 
+global(Stream LOOPIN, Stream LOOPOUT)
+
 class Stream (Number s) {
 	func Character get()() {
 		nasm("push 0")
 		sys(0, this, rsp, 1)
 		nasm("pop rax")
 		return rax
+	}
+}
+
+func void load_loop()() {
+	if (LOOPIN == 0) {
+		# Create loop stream
+		nasm("mov rax, 22
+		mov rdi, LOOPIN
+		syscall
+		")
+		LOOPOUT = LOOPIN
+		LOOPIN >> 32
+		rax = LOOPOUT
+		nasm("mov rbx, 0xFFFFFFFF")
+		nasm("and rax, rbx")
+		LOOPOUT = rax
 	}
 }

@@ -14,6 +14,8 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, St
 	parser = Parser_new(String_fromTerminated(in_path), input)
 	root = parser.parse()
 
+	load_loop()
+
 	v = Printer_new()
 	root.m_visit(v)
 }

@@ -133,8 +133,14 @@ class String (Number length, Number size, CharArr data) {
 		dest.length = this.length
 	}
 
-	func String clone()(String str) {
-		str = String_new(this.length)
+	func String clone()() {
+		return this.clone(0)
+	}
+
+	func String clone(Number extra)(Number len, String str) {
+		len = this.length
+		len += extra
+		str = String_new(len)
 		this.copyTo(str)
 		return str
 	}
