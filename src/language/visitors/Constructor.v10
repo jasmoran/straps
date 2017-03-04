@@ -1,0 +1,113 @@
+func Constructor Constructor_new()(?T, ListNode ln, Node n) {
+	define V Constructor
+	include "src/language/visitors/init.v10"
+	ln = 0
+	n = 0
+	v = Constructor_new(?U, ln, ln, n)
+	v.v = v
+	return v
+}
+
+class Constructor(?T, ListNode pb, ListNode block, Node new_obj) {
+	func void visit(ClassNode n)(Number size) {
+		this.new_obj = StringNode_new(nIDENTIFIER, n.name, "obj")
+
+		size = n.fields.children.length
+		size << 3
+
+		# Create allocate call + assign and append to block
+		this.block = ListNode_new(nBLOCK).append(
+			BinaryOperationNode_new(
+				ASSIGN,
+				this.new_obj,
+				BinaryOperationNode_new(
+					PAREN_OPEN,
+					StringNode_new(nIDENTIFIER, n.name, "allocate").toNode(),
+					ListNode_new(nCALL).append(
+						StringNode_new(nNUMBER, "Number", size.toString()).toNode()
+					).toNode()
+				).toNode()
+			 ).toNode()
+		)
+
+		# Loop through fields
+		n.fields.visit_children(this.v)
+
+		# Create return node and append to block
+		this.block.append(
+			ReturnNode_new(this.new_obj).toNode()
+		)
+
+		# Create _new function and append to parent block
+		this.pb.append(
+			FunctionNode_new(
+				n.name,
+				n.name.clone(4).append("_new"),
+				n.fields,
+				ListNode_new(nLIST).append(this.new_obj),
+				this.block
+			).toNode()
+		)
+
+		# Clear out block (acts as flag for StringNode method)
+		this.block = 0
+	}
+
+	func void visit(ListNode n)(ListNode old_pb) {
+		old_pb = this.pb
+		if (n.type == nBLOCK)
+			this.pb = n
+
+		n.visit_children(this.v)
+
+		this.pb = old_pb
+	}
+
+	func void visit(StringNode n)() {
+		if (this.block != 0) {
+			# Assign passed values to this field and append to block
+			this.block.append(
+				BinaryOperationNode_new(
+					ASSIGN,
+					BinaryOperationNode_new(DOT, this.new_obj, n.toNode()).toNode(),
+					n.toNode()
+				).toNode()
+			)
+		}
+	}
+
+
+
+
+
+	func void visit(Node n)() {
+	}
+
+	func void visit(BinaryOperationNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(UnaryOperationNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(FunctionNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(IfNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(LoopNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(ReturnNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(EnumNode n)() {
+		n.visit_children(this.v)
+	}
+}

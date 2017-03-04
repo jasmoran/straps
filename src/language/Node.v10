@@ -165,6 +165,12 @@ class ListNode(NodeType type, void m_visit, LinkedList children) {
 	}
 
 	func Node toNode()() { return this }
+
+	func ListNode append(Node n)(Any a) {
+		a = n
+		this.children.append(a)
+		return this
+	}
 }
 
 

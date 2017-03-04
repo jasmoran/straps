@@ -16,6 +16,8 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, St
 
 	load_loop()
 
+	v = Constructor_new()
+	root.m_visit(v)
 	v = Printer_new()
 	root.m_visit(v)
 }
