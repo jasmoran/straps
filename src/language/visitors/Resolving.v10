@@ -1,0 +1,140 @@
+func Resolving Resolving_new()(?T, Scope sc) {
+	define V Resolving
+	include "src/language/visitors/init.v10"
+	sc = scope
+	v = Resolving_new(?U, sc, true)
+	v.v = v
+	return v
+}
+
+class Resolving(?T, Scope scope, Boolean resolve_idents) {
+	func void visit(StringNode n)(Node replacement) {
+		n.ret_type.resolve(this.scope)
+		if (n.type == nIDENTIFIER) {
+			if (this.resolve_idents == true) n = this.scope.resolve(n.string)
+		}
+		return n
+	}
+
+	func void visit(FunctionNode n)(Scope prev_scope, ListNode block) {
+		prev_scope = this.scope
+		this.scope = n.scope
+		n.ret_type.resolve(this.scope)
+
+		# Dont resolve identifiers in vars and args
+		this.resolve_idents = false
+		n.args.visit(this.v)
+		n.vars.visit(this.v)
+		this.resolve_idents = true
+		n.block.visit(this.v)
+
+		this.scope = prev_scope
+		return n
+	}
+
+	func void visit(BinaryOperationNode n)(Scope prev_scope, StringNode sn, BinaryOperationNode dot, ListNode args) {
+		# Handle fields
+		if (n.op == DOT) {
+			# Resolve first item
+			sn = n.lhs
+			n.lhs = sn.m_visit(this)
+
+			# Save current scope
+			prev_scope = this.scope
+
+			# Set scope to that of the first items type
+			sn = n.lhs
+			this.scope = sn.ret_type.getScope()
+			if (this.scope == 0) this.scope = prev_scope
+
+			# Resolve second item
+			sn = n.rhs
+			n.rhs = sn.m_visit(this)
+
+			# Inherit ret_type from rhs
+			sn = n.rhs
+			n.ret_type = sn.ret_type
+
+			# Restore scope
+			this.scope = prev_scope
+
+			return n
+		}
+
+		if (n.op == PAREN_OPEN) {
+			args = n.rhs
+			if (n.lhs.type == nBINARYOP) {
+				dot = n.lhs
+				if (dot.op == DOT) {
+					# Add lhs of dot to beginning of arguments
+					args.prepend(dot.lhs)
+
+					# rhs of dot becomes new lhs of paren_open
+					n.lhs = dot.rhs
+				}
+			} else if (n.lhs.type == nIDENTIFIER) {
+				
+			}
+		}
+
+		n.rvisit_children(this.v)
+
+		# Handle method calls
+		#if (n.op == PAREN_OPEN) {
+		#	args = n.rhs
+		#	if (n.lhs.type == nBINARYOP) {
+		#		dot = n.lhs
+		#		if (dot.op == DOT) {
+		#			# Add lhs of dot to beginning of arguments
+		#			args.prepend(dot.lhs)
+
+		#			# rhs of dot becomes new lhs of paren_open
+		#			n.lhs = dot.rhs
+		#		}
+		#	}
+		#}
+
+		return n
+	}
+
+
+
+	func void visit(ClassNode n)() {
+		n.rvisit_children(this.v)
+		return n
+	}
+
+	func void visit(Node n)() {
+		return n
+	}
+
+	func void visit(UnaryOperationNode n)() {
+		n.rvisit_children(this.v)
+		return n
+	}
+
+	func void visit(ListNode n)() {
+		n.rvisit_children(this.v)
+		return n
+	}
+
+	func void visit(IfNode n)() {
+		n.rvisit_children(this.v)
+		return n
+	}
+
+	func void visit(LoopNode n)() {
+		n.rvisit_children(this.v)
+		return n
+	}
+
+	func void visit(ReturnNode n)() {
+		n.rvisit_children(this.v)
+		return n
+	}
+
+	func void visit(EnumNode n)() {
+		n.rvisit_children(this.v)
+		return n
+	}
+}

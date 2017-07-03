@@ -1,0 +1,60 @@
+func Typing Typing_new()(?T) {
+	define V Typing
+	include "src/language/visitors/init.v10"
+
+	v = Typing_new(?U)
+	v.v = v
+	return v
+}
+
+class Typing(?T) {
+	func void visit(ClassNode n)(Scope sc) {
+		sc = scope
+		if (sc == 0) error("NULL global scope")
+		sc.set(n.name, n.toNode())
+		n.visit_children(this.v)
+	}
+
+
+
+
+
+
+	func void visit(Node n)() {
+	}
+
+	func void visit(BinaryOperationNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(UnaryOperationNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(StringNode n)() {
+	}
+
+	func void visit(FunctionNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(ListNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(IfNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(LoopNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(ReturnNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(EnumNode n)() {
+		n.visit_children(this.v)
+	}
+}

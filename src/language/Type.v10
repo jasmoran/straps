@@ -1,0 +1,41 @@
+func Type Type_new(String raw)(ClassNode cn) {
+	cn = 0
+	return Type_new(raw, cn)
+}
+
+func Type Type_new()(String s, ClassNode cn) {
+	s = 0
+	cn = 0
+	return Type_new(s, cn)
+}
+
+class Type (String raw, ClassNode res) {
+	func String toString()(String s) {
+		if (this.raw == 0) {
+			return "Unknown"
+		} else if (this.res == 0) {
+			return this.raw.clone(2).prepend('#').append('#')
+		} else {
+			return this.res.name.clone(2).prepend('<').append('>')
+		}
+	}
+
+	func void resolve(Scope scope)() {
+		if (this.res > 0) return 0
+		if (scope == 0) error("Called with null scope")
+		loop {
+			if (scope == 0) break
+			this.res = scope.get(this.raw)
+			if (this.res > 0) return 0
+			this.res = 0
+			scope = scope.parent
+		}
+		#error("Could not resolve type: ", this.raw)
+	}
+
+	func Scope getScope()() {
+		if (this.res == 0) error("Attempted to fetch scope of unresolved type ", this.toString())
+		#if (this.res == 0) return 0
+		return this.res.scope
+	}
+}

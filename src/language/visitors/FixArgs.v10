@@ -1,0 +1,74 @@
+func FixArgs FixArgs_new()(?T) {
+	define V FixArgs
+	include "src/language/visitors/init.v10"
+	v = FixArgs_new(?U)
+	v.v = v
+	return v
+}
+
+class FixArgs(?T) {
+	func void visit(FunctionNode n)(LinkedListNode lln, StringNode arg) {
+		# Leave main function alone
+		if (n.name.equal("main") == true) {
+			n.visit_children(this.v)
+			return 0
+		}
+
+		n.name = String_new(128).append(n.name)
+
+		# Loop through arguments
+		lln = n.args.children.first
+		loop {
+			if (lln == 0) { break }
+			arg = lln.payload
+
+			# Append arguments type to function name
+			n.name.append('_').append(arg.ret_type.raw)
+
+			lln = lln.fwrd
+		}
+
+		n.visit_children(this.v)
+	}
+
+	func void visit(BinaryOperationNode n)() {
+		n.visit_children(this.v)
+	}
+
+
+
+
+	func void visit(Node n)() {
+	}
+
+	func void visit(UnaryOperationNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(StringNode n)() {
+	}
+
+	func void visit(ClassNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(ListNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(IfNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(LoopNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(ReturnNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(EnumNode n)() {
+		n.visit_children(this.v)
+	}
+}

@@ -1,0 +1,21 @@
+class Scope (Scope parent, Map_Node scope) {
+	func Node get(String name)() {
+		return this.scope.get(name)
+	}
+
+	func void set(String name, Node node)() {
+		this.scope.set(name, node)
+	}
+
+	func Node resolve(String name)(Scope s, Node res) {
+		s = this
+		if (s == 0) error("Attempted to resolve on NULL scope")
+		loop {
+			if (s == 0) break
+			res = s.get(name)
+			if (res > 0) return res
+			s = s.parent
+		}
+		error("Could not resolve value ", name)
+	}
+}

@@ -1,0 +1,84 @@
+func Method Method_new()(?T, ListNode ln, ClassNode cn) {
+	define V Method
+	include "src/language/visitors/init.v10"
+	ln = 0
+	cn = 0
+	v = Method_new(?U, ln, cn)
+	v.v = v
+	return v
+}
+
+class Method(?T, ListNode pb, ClassNode cls) {
+	func void visit(ClassNode n)() {
+		this.cls = n
+		# Process each method
+		n.block.visit_children(this.v)
+
+		# Remove methods from now class now they have been copied to parent block
+		n.block.children.clear()
+		this.cls = 0
+	}
+
+	func void visit(FunctionNode n)(Number length) {
+		if (this.cls != 0) {
+			# Add method to scope of class
+			this.cls.scope.set(n.name, n.toNode())
+
+			# Save new method name "_CLASS_METHOD"
+			length = n.name.length
+			length += 2
+			n.name = this.cls.name.clone(length).prepend('_').append('_').append(n.name)
+
+			# Add 'this' to arguments
+			n.args.prepend(
+				StringNode_new(nIDENTIFIER, this.cls.name, "this").toNode()
+			)
+
+			# Copy method to parent block
+			this.pb.append(n.toNode())
+		}
+	}
+
+	func void visit(ListNode n)(ListNode old_pb) {
+		old_pb = this.pb
+		if (n.type == nBLOCK)
+			this.pb = n
+
+		n.visit_children(this.v)
+
+		this.pb = old_pb
+	}
+
+
+
+
+	func void visit(Node n)() {
+	}
+
+	func void visit(BinaryOperationNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(UnaryOperationNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(StringNode n)() {
+	}
+
+	func void visit(IfNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(LoopNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(ReturnNode n)() {
+		n.visit_children(this.v)
+	}
+
+	func void visit(EnumNode n)() {
+		n.visit_children(this.v)
+	}
+}
