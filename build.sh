@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
-# nasm -f elf64 -o bin/v1.o src/v1.asm &&
-# gcc -m64 -o bin/v1 bin/v1.o &&
-# rm bin/v1.o &&
+nasm -f elf64 -o bin/v1.o src/v1.asm &&
+ld -m elf_x86_64 -o bin/v1 bin/v1.o &&
+rm bin/v1.o &&
 
-# ./bin/v1 < src/v2.v1 > asm_out/v2.asm &&
+./bin/v1 < src/v2.v1 > asm_out/v2.asm &&
+exit
 # nasm -f elf64 -o bin/v2.o asm_out/v2.asm &&
 # gcc -m64 -o bin/v2 bin/v2.o &&
 # rm bin/v2.o &&

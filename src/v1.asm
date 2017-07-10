@@ -2,8 +2,8 @@ section .bss
 	current_char:	resb	1
 
 section .text
-global main
-main:
+global _start
+_start:
 	; Read byte from stdin
 	mov rax, 0
 	mov rdi, 0
@@ -19,7 +19,7 @@ main:
 	cmp BYTE[current_char], 0x7E ; tilde
 	je .nasm_sect
 	
-	jmp main
+	jmp _start
 	
 	; No man's land
 	
@@ -37,7 +37,7 @@ main:
 	
 	; Check for end NASM section
 	cmp BYTE[current_char], 0x7E ; tilde
-	je main
+	je _start
 	
 	; Write byte to stdout
 	mov rax, 1
@@ -51,4 +51,7 @@ main:
 	; No man's land
 	
 .exit:
+	mov rax, 60
+	mov rdi, 0
+	syscall
 
