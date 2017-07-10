@@ -12,7 +12,7 @@ section .data
 	new_line:			db		10
 
 section .text
-global main
+global _start
 
 asm_literal:
 ~
@@ -250,7 +250,7 @@ func_ret:
 	ret
 
 
-main:
+_start:
 ~
 	# Read byte from stdin
 	*0,0,current_char,1*
@@ -264,40 +264,43 @@ main:
 	cmp BYTE[current_char], 0x7E ; tilde
 	jne .end_if1
 		call asm_literal
-		jmp main
+		jmp _start
 	.end_if1:
 
 	; Check for syscall
 	cmp BYTE[current_char], 0x2A ; asterisk
 	jne .end_if2
 		call syscall
-		jmp main
+		jmp _start
 	.end_if2:
 
 	; Check for comment
 	cmp BYTE[current_char], '#'
 	jne .end_if3
 		call comment
-		jmp main
+		jmp _start
 	.end_if3:
 
 	; Check for function declaration
 	cmp BYTE[current_char], 'f'
 	jne .end_if4
 		call func_decl
-		jmp main
+		jmp _start
 	.end_if4:
 
 	; Check for function return
 	cmp BYTE[current_char], 'r'
 	jne .end_if5
 		call func_ret
-		jmp main
+		jmp _start
 	.end_if5:
 
-	jmp main
+	jmp _start
 
 	; No man's land
 
 .exit:
+	mov rax, 60
+	mov rdi, 0
+	syscall
 ~
