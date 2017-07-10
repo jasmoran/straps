@@ -21,7 +21,7 @@ section .data
   cmp:          db    'cmp '
 
 section .text
-global main
+global _start
 
 ~
 f asm_literal,0,0:
@@ -435,7 +435,7 @@ f block_end,0,0:
   r
 
 
-f main,0,0:
+f _start,0,0:
 ~
 .byte_loop:
 ~
@@ -524,4 +524,8 @@ f main,0,0:
 .exit:
   mov rsp, rbp
   pop rbp
+
+  mov rax, 60
+  mov rdi, 0
+  syscall
 ~
