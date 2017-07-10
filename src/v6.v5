@@ -30,7 +30,7 @@ section .data
 	square_close:	db		']'
 
 section .text
-global main
+global _start
 ~
 
 f asm_literal,0,0:
@@ -742,7 +742,7 @@ f exression,0,0:
 	a rax=0;
 	r
 
-f main,0,0:
+f _start,0,0:
 	l{
 		()exression;
 		i rax, 0 { b }i
@@ -752,3 +752,4 @@ f main,0,0:
 		mov rsp, rbp
 	  pop rbp
 	~
+	*60,0*
