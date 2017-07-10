@@ -27,7 +27,7 @@ section .data
 	square_close:	db		']'
 
 section .text
-global main
+global _start
 ~
 
 f asm_literal,0,0:
@@ -599,7 +599,7 @@ f assignment,0,0:
 
 
 
-f main,0,0:
+f _start,0,0:
 	l{
 		# Read byte from stdin
 		*0,0,current_char,1*
@@ -727,3 +727,5 @@ f main,0,0:
 	  mov rsp, rbp
 	  pop rbp
 	~
+
+	*60,0*
