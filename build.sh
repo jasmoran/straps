@@ -30,9 +30,8 @@ ld -m elf_x86_64 -o bin/v6 bin/v6.o &&
 rm bin/v6.o &&
 
 ./bin/v6 < src/v7.v6 > asm_out/v7.asm &&
-exit
 nasm -f elf64 -o bin/v7.o asm_out/v7.asm &&
-gcc -m64 -o bin/v7 bin/v7.o &&
+ld -m elf_x86_64 -o bin/v7 bin/v7.o &&
 rm bin/v7.o &&
 
 # ./bin/v7 < src/v7.v7 > asm_out/v77.asm &&
@@ -41,13 +40,13 @@ rm bin/v7.o &&
 # rm bin/v77.o
 
 ./bin/v7 < src/v8.v7 > asm_out/v8.asm &&
-exit
-# ruby fun_name.rb asm_out/v8.asm >> asm_out/v8.asm &&
-# nasm -f elf64 -o bin/v8.o asm_out/v8.asm &&
-# gcc -m64 -o bin/v8 bin/v8.o &&
-# rm bin/v8.o &&
+ruby fun_name.rb asm_out/v8.asm >> asm_out/v8.asm &&
+nasm -f elf64 -o bin/v8.o asm_out/v8.asm &&
+ld -m elf_x86_64 -o bin/v8 bin/v8.o &&
+rm bin/v8.o &&
 
-# ./bin/v8 src/v9.v8 asm_out/v9.asm &&
+./bin/v8 src/v9.v8 asm_out/v9.asm &&
+exit
 # nasm -f elf64 -o bin/v9.o asm_out/v9.asm &&
 # gcc -m64 -o bin/v9 bin/v9.o &&
 # rm bin/v9.o &&
