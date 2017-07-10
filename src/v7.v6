@@ -85,7 +85,7 @@ section .data
 	stmt:					db		'STATEMENT'
 
 section .text
-global main
+global _start
 ~
 
 f asm_literal,0,0{
@@ -803,7 +803,7 @@ f exression,1,0{
 	r
 }
 
-f main,0,0{
+f _start,0,0{
 	# Initialize tokenizer
 	a BYTE[next_char]=1;
 	()token_kee_char;
