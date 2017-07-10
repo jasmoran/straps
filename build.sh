@@ -5,12 +5,12 @@ ld -m elf_x86_64 -o bin/v1 bin/v1.o &&
 rm bin/v1.o &&
 
 ./bin/v1 < src/v2.v1 > asm_out/v2.asm &&
-exit
-# nasm -f elf64 -o bin/v2.o asm_out/v2.asm &&
-# gcc -m64 -o bin/v2 bin/v2.o &&
-# rm bin/v2.o &&
+nasm -f elf64 -o bin/v2.o asm_out/v2.asm &&
+ld -m elf_x86_64 -o bin/v2 bin/v2.o &&
+rm bin/v2.o &&
 
-# ./bin/v2 < src/v3.v2 > asm_out/v3.asm &&
+./bin/v2 < src/v3.v2 > asm_out/v3.asm &&
+exit
 # nasm -f elf64 -o bin/v3.o asm_out/v3.asm &&
 # gcc -m64 -o bin/v3 bin/v3.o &&
 # rm bin/v3.o &&

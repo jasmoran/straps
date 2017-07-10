@@ -8,7 +8,7 @@ section .data
 	sys_inst:		db		10, 'syscall', 10
 
 section .text
-global main
+global _start
 
 asm_literal:
 	; Read byte from stdin
@@ -110,7 +110,7 @@ syscall:
 	
 
 
-main:
+_start:
 	; Read byte from stdin
 	mov rax, 0
 	mov rdi, 0
@@ -126,16 +126,19 @@ main:
 	cmp BYTE[current_char], 0x7E ; tilde
 	jne .end_if1
 		call asm_literal
-		jmp main
+		jmp _start
 	.end_if1:
 	
 	; Check for syscall
 	cmp BYTE[current_char], 0x2A ; asterisk
-	jne main
+	jne _start
 		call syscall
-		jmp main
+		jmp _start
 	
 	; No man's land
 	
 .exit:
+	mov rax, 60
+	mov rdi, 0
+	syscall
 ~
