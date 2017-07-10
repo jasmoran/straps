@@ -46,14 +46,13 @@ ld -m elf_x86_64 -o bin/v8 bin/v8.o &&
 rm bin/v8.o &&
 
 ./bin/v8 src/v9.v8 asm_out/v9.asm &&
-exit
-# nasm -f elf64 -o bin/v9.o asm_out/v9.asm &&
-# gcc -m64 -o bin/v9 bin/v9.o &&
-# rm bin/v9.o &&
+nasm -f elf64 -o bin/v9.o asm_out/v9.asm &&
+ld -m elf_x86_64 -o bin/v9 bin/v9.o &&
+rm bin/v9.o &&
 
 ./bin/v9 src/v9.v9 asm_out/v99.asm &&
 nasm -f elf64 -o bin/v99.o asm_out/v99.asm &&
-gcc -m64 -o bin/v99 bin/v99.o &&
+ld -m elf_x86_64 -o bin/v99 bin/v99.o &&
 rm bin/v99.o
 
 # ./bin/v99 src/v9.v9 asm_out/v99t.asm &&

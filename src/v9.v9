@@ -57,7 +57,7 @@ section .data
 	db 39
 
 section .text
-global main
+global _start
 ")
 
 include "src/printer.v9"
@@ -87,21 +87,19 @@ func read_number()() {
 	return
 }
 
+nasm("_start:
+")
 func main()(in_file_name) {
 	nasm("mov QWORD[rbp + 8], 0
 	")
 
 	# Open in file
-	rsi += 8
-	var in_file_name = rsi
-	rsi = rsi[0]
+	rsi = arg2
 	sys(2,rsi,0,511)
 	in_file_fid[0] = rax
 
 	# Create out file
-	rsi = var in_file_name
-	rsi += 8
-	rsi = rsi[0]
+	rsi = arg3
 	sys(85,rsi,511)
 	out_file_fid[0] = rax
 
