@@ -9,4 +9,4 @@ rm bin/v10.o &&
 nasm -f elf64 -o bin/v1010.o asm_out/v1010.asm &&
 ld -m elf_x86_64 -o bin/v1010 bin/v1010.o &&
 rm bin/v1010.o &&
-./run_test -q test/**/*
+./run_test -q

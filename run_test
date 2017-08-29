@@ -92,6 +92,9 @@ diff = ARGV[0].include? 'd'
 
 passed = 0
 
+# Run on all files in test directory by default
+files = Dir['test/**/*.v10'] if files.empty?
+
 files.each do |f|
 	res = test(f, leave_asm, leave_bin)
 
