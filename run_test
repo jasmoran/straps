@@ -49,7 +49,7 @@ def test(program, leave_asm, leave_bin)
 	data = File.open(program).read
 	lines = data.split("\n")
 	pretty_out = ''
-	outputs = '^'
+	outputs = '\A'
 	inputs = []
 	lines.each do |l|
 		case l[0..1]
@@ -60,11 +60,17 @@ def test(program, leave_asm, leave_bin)
 			outputs << ".*\n"
 		when '#+'
 			inputs << l[2..-1]
+		when '#!'
+			path = l[2..-1]
+			path = File.dirname(program) + '/' + path unless File.exist? path
+			ftext = File.open(path).read
+			outputs << Regexp.escape(ftext)
+			pretty_out << ftext
 		else
 			break
 		end
 	end
-	expected = Regexp.new(outputs[0..-2] + '$', Regexp::MULTILINE)
+	expected = Regexp.new(outputs[0..-2] + '\Z', Regexp::MULTILINE)
 	actual = run(program, leave_asm, leave_bin, inputs)
 
 	if expected === actual
