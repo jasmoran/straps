@@ -1,0 +1,22 @@
+#!Printer.out
+#-
+
+include "src/stdlib/stdlib.v10"
+include "src/language/parser/Parser.v10"
+
+include "src/language/visitors/Visitor.v10"
+include "src/language/visitors/Printer.v10"
+
+func void main()(Stream input, Parser parser, Node root, Visitor v) {
+	# Open input file
+	input = File_open("test/language/Visitors/sample.v10.test")
+	if (input < 0) {
+		"Couldn't read input file".println(STDERR)
+		return 1
+	}
+
+	parser = Parser_new("sample.v10", input)
+	root = parser.parse()
+	v = Printer_new()
+	root.m_visit(v)
+}

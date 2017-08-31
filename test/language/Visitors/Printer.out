@@ -1,0 +1,55 @@
+nBLOCK
+  nCLASS(Any)
+    nLIST
+      nIDENTIFIER(Any: "deref")
+    nBLOCK
+  nCLASS(Character)
+    nLIST
+    nBLOCK
+  nCLASS(Number)
+    nLIST
+    nBLOCK
+  nCLASS(Boolean)
+    nLIST
+    nBLOCK
+  nENUM(Boolean)
+    nBLOCK
+      nIDENTIFIER(Unknown: "false")
+      nIDENTIFIER(Unknown: "true")
+  nCLASS(String)
+    nLIST
+    nBLOCK
+      nFUNCTION(Any: println)
+        nLIST
+        nLIST
+        nBLOCK
+  nFUNCTION(Any: allocate)
+    nLIST
+      nIDENTIFIER(Number: "size")
+    nLIST
+    nBLOCK
+  nFUNCTION(Boolean: thisisafunction)
+    nLIST
+      nIDENTIFIER(Any: "arg1")
+      nIDENTIFIER(Any: "arg2")
+    nLIST
+      nIDENTIFIER(Any: "var1")
+      nIDENTIFIER(Any: "var2")
+    nBLOCK
+      nBINARYOP(ASSIGN)
+        nIDENTIFIER(Unknown: "arg1")
+        nIDENTIFIER(Unknown: "var1")
+      nUNARYOP(INCREMENT, right)
+        nIDENTIFIER(Unknown: "var2")
+      nBINARYOP(ADD)
+        nIDENTIFIER(Unknown: "var1")
+        nNUMBER(Number: "1337")
+      nLOOP
+        nBLOCK
+          nBINARYOP(PAREN_OPEN)
+            nBINARYOP(DOT)
+              nSTRING(String: "oopsy daisy")
+              nIDENTIFIER(Unknown: "println")
+            nCALL
+      nRETURN
+        nIDENTIFIER(Unknown: "true")

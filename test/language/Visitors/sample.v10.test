@@ -1,0 +1,21 @@
+class Any (Any deref) {}
+class Character () {}
+class Number () {}
+class Boolean () {}
+enum Boolean { false true }
+
+class String () {
+	func Any println()() {}
+}
+
+func Any allocate(Number size)() {}
+
+func Boolean thisisafunction(Any arg1, Any arg2)(Any var1, Any var2) {
+	arg1 = var1
+	var2++
+	var1 += 1337
+	loop {
+		"oopsy daisy".println()
+	}
+	return true
+}
