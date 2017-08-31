@@ -1,10 +1,21 @@
-class Scope (Scope parent, Map_Node scope) {
+func Scope Scope_new()(Scope sc) {
+	sc = 0
+	return Scope_new(sc)
+}
+
+func Scope Scope_new(Scope parent)(Map sc) {
+	sc = Map_new(2048)
+	return Scope_new(parent, sc)
+}
+
+class Scope (Scope parent, Map scope) {
 	func Node get(String name)() {
 		return this.scope.get(name)
 	}
 
-	func void set(String name, Node node)() {
-		this.scope.set(name, node)
+	func void set(String name, Node node)(Any a) {
+		a = node
+		this.scope.set(name, a)
 	}
 
 	func Node resolve(String name)(Scope s, Node res) {

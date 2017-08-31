@@ -34,4 +34,14 @@ class Map (Array keys, Array values) {
 		this.keys.clear()
 		this.values.clear()
 	}
+
+	func void print_keys()(Number index, String key) {
+		index = 0
+		loop {
+			if (this.keys.length == index) break
+			key = this.keys.get(index)
+			key.println()
+			index++
+		}
+	}
 }
