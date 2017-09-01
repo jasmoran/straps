@@ -2,6 +2,7 @@
 #-HiHi
 #-Hioi
 #-ioi
+#-iioi
 #-
 
 include "src/stdlib/stdlib.v10"
@@ -15,5 +16,7 @@ func void main()(String str, Character nl) {
 	str.set(2, 'o')
 	str.println()
 	str.shift_left(1)
+	str.println()
+	str.shift_right(1)
 	str.println()
 }

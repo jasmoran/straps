@@ -82,11 +82,15 @@ class String (Number length, Number size, CharArr data) {
 
 	func String shift_right(Number n)() {
 		# Shifts characters in the string n bytes to the right
+		rcx = this.length
 		rsi = this.data
+		rsi += rcx
+		rsi--
 		rdi = rsi
 		rdi += n
-		rcx = this.length
+		nasm("std")
 		nasm("rep movsb")
+		nasm("cld")
 		this.length += n
 		return this
 	}
