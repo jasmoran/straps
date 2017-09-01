@@ -3,10 +3,13 @@
 
 include "src/stdlib/stdlib.v10"
 include "src/language/parser/Parser.v10"
+include "src/language/Scope.v10"
 
 include "src/language/visitors/Visitor.v10"
 include "src/language/visitors/Printer.v10"
 include "src/language/visitors/Constructor.v10"
+
+global(Scope scope)
 
 func void main()(Stream input, Parser parser, Node root, Visitor v) {
 	# Open input file

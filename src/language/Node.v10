@@ -92,13 +92,15 @@ class StringNode(NodeType type, void m_visit, String ret_type, String string) {
 
 
 
-func Node ClassNode_new(String name, ListNode fields, ListNode block)(void m_visit) {
+func Node ClassNode_new(String name, ListNode fields, ListNode block)(void m_visit, Scope sc) {
 	define N ClassNode
 	include "src/language/nodes/init.v10"
-	return ClassNode_new(nCLASS, m_visit, name, fields, block)
+	sc = scope
+	sc = Scope_new(sc)
+	return ClassNode_new(nCLASS, m_visit, name, fields, block, sc)
 }
 
-class ClassNode(NodeType type, void m_visit, String name, ListNode fields, ListNode block) {
+class ClassNode(NodeType type, void m_visit, String name, ListNode fields, ListNode block, Scope scope) {
 	func void visit(Visitor v)() {
 		v.m_visit_ClassNode(this)
 	}
@@ -169,6 +171,12 @@ class ListNode(NodeType type, void m_visit, LinkedList children) {
 	func ListNode append(Node n)(Any a) {
 		a = n
 		this.children.append(a)
+		return this
+	}
+
+	func ListNode prepend(Node n)(Any a) {
+		a = n
+		this.children.prepend(a)
 		return this
 	}
 }

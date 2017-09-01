@@ -1,0 +1,133 @@
+nBLOCK
+  nCLASS(Any)
+    nLIST
+      nIDENTIFIER(Any: "deref")
+    nBLOCK
+  nCLASS(Character)
+    nLIST
+    nBLOCK
+  nCLASS(Number)
+    nLIST
+    nBLOCK
+  nCLASS(Boolean)
+    nLIST
+    nBLOCK
+  nENUM(Boolean)
+    nBLOCK
+      nIDENTIFIER(Unknown: "false")
+      nIDENTIFIER(Unknown: "true")
+  nCLASS(String)
+println
+    nLIST
+    nBLOCK
+  nFUNCTION(Any: allocate)
+    nLIST
+      nIDENTIFIER(Number: "size")
+    nLIST
+    nBLOCK
+  nFUNCTION(Boolean: thisisafunction)
+    nLIST
+      nIDENTIFIER(Any: "arg1")
+      nIDENTIFIER(Any: "arg2")
+    nLIST
+      nIDENTIFIER(Any: "var1")
+      nIDENTIFIER(Any: "var2")
+    nBLOCK
+      nBINARYOP(ASSIGN)
+        nIDENTIFIER(Unknown: "arg1")
+        nIDENTIFIER(Unknown: "var1")
+      nUNARYOP(INCREMENT, right)
+        nIDENTIFIER(Unknown: "var2")
+      nBINARYOP(ADD)
+        nIDENTIFIER(Unknown: "var1")
+        nNUMBER(Number: "1337")
+      nLOOP
+        nBLOCK
+          nBINARYOP(PAREN_OPEN)
+            nBINARYOP(DOT)
+              nSTRING(String: "oopsy daisy")
+              nIDENTIFIER(Unknown: "println")
+            nCALL
+      nRETURN
+        nIDENTIFIER(Unknown: "true")
+  nFUNCTION(Any: Any_new)
+    nLIST
+      nIDENTIFIER(Any: "deref")
+    nLIST
+      nIDENTIFIER(Any: "obj")
+    nBLOCK
+      nBINARYOP(ASSIGN)
+        nIDENTIFIER(Any: "obj")
+        nBINARYOP(PAREN_OPEN)
+          nIDENTIFIER(Any: "allocate")
+          nCALL
+            nNUMBER(Number: "8")
+      nBINARYOP(ASSIGN)
+        nBINARYOP(DOT)
+          nIDENTIFIER(Any: "obj")
+          nIDENTIFIER(Any: "deref")
+        nIDENTIFIER(Any: "deref")
+      nRETURN
+        nIDENTIFIER(Any: "obj")
+  nFUNCTION(Character: Character_new)
+    nLIST
+    nLIST
+      nIDENTIFIER(Character: "obj")
+    nBLOCK
+      nBINARYOP(ASSIGN)
+        nIDENTIFIER(Character: "obj")
+        nBINARYOP(PAREN_OPEN)
+          nIDENTIFIER(Character: "allocate")
+          nCALL
+            nNUMBER(Number: "0")
+      nRETURN
+        nIDENTIFIER(Character: "obj")
+  nFUNCTION(Number: Number_new)
+    nLIST
+    nLIST
+      nIDENTIFIER(Number: "obj")
+    nBLOCK
+      nBINARYOP(ASSIGN)
+        nIDENTIFIER(Number: "obj")
+        nBINARYOP(PAREN_OPEN)
+          nIDENTIFIER(Number: "allocate")
+          nCALL
+            nNUMBER(Number: "0")
+      nRETURN
+        nIDENTIFIER(Number: "obj")
+  nFUNCTION(Boolean: Boolean_new)
+    nLIST
+    nLIST
+      nIDENTIFIER(Boolean: "obj")
+    nBLOCK
+      nBINARYOP(ASSIGN)
+        nIDENTIFIER(Boolean: "obj")
+        nBINARYOP(PAREN_OPEN)
+          nIDENTIFIER(Boolean: "allocate")
+          nCALL
+            nNUMBER(Number: "0")
+      nRETURN
+        nIDENTIFIER(Boolean: "obj")
+  nFUNCTION(String: String_new)
+    nLIST
+    nLIST
+      nIDENTIFIER(String: "obj")
+    nBLOCK
+      nBINARYOP(ASSIGN)
+        nIDENTIFIER(String: "obj")
+        nBINARYOP(PAREN_OPEN)
+          nIDENTIFIER(String: "allocate")
+          nCALL
+            nNUMBER(Number: "0")
+      nRETURN
+        nIDENTIFIER(String: "obj")
+  nFUNCTION(Any: _String_println)
+    nLIST
+      nIDENTIFIER(String: "this")
+    nLIST
+    nBLOCK
+Any
+Character
+Number
+Boolean
+String

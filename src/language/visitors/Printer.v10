@@ -66,6 +66,7 @@ class Printer(?T, Number indent, Stream s) {
 		"(".print(this.s)
 		n.name.print(this.s)
 		")\n".print(this.s)
+		n.scope.scope.print_keys()
 
 		this.indent++
 		n.visit_children(this.v)
