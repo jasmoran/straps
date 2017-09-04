@@ -1,7 +1,7 @@
 nBLOCK
   nCLASS(Any)
     nLIST
-      nIDENTIFIER(Any: "deref")
+      nIDENTIFIER(#Any#: "deref")
     nBLOCK
   nCLASS(Character)
     nLIST
@@ -19,22 +19,22 @@ nBLOCK
   nCLASS(String)
     nLIST
     nBLOCK
-      nFUNCTION(Any: println)
+      nFUNCTION(#Any#: println)
         nLIST
         nLIST
         nBLOCK
-  nFUNCTION(Any: allocate)
+  nFUNCTION(#Any#: allocate)
     nLIST
-      nIDENTIFIER(Number: "size")
+      nIDENTIFIER(#Number#: "size")
     nLIST
     nBLOCK
-  nFUNCTION(Boolean: thisisafunction)
+  nFUNCTION(#Boolean#: thisisafunction)
     nLIST
-      nIDENTIFIER(Any: "arg1")
-      nIDENTIFIER(Any: "arg2")
+      nIDENTIFIER(#Any#: "arg1")
+      nIDENTIFIER(#Any#: "arg2")
     nLIST
-      nIDENTIFIER(Any: "var1")
-      nIDENTIFIER(Any: "var2")
+      nIDENTIFIER(#Any#: "var1")
+      nIDENTIFIER(#Any#: "var2")
     nBLOCK
       nBINARYOP(ASSIGN)
         nIDENTIFIER(Unknown: "arg1")
@@ -43,12 +43,12 @@ nBLOCK
         nIDENTIFIER(Unknown: "var2")
       nBINARYOP(ADD)
         nIDENTIFIER(Unknown: "var1")
-        nNUMBER(Number: "1337")
+        nNUMBER(#Number#: "1337")
       nLOOP
         nBLOCK
           nBINARYOP(PAREN_OPEN)
             nBINARYOP(DOT)
-              nSTRING(String: "oopsy daisy")
+              nSTRING(#String#: "oopsy daisy")
               nIDENTIFIER(Unknown: "println")
             nCALL
       nRETURN

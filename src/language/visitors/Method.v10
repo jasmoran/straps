@@ -31,7 +31,7 @@ class Method(?T, ListNode pb, ClassNode cls) {
 
 			# Add 'this' to arguments
 			n.args.prepend(
-				StringNode_new(nIDENTIFIER, this.cls.name, "this").toNode()
+				StringNode_new(nIDENTIFIER, Type_new(this.cls.name), "this").toNode()
 			)
 
 			# Copy method to parent block

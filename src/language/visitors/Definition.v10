@@ -113,7 +113,7 @@ class Definition(?T) {
 					BinaryOperationNode_new(
 						SQUARE_OPEN,
 						field.toNode(),
-						StringNode_new(nNUMBER, "Number", "0").toNode()
+						StringNode_new(nNUMBER, Type_new("Number"), "0").toNode()
 					).toNode()
 				)
 			} else {
@@ -133,8 +133,8 @@ class Definition(?T) {
 	func Node new_variable(Number offset, Type ret_type)() {
 		return BinaryOperationNode_new(
 			SQUARE_OPEN,
-			StringNode_new(nREGISTER, "Unknown", "rbp").toNode(),
-			StringNode_new(nNUMBER, "Number", offset.toString()).toNode(),
+			StringNode_new(nREGISTER, Type_new(), "rbp").toNode(),
+			StringNode_new(nNUMBER, Type_new("Number"), offset.toString()).toNode(),
 			ret_type
 		)
 	}

@@ -38,4 +38,8 @@ class Type (String raw, ClassNode res) {
 		#if (this.res == 0) return 0
 		return this.res.scope
 	}
+
+	func void print(Stream s)() {
+		this.toString().print(s)
+	}
 }

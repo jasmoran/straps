@@ -1,7 +1,7 @@
 nBLOCK
   nCLASS(Any)
     nLIST
-      nIDENTIFIER(Any: "deref")
+      nIDENTIFIER(#Any#: "deref")
     nBLOCK
   nCLASS(Character)
     nLIST
@@ -20,18 +20,18 @@ nBLOCK
 println
     nLIST
     nBLOCK
-  nFUNCTION(Any: allocate)
+  nFUNCTION(#Any#: allocate)
     nLIST
-      nIDENTIFIER(Number: "size")
+      nIDENTIFIER(#Number#: "size")
     nLIST
     nBLOCK
-  nFUNCTION(Boolean: thisisafunction)
+  nFUNCTION(#Boolean#: thisisafunction)
     nLIST
-      nIDENTIFIER(Any: "arg1")
-      nIDENTIFIER(Any: "arg2")
+      nIDENTIFIER(#Any#: "arg1")
+      nIDENTIFIER(#Any#: "arg2")
     nLIST
-      nIDENTIFIER(Any: "var1")
-      nIDENTIFIER(Any: "var2")
+      nIDENTIFIER(#Any#: "var1")
+      nIDENTIFIER(#Any#: "var2")
     nBLOCK
       nBINARYOP(ASSIGN)
         nIDENTIFIER(Unknown: "arg1")
@@ -40,90 +40,90 @@ println
         nIDENTIFIER(Unknown: "var2")
       nBINARYOP(ADD)
         nIDENTIFIER(Unknown: "var1")
-        nNUMBER(Number: "1337")
+        nNUMBER(#Number#: "1337")
       nLOOP
         nBLOCK
           nBINARYOP(PAREN_OPEN)
             nBINARYOP(DOT)
-              nSTRING(String: "oopsy daisy")
+              nSTRING(#String#: "oopsy daisy")
               nIDENTIFIER(Unknown: "println")
             nCALL
       nRETURN
         nIDENTIFIER(Unknown: "true")
-  nFUNCTION(Any: Any_new)
+  nFUNCTION(#Any#: Any_new)
     nLIST
-      nIDENTIFIER(Any: "deref")
+      nIDENTIFIER(#Any#: "deref")
     nLIST
-      nIDENTIFIER(Any: "obj")
+      nIDENTIFIER(#Any#: "obj")
     nBLOCK
       nBINARYOP(ASSIGN)
-        nIDENTIFIER(Any: "obj")
+        nIDENTIFIER(#Any#: "obj")
         nBINARYOP(PAREN_OPEN)
-          nIDENTIFIER(Any: "allocate")
+          nIDENTIFIER(#Any#: "allocate")
           nCALL
-            nNUMBER(Number: "8")
+            nNUMBER(#Number#: "8")
       nBINARYOP(ASSIGN)
         nBINARYOP(DOT)
-          nIDENTIFIER(Any: "obj")
-          nIDENTIFIER(Any: "deref")
-        nIDENTIFIER(Any: "deref")
+          nIDENTIFIER(#Any#: "obj")
+          nIDENTIFIER(#Any#: "deref")
+        nIDENTIFIER(#Any#: "deref")
       nRETURN
-        nIDENTIFIER(Any: "obj")
-  nFUNCTION(Character: Character_new)
+        nIDENTIFIER(#Any#: "obj")
+  nFUNCTION(#Character#: Character_new)
     nLIST
     nLIST
-      nIDENTIFIER(Character: "obj")
+      nIDENTIFIER(#Character#: "obj")
     nBLOCK
       nBINARYOP(ASSIGN)
-        nIDENTIFIER(Character: "obj")
+        nIDENTIFIER(#Character#: "obj")
         nBINARYOP(PAREN_OPEN)
-          nIDENTIFIER(Character: "allocate")
+          nIDENTIFIER(#Character#: "allocate")
           nCALL
-            nNUMBER(Number: "0")
+            nNUMBER(#Number#: "0")
       nRETURN
-        nIDENTIFIER(Character: "obj")
-  nFUNCTION(Number: Number_new)
+        nIDENTIFIER(#Character#: "obj")
+  nFUNCTION(#Number#: Number_new)
     nLIST
     nLIST
-      nIDENTIFIER(Number: "obj")
+      nIDENTIFIER(#Number#: "obj")
     nBLOCK
       nBINARYOP(ASSIGN)
-        nIDENTIFIER(Number: "obj")
+        nIDENTIFIER(#Number#: "obj")
         nBINARYOP(PAREN_OPEN)
-          nIDENTIFIER(Number: "allocate")
+          nIDENTIFIER(#Number#: "allocate")
           nCALL
-            nNUMBER(Number: "0")
+            nNUMBER(#Number#: "0")
       nRETURN
-        nIDENTIFIER(Number: "obj")
-  nFUNCTION(Boolean: Boolean_new)
+        nIDENTIFIER(#Number#: "obj")
+  nFUNCTION(#Boolean#: Boolean_new)
     nLIST
     nLIST
-      nIDENTIFIER(Boolean: "obj")
+      nIDENTIFIER(#Boolean#: "obj")
     nBLOCK
       nBINARYOP(ASSIGN)
-        nIDENTIFIER(Boolean: "obj")
+        nIDENTIFIER(#Boolean#: "obj")
         nBINARYOP(PAREN_OPEN)
-          nIDENTIFIER(Boolean: "allocate")
+          nIDENTIFIER(#Boolean#: "allocate")
           nCALL
-            nNUMBER(Number: "0")
+            nNUMBER(#Number#: "0")
       nRETURN
-        nIDENTIFIER(Boolean: "obj")
-  nFUNCTION(String: String_new)
+        nIDENTIFIER(#Boolean#: "obj")
+  nFUNCTION(#String#: String_new)
     nLIST
     nLIST
-      nIDENTIFIER(String: "obj")
+      nIDENTIFIER(#String#: "obj")
     nBLOCK
       nBINARYOP(ASSIGN)
-        nIDENTIFIER(String: "obj")
+        nIDENTIFIER(#String#: "obj")
         nBINARYOP(PAREN_OPEN)
-          nIDENTIFIER(String: "allocate")
+          nIDENTIFIER(#String#: "allocate")
           nCALL
-            nNUMBER(Number: "0")
+            nNUMBER(#Number#: "0")
       nRETURN
-        nIDENTIFIER(String: "obj")
-  nFUNCTION(Any: _String_println)
+        nIDENTIFIER(#String#: "obj")
+  nFUNCTION(#Any#: _String_println)
     nLIST
-      nIDENTIFIER(String: "this")
+      nIDENTIFIER(#String#: "this")
     nLIST
     nBLOCK
 Any

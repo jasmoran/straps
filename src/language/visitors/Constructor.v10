@@ -10,7 +10,7 @@ func Constructor Constructor_new()(?T, ListNode ln, Node n) {
 
 class Constructor(?T, ListNode pb, ListNode block, Node new_obj) {
 	func void visit(ClassNode n)(Number size) {
-		this.new_obj = StringNode_new(nIDENTIFIER, n.name, "obj")
+		this.new_obj = StringNode_new(nIDENTIFIER, Type_new(n.name), "obj")
 
 		size = n.fields.children.length
 		size << 3
@@ -22,9 +22,9 @@ class Constructor(?T, ListNode pb, ListNode block, Node new_obj) {
 				this.new_obj,
 				BinaryOperationNode_new(
 					PAREN_OPEN,
-					StringNode_new(nIDENTIFIER, n.name, "allocate").toNode(),
+					StringNode_new(nIDENTIFIER, Type_new(n.name), "allocate").toNode(),
 					ListNode_new(nCALL).append(
-						StringNode_new(nNUMBER, "Number", size.toString()).toNode()
+						StringNode_new(nNUMBER, Type_new("Number"), size.toString()).toNode()
 					).toNode()
 				).toNode()
 			 ).toNode()
@@ -41,7 +41,7 @@ class Constructor(?T, ListNode pb, ListNode block, Node new_obj) {
 		# Create _new function and append to parent block
 		this.pb.append(
 			FunctionNode_new(
-				n.name,
+				Type_new(n.name),
 				n.name.clone(4).append("_new"),
 				n.fields,
 				ListNode_new(nLIST).append(this.new_obj),

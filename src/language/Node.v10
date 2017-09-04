@@ -74,13 +74,13 @@ class UnaryOperationNode(NodeType type, void m_visit, Token op, Node expr, Boole
 
 
 
-func StringNode StringNode_new(NodeType type, String ret_type, String string)(void m_visit) {
+func StringNode StringNode_new(NodeType type, Type ret_type, String string)(void m_visit) {
 	define N StringNode
 	include "src/language/nodes/init.v10"
 	return StringNode_new(type, m_visit, ret_type, string)
 }
 
-class StringNode(NodeType type, void m_visit, String ret_type, String string) {
+class StringNode(NodeType type, void m_visit, Type ret_type, String string) {
 	func void visit(Visitor v)() {
 		v.m_visit_StringNode(this)
 	}
@@ -117,13 +117,13 @@ class ClassNode(NodeType type, void m_visit, String name, ListNode fields, ListN
 
 
 
-func Node FunctionNode_new(String ret_type, String name, ListNode args, ListNode vars, ListNode block)(void m_visit) {
+func Node FunctionNode_new(Type ret_type, String name, ListNode args, ListNode vars, ListNode block)(void m_visit) {
 	define N FunctionNode
 	include "src/language/nodes/init.v10"
 	return FunctionNode_new(nFUNCTION, m_visit, ret_type, name, args, vars, block)
 }
 
-class FunctionNode(NodeType type, void m_visit, String ret_type, String name, ListNode args, ListNode vars, ListNode block) {
+class FunctionNode(NodeType type, void m_visit, Type ret_type, String name, ListNode args, ListNode vars, ListNode block) {
 	func void visit(Visitor v)() {
 		v.m_visit_FunctionNode(this)
 	}
