@@ -1,26 +1,33 @@
-func Printer Printer_new(Stream s)(?T) {
+func Printer Printer_new(Number indent, Stream s, Number depth)(?T) {
 	define V Printer
 	include "src/language/visitors/init.v10"
-	v = Printer_new(?U, 0, s)
+	depth += indent
+	v = Printer_new(?U, indent, s, depth)
 	v.v = v
 	return v
 }
 
-func Printer Printer_new()() {
-	return Printer_new(STDOUT)
+func Printer Printer_new(Stream s)() {
+	return Printer_new(0, s, 9999)
 }
 
-class Printer(?T, Number indent, Stream s) {
+func Printer Printer_new()() {
+	return Printer_new(0, STDOUT, 9999)
+}
+
+class Printer(?T, Number indent, Stream s, Number depth) {
 	func void pi()(Number i) {
 		i = this.indent loop { if (i <= 0) { break } "  ".print(this.s) i-- }
 	}
 
 	func void visit(Node n)() {
+		if (this.indent > this.depth) return 0
 		this.pi()
 		n.type.toString().println(this.s)
 	}
 
 	func void visit(BinaryOperationNode n)() {
+		if (this.indent > this.depth) return 0
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
@@ -33,6 +40,7 @@ class Printer(?T, Number indent, Stream s) {
 	}
 
 	func void visit(UnaryOperationNode n)() {
+		if (this.indent > this.depth) return 0
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
@@ -51,6 +59,7 @@ class Printer(?T, Number indent, Stream s) {
 	}
 
 	func void visit(StringNode n)() {
+		if (this.indent > this.depth) return 0
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
@@ -61,12 +70,13 @@ class Printer(?T, Number indent, Stream s) {
 	}
 
 	func void visit(ClassNode n)() {
+		if (this.indent > this.depth) return 0
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
 		n.name.print(this.s)
 		")\n".print(this.s)
-		n.scope.scope.print_keys()
+		n.scope.print()
 
 		this.indent++
 		n.visit_children(this.v)
@@ -74,6 +84,7 @@ class Printer(?T, Number indent, Stream s) {
 	}
 
 	func void visit(FunctionNode n)() {
+		if (this.indent > this.depth) return 0
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
@@ -81,6 +92,7 @@ class Printer(?T, Number indent, Stream s) {
 		": ".print(this.s)
 		n.name.print(this.s)
 		")\n".print(this.s)
+		n.scope.print()
 
 		this.indent++
 		n.visit_children(this.v)
@@ -88,6 +100,7 @@ class Printer(?T, Number indent, Stream s) {
 	}
 
 	func void visit(ListNode n)() {
+		if (this.indent > this.depth) return 0
 		this.pi()
 		n.type.toString().println(this.s)
 
@@ -97,6 +110,7 @@ class Printer(?T, Number indent, Stream s) {
 	}
 
 	func void visit(IfNode n)() {
+		if (this.indent > this.depth) return 0
 		this.pi()
 		n.type.toString().println(this.s)
 
@@ -106,6 +120,7 @@ class Printer(?T, Number indent, Stream s) {
 	}
 
 	func void visit(LoopNode n)() {
+		if (this.indent > this.depth) return 0
 		this.pi()
 		n.type.toString().println(this.s)
 
@@ -115,6 +130,7 @@ class Printer(?T, Number indent, Stream s) {
 	}
 
 	func void visit(ReturnNode n)() {
+		if (this.indent > this.depth) return 0
 		this.pi()
 		n.type.toString().println(this.s)
 
@@ -124,6 +140,7 @@ class Printer(?T, Number indent, Stream s) {
 	}
 
 	func void visit(EnumNode n)() {
+		if (this.indent > this.depth) return 0
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
