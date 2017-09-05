@@ -1,0 +1,324 @@
+nBLOCK
+  nENUM(Boolean)
+    nBLOCK
+      nIDENTIFIER(Unknown: "false")
+      nIDENTIFIER(Unknown: "true")
+  nFUNCTION(#Any#: allocate)
+size: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "16")
+>>
+    nLIST
+      nIDENTIFIER(#Number#: "size")
+    nLIST
+    nBLOCK
+  nFUNCTION(#Boolean#: thisisafunction)
+arg1: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "16")
+>>
+arg2: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "24")
+>>
+var1: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-8")
+>>
+var2: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-16")
+>>
+    nLIST
+      nIDENTIFIER(#Any#: "arg1")
+      nIDENTIFIER(#Any#: "arg2")
+    nLIST
+      nIDENTIFIER(#Any#: "var1")
+      nIDENTIFIER(#Any#: "var2")
+    nBLOCK
+      nBINARYOP(ASSIGN)
+        nIDENTIFIER(Unknown: "arg1")
+        nIDENTIFIER(Unknown: "var1")
+      nUNARYOP(INCREMENT, right)
+        nIDENTIFIER(Unknown: "var2")
+      nBINARYOP(ADD)
+        nIDENTIFIER(Unknown: "var1")
+        nNUMBER(#Number#: "1337")
+      nLOOP
+        nBLOCK
+          nBINARYOP(PAREN_OPEN)
+            nBINARYOP(DOT)
+              nSTRING(#String#: "oopsy daisy")
+              nIDENTIFIER(Unknown: "println")
+            nCALL
+      nRETURN
+        nIDENTIFIER(Unknown: "true")
+  nFUNCTION(#Any#: Any_new)
+deref: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "16")
+>>
+obj: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-8")
+>>
+    nLIST
+      nIDENTIFIER(#Any#: "deref")
+    nLIST
+      nIDENTIFIER(#Any#: "obj")
+    nBLOCK
+      nBINARYOP(ASSIGN)
+        nIDENTIFIER(#Any#: "obj")
+        nBINARYOP(PAREN_OPEN)
+          nIDENTIFIER(#Any#: "allocate")
+          nCALL
+            nNUMBER(#Number#: "8")
+      nBINARYOP(ASSIGN)
+        nBINARYOP(DOT)
+          nIDENTIFIER(#Any#: "obj")
+          nIDENTIFIER(#Any#: "deref")
+        nIDENTIFIER(#Any#: "deref")
+      nRETURN
+        nIDENTIFIER(#Any#: "obj")
+  nFUNCTION(#Character#: Character_new)
+obj: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-8")
+>>
+    nLIST
+    nLIST
+      nIDENTIFIER(#Character#: "obj")
+    nBLOCK
+      nBINARYOP(ASSIGN)
+        nIDENTIFIER(#Character#: "obj")
+        nBINARYOP(PAREN_OPEN)
+          nIDENTIFIER(#Character#: "allocate")
+          nCALL
+            nNUMBER(#Number#: "0")
+      nRETURN
+        nIDENTIFIER(#Character#: "obj")
+  nFUNCTION(#Number#: Number_new)
+obj: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-8")
+>>
+    nLIST
+    nLIST
+      nIDENTIFIER(#Number#: "obj")
+    nBLOCK
+      nBINARYOP(ASSIGN)
+        nIDENTIFIER(#Number#: "obj")
+        nBINARYOP(PAREN_OPEN)
+          nIDENTIFIER(#Number#: "allocate")
+          nCALL
+            nNUMBER(#Number#: "0")
+      nRETURN
+        nIDENTIFIER(#Number#: "obj")
+  nFUNCTION(#Boolean#: Boolean_new)
+obj: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-8")
+>>
+    nLIST
+    nLIST
+      nIDENTIFIER(#Boolean#: "obj")
+    nBLOCK
+      nBINARYOP(ASSIGN)
+        nIDENTIFIER(#Boolean#: "obj")
+        nBINARYOP(PAREN_OPEN)
+          nIDENTIFIER(#Boolean#: "allocate")
+          nCALL
+            nNUMBER(#Number#: "0")
+      nRETURN
+        nIDENTIFIER(#Boolean#: "obj")
+  nFUNCTION(#String#: String_new)
+obj: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-8")
+>>
+    nLIST
+    nLIST
+      nIDENTIFIER(#String#: "obj")
+    nBLOCK
+      nBINARYOP(ASSIGN)
+        nIDENTIFIER(#String#: "obj")
+        nBINARYOP(PAREN_OPEN)
+          nIDENTIFIER(#String#: "allocate")
+          nCALL
+            nNUMBER(#Number#: "0")
+      nRETURN
+        nIDENTIFIER(#String#: "obj")
+  nFUNCTION(#Any#: _String_println)
+this: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "16")
+>>
+    nLIST
+      nIDENTIFIER(#String#: "this")
+    nLIST
+    nBLOCK
+Any: <<
+  nCLASS(Any)
+deref: <<
+  nINDEX(#Any#: "0")
+>>
+    nLIST
+    nBLOCK
+>>
+Character: <<
+  nCLASS(Character)
+    nLIST
+    nBLOCK
+>>
+Number: <<
+  nCLASS(Number)
+    nLIST
+    nBLOCK
+>>
+Boolean: <<
+  nCLASS(Boolean)
+    nLIST
+    nBLOCK
+>>
+String: <<
+  nCLASS(String)
+println: <<
+  nFUNCTION(#Any#: _String_println)
+this: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "16")
+>>
+    nLIST
+    nLIST
+    nBLOCK
+>>
+    nLIST
+    nBLOCK
+>>
+false: <<
+  nNUMBER(#Boolean#: "0")
+>>
+true: <<
+  nNUMBER(#Boolean#: "1")
+>>
+allocate: <<
+  nFUNCTION(#Any#: allocate)
+size: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "16")
+>>
+    nLIST
+    nLIST
+    nBLOCK
+>>
+thisisafunction: <<
+  nFUNCTION(#Boolean#: thisisafunction)
+arg1: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "16")
+>>
+arg2: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "24")
+>>
+var1: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-8")
+>>
+var2: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-16")
+>>
+    nLIST
+    nLIST
+    nBLOCK
+>>
+Any_new: <<
+  nFUNCTION(#Any#: Any_new)
+deref: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "16")
+>>
+obj: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-8")
+>>
+    nLIST
+    nLIST
+    nBLOCK
+>>
+Character_new: <<
+  nFUNCTION(#Character#: Character_new)
+obj: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-8")
+>>
+    nLIST
+    nLIST
+    nBLOCK
+>>
+Number_new: <<
+  nFUNCTION(#Number#: Number_new)
+obj: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-8")
+>>
+    nLIST
+    nLIST
+    nBLOCK
+>>
+Boolean_new: <<
+  nFUNCTION(#Boolean#: Boolean_new)
+obj: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-8")
+>>
+    nLIST
+    nLIST
+    nBLOCK
+>>
+String_new: <<
+  nFUNCTION(#String#: String_new)
+obj: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "-8")
+>>
+    nLIST
+    nLIST
+    nBLOCK
+>>
+_String_println: <<
+  nFUNCTION(#Any#: _String_println)
+this: <<
+  nBINARYOP(SQUARE_OPEN)
+    nREGISTER(Unknown: "rbp")
+    nNUMBER(#Number#: "16")
+>>
+    nLIST
+    nLIST
+    nBLOCK
+>>
