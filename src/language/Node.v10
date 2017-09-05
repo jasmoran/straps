@@ -122,13 +122,15 @@ class ClassNode(NodeType type, void m_visit, String name, ListNode fields, ListN
 
 
 
-func Node FunctionNode_new(Type ret_type, String name, ListNode args, ListNode vars, ListNode block)(void m_visit) {
+func Node FunctionNode_new(Type ret_type, String name, ListNode args, ListNode vars, ListNode block)(void m_visit, Scope sc) {
 	define N FunctionNode
 	include "src/language/nodes/init.v10"
-	return FunctionNode_new(nFUNCTION, m_visit, ret_type, name, args, vars, block)
+	sc = scope
+	sc = Scope_new(sc)
+	return FunctionNode_new(nFUNCTION, m_visit, ret_type, name, args, vars, block, sc)
 }
 
-class FunctionNode(NodeType type, void m_visit, Type ret_type, String name, ListNode args, ListNode vars, ListNode block) {
+class FunctionNode(NodeType type, void m_visit, Type ret_type, String name, ListNode args, ListNode vars, ListNode block, Scope scope) {
 	func void visit(Visitor v)() {
 		v.m_visit_FunctionNode(this)
 	}
