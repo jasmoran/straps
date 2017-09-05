@@ -30,8 +30,10 @@ class Definition(?T) {
 		}
 	}
 
-	func void visit(EnumNode n)(Number ix, StringNode field, LinkedListNode lln, Scope sc) {
+	func void visit(EnumNode n)(Number ix, StringNode field, LinkedListNode lln, Scope sc, Type type) {
 		ix = 0
+
+		type = Type_new(n.name)
 
 		lln = n.values.children.first
 		loop {
@@ -42,7 +44,7 @@ class Definition(?T) {
 			sc = scope
 			sc.set(
 				field.string,
-				StringNode_new(nNUMBER, n.name, ix.toString()).toNode()
+				StringNode_new(nNUMBER, type, ix.toString()).toNode()
 			)
 
 			ix++
@@ -111,6 +113,7 @@ class Definition(?T) {
 				sc.set(
 					field.string,
 					BinaryOperationNode_new(
+						field.ret_type,
 						SQUARE_OPEN,
 						field.toNode(),
 						StringNode_new(nNUMBER, Type_new("Number"), "0").toNode()
@@ -119,7 +122,7 @@ class Definition(?T) {
 			} else {
 				field.m_visit(this)
 
-				# Remove class nodes once thay have been visited
+				# Remove class nodes once they have been visited
 				if (field.type == nCLASS) n.children.remove(lln)
 			}
 
@@ -132,10 +135,10 @@ class Definition(?T) {
 
 	func Node new_variable(Number offset, Type ret_type)() {
 		return BinaryOperationNode_new(
+			ret_type,
 			SQUARE_OPEN,
 			StringNode_new(nREGISTER, Type_new(), "rbp").toNode(),
-			StringNode_new(nNUMBER, Type_new("Number"), offset.toString()).toNode(),
-			ret_type
+			StringNode_new(nNUMBER, Type_new("Number"), offset.toString()).toNode()
 		)
 	}
 

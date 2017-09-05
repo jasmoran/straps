@@ -20,7 +20,7 @@ func Node Node_new(NodeType type)(void m_visit) {
 	return Node_new(type, m_visit)
 }
 
-class Node(NodeType type, void m_visit){
+class Node(NodeType type, void m_visit) {
 	func void visit(Visitor v)() {
 		v.m_visit_Node(this)
 	}
@@ -30,13 +30,16 @@ class Node(NodeType type, void m_visit){
 
 
 
-func BinaryOperationNode BinaryOperationNode_new(Token op, Node lhs, Node rhs)(void m_visit) {
+func BinaryOperationNode BinaryOperationNode_new(Token op, Node lhs, Node rhs)() {
+	return BinaryOperationNode_new(Type_new(), op, lhs, rhs)
+}
+func BinaryOperationNode BinaryOperationNode_new(Type ret_type, Token op, Node lhs, Node rhs)(void m_visit) {
 	define N BinaryOperationNode
 	include "src/language/nodes/init.v10"
-	return BinaryOperationNode_new(nBINARYOP, m_visit, op, lhs, rhs)
+	return BinaryOperationNode_new(nBINARYOP, m_visit, ret_type, op, lhs, rhs)
 }
 
-class BinaryOperationNode(NodeType type, void m_visit, Token op, Node lhs, Node rhs) {
+class BinaryOperationNode(NodeType type, void m_visit, Type ret_type, Token op, Node lhs, Node rhs) {
 	func void visit(Visitor v)() {
 		v.m_visit_BinaryOperationNode(this)
 	}
@@ -52,14 +55,16 @@ class BinaryOperationNode(NodeType type, void m_visit, Token op, Node lhs, Node 
 }
 
 
-
-func UnaryOperationNode UnaryOperationNode_new(Token op, Node expr, Boolean left)(void m_visit) {
+func UnaryOperationNode UnaryOperationNode_new(Token op, Node expr, Boolean left)() {
+	return UnaryOperationNode_new(Type_new(), op, expr, left)
+}
+func UnaryOperationNode UnaryOperationNode_new(Type ret_type, Token op, Node expr, Boolean left)(void m_visit) {
 	define N UnaryOperationNode
 	include "src/language/nodes/init.v10"
-	return UnaryOperationNode_new(nUNARYOP, m_visit, op, expr, left)
+	return UnaryOperationNode_new(nUNARYOP, m_visit, ret_type, op, expr, left)
 }
 
-class UnaryOperationNode(NodeType type, void m_visit, Token op, Node expr, Boolean left) {
+class UnaryOperationNode(NodeType type, void m_visit, Type ret_type, Token op, Node expr, Boolean left) {
 	func void visit(Visitor v)() {
 		v.m_visit_UnaryOperationNode(this)
 	}
