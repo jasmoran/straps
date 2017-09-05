@@ -36,18 +36,18 @@ nBLOCK
       nIDENTIFIER(#Any#: "var1")
       nIDENTIFIER(#Any#: "var2")
     nBLOCK
-      nBINARYOP(ASSIGN)
+      nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(Unknown: "arg1")
         nIDENTIFIER(Unknown: "var1")
-      nUNARYOP(INCREMENT, right)
+      nUNARYOP(Unknown: INCREMENT, right)
         nIDENTIFIER(Unknown: "var2")
-      nBINARYOP(ADD)
+      nBINARYOP(Unknown: ADD)
         nIDENTIFIER(Unknown: "var1")
         nNUMBER(#Number#: "1337")
       nLOOP
         nBLOCK
-          nBINARYOP(PAREN_OPEN)
-            nBINARYOP(DOT)
+          nBINARYOP(Unknown: PAREN_OPEN)
+            nBINARYOP(Unknown: DOT)
               nSTRING(#String#: "oopsy daisy")
               nIDENTIFIER(Unknown: "println")
             nCALL

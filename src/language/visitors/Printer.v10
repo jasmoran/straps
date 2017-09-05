@@ -31,6 +31,8 @@ class Printer(?T, Number indent, Stream s, Number depth) {
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
+		n.ret_type.print(this.s)
+		": ".print(this.s)
 		n.op.toString().print(this.s)
 		")\n".print(this.s)
 
@@ -44,6 +46,8 @@ class Printer(?T, Number indent, Stream s, Number depth) {
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
+		n.ret_type.print(this.s)
+		": ".print(this.s)
 		n.op.toString().print(this.s)
 		", ".print(this.s)
 		if (n.left == true) {

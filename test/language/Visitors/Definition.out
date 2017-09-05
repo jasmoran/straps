@@ -5,7 +5,7 @@ nBLOCK
       nIDENTIFIER(Unknown: "true")
   nFUNCTION(#Any#: allocate)
 size: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Number#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "16")
 >>
@@ -15,22 +15,22 @@ size: <<
     nBLOCK
   nFUNCTION(#Boolean#: thisisafunction)
 arg1: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "16")
 >>
 arg2: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "24")
 >>
 var1: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
 var2: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-16")
 >>
@@ -41,18 +41,18 @@ var2: <<
       nIDENTIFIER(#Any#: "var1")
       nIDENTIFIER(#Any#: "var2")
     nBLOCK
-      nBINARYOP(ASSIGN)
+      nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(Unknown: "arg1")
         nIDENTIFIER(Unknown: "var1")
-      nUNARYOP(INCREMENT, right)
+      nUNARYOP(Unknown: INCREMENT, right)
         nIDENTIFIER(Unknown: "var2")
-      nBINARYOP(ADD)
+      nBINARYOP(Unknown: ADD)
         nIDENTIFIER(Unknown: "var1")
         nNUMBER(#Number#: "1337")
       nLOOP
         nBLOCK
-          nBINARYOP(PAREN_OPEN)
-            nBINARYOP(DOT)
+          nBINARYOP(Unknown: PAREN_OPEN)
+            nBINARYOP(Unknown: DOT)
               nSTRING(#String#: "oopsy daisy")
               nIDENTIFIER(Unknown: "println")
             nCALL
@@ -60,12 +60,12 @@ var2: <<
         nIDENTIFIER(Unknown: "true")
   nFUNCTION(#Any#: Any_new)
 deref: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "16")
 >>
 obj: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
@@ -74,14 +74,14 @@ obj: <<
     nLIST
       nIDENTIFIER(#Any#: "obj")
     nBLOCK
-      nBINARYOP(ASSIGN)
+      nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(#Any#: "obj")
-        nBINARYOP(PAREN_OPEN)
+        nBINARYOP(Unknown: PAREN_OPEN)
           nIDENTIFIER(#Any#: "allocate")
           nCALL
             nNUMBER(#Number#: "8")
-      nBINARYOP(ASSIGN)
-        nBINARYOP(DOT)
+      nBINARYOP(Unknown: ASSIGN)
+        nBINARYOP(Unknown: DOT)
           nIDENTIFIER(#Any#: "obj")
           nIDENTIFIER(#Any#: "deref")
         nIDENTIFIER(#Any#: "deref")
@@ -89,7 +89,7 @@ obj: <<
         nIDENTIFIER(#Any#: "obj")
   nFUNCTION(#Character#: Character_new)
 obj: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Character#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
@@ -97,9 +97,9 @@ obj: <<
     nLIST
       nIDENTIFIER(#Character#: "obj")
     nBLOCK
-      nBINARYOP(ASSIGN)
+      nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(#Character#: "obj")
-        nBINARYOP(PAREN_OPEN)
+        nBINARYOP(Unknown: PAREN_OPEN)
           nIDENTIFIER(#Character#: "allocate")
           nCALL
             nNUMBER(#Number#: "0")
@@ -107,7 +107,7 @@ obj: <<
         nIDENTIFIER(#Character#: "obj")
   nFUNCTION(#Number#: Number_new)
 obj: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Number#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
@@ -115,9 +115,9 @@ obj: <<
     nLIST
       nIDENTIFIER(#Number#: "obj")
     nBLOCK
-      nBINARYOP(ASSIGN)
+      nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(#Number#: "obj")
-        nBINARYOP(PAREN_OPEN)
+        nBINARYOP(Unknown: PAREN_OPEN)
           nIDENTIFIER(#Number#: "allocate")
           nCALL
             nNUMBER(#Number#: "0")
@@ -125,7 +125,7 @@ obj: <<
         nIDENTIFIER(#Number#: "obj")
   nFUNCTION(#Boolean#: Boolean_new)
 obj: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Boolean#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
@@ -133,9 +133,9 @@ obj: <<
     nLIST
       nIDENTIFIER(#Boolean#: "obj")
     nBLOCK
-      nBINARYOP(ASSIGN)
+      nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(#Boolean#: "obj")
-        nBINARYOP(PAREN_OPEN)
+        nBINARYOP(Unknown: PAREN_OPEN)
           nIDENTIFIER(#Boolean#: "allocate")
           nCALL
             nNUMBER(#Number#: "0")
@@ -143,7 +143,7 @@ obj: <<
         nIDENTIFIER(#Boolean#: "obj")
   nFUNCTION(#String#: String_new)
 obj: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#String#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
@@ -151,9 +151,9 @@ obj: <<
     nLIST
       nIDENTIFIER(#String#: "obj")
     nBLOCK
-      nBINARYOP(ASSIGN)
+      nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(#String#: "obj")
-        nBINARYOP(PAREN_OPEN)
+        nBINARYOP(Unknown: PAREN_OPEN)
           nIDENTIFIER(#String#: "allocate")
           nCALL
             nNUMBER(#Number#: "0")
@@ -161,7 +161,7 @@ obj: <<
         nIDENTIFIER(#String#: "obj")
   nFUNCTION(#Any#: _String_println)
 this: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#String#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "16")
 >>
@@ -197,7 +197,7 @@ String: <<
 println: <<
   nFUNCTION(#Any#: _String_println)
 this: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#String#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "16")
 >>
@@ -217,7 +217,7 @@ true: <<
 allocate: <<
   nFUNCTION(#Any#: allocate)
 size: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Number#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "16")
 >>
@@ -228,22 +228,22 @@ size: <<
 thisisafunction: <<
   nFUNCTION(#Boolean#: thisisafunction)
 arg1: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "16")
 >>
 arg2: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "24")
 >>
 var1: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
 var2: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-16")
 >>
@@ -254,12 +254,12 @@ var2: <<
 Any_new: <<
   nFUNCTION(#Any#: Any_new)
 deref: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "16")
 >>
 obj: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
@@ -270,7 +270,7 @@ obj: <<
 Character_new: <<
   nFUNCTION(#Character#: Character_new)
 obj: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Character#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
@@ -281,7 +281,7 @@ obj: <<
 Number_new: <<
   nFUNCTION(#Number#: Number_new)
 obj: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Number#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
@@ -292,7 +292,7 @@ obj: <<
 Boolean_new: <<
   nFUNCTION(#Boolean#: Boolean_new)
 obj: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#Boolean#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
@@ -303,7 +303,7 @@ obj: <<
 String_new: <<
   nFUNCTION(#String#: String_new)
 obj: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#String#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
@@ -314,7 +314,7 @@ obj: <<
 _String_println: <<
   nFUNCTION(#Any#: _String_println)
 this: <<
-  nBINARYOP(SQUARE_OPEN)
+  nBINARYOP(#String#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "16")
 >>

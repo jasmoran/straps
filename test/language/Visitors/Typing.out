@@ -36,18 +36,18 @@ nBLOCK
       nIDENTIFIER(#Any#: "var1")
       nIDENTIFIER(#Any#: "var2")
     nBLOCK
-      nBINARYOP(ASSIGN)
+      nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(Unknown: "arg1")
         nIDENTIFIER(Unknown: "var1")
-      nUNARYOP(INCREMENT, right)
+      nUNARYOP(Unknown: INCREMENT, right)
         nIDENTIFIER(Unknown: "var2")
-      nBINARYOP(ADD)
+      nBINARYOP(Unknown: ADD)
         nIDENTIFIER(Unknown: "var1")
         nNUMBER(#Number#: "1337")
       nLOOP
         nBLOCK
-          nBINARYOP(PAREN_OPEN)
-            nBINARYOP(DOT)
+          nBINARYOP(Unknown: PAREN_OPEN)
+            nBINARYOP(Unknown: DOT)
               nSTRING(#String#: "oopsy daisy")
               nIDENTIFIER(Unknown: "println")
             nCALL
@@ -59,14 +59,14 @@ nBLOCK
     nLIST
       nIDENTIFIER(#Any#: "obj")
     nBLOCK
-      nBINARYOP(ASSIGN)
+      nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(#Any#: "obj")
-        nBINARYOP(PAREN_OPEN)
+        nBINARYOP(Unknown: PAREN_OPEN)
           nIDENTIFIER(#Any#: "allocate")
           nCALL
             nNUMBER(#Number#: "8")
-      nBINARYOP(ASSIGN)
-        nBINARYOP(DOT)
+      nBINARYOP(Unknown: ASSIGN)
+        nBINARYOP(Unknown: DOT)
           nIDENTIFIER(#Any#: "obj")
           nIDENTIFIER(#Any#: "deref")
         nIDENTIFIER(#Any#: "deref")
@@ -77,9 +77,9 @@ nBLOCK
     nLIST
       nIDENTIFIER(#Character#: "obj")
     nBLOCK
-      nBINARYOP(ASSIGN)
+      nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(#Character#: "obj")
-        nBINARYOP(PAREN_OPEN)
+        nBINARYOP(Unknown: PAREN_OPEN)
           nIDENTIFIER(#Character#: "allocate")
           nCALL
             nNUMBER(#Number#: "0")
@@ -90,9 +90,9 @@ nBLOCK
     nLIST
       nIDENTIFIER(#Number#: "obj")
     nBLOCK
-      nBINARYOP(ASSIGN)
+      nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(#Number#: "obj")
-        nBINARYOP(PAREN_OPEN)
+        nBINARYOP(Unknown: PAREN_OPEN)
           nIDENTIFIER(#Number#: "allocate")
           nCALL
             nNUMBER(#Number#: "0")
@@ -103,9 +103,9 @@ nBLOCK
     nLIST
       nIDENTIFIER(#Boolean#: "obj")
     nBLOCK
-      nBINARYOP(ASSIGN)
+      nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(#Boolean#: "obj")
-        nBINARYOP(PAREN_OPEN)
+        nBINARYOP(Unknown: PAREN_OPEN)
           nIDENTIFIER(#Boolean#: "allocate")
           nCALL
             nNUMBER(#Number#: "0")
@@ -116,9 +116,9 @@ nBLOCK
     nLIST
       nIDENTIFIER(#String#: "obj")
     nBLOCK
-      nBINARYOP(ASSIGN)
+      nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(#String#: "obj")
-        nBINARYOP(PAREN_OPEN)
+        nBINARYOP(Unknown: PAREN_OPEN)
           nIDENTIFIER(#String#: "allocate")
           nCALL
             nNUMBER(#Number#: "0")
