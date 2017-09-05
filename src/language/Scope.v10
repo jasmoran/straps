@@ -29,4 +29,19 @@ class Scope (Scope parent, Map scope) {
 		}
 		error("Could not resolve value ", name)
 	}
+
+	func void print()(Number index, String key, Node value, Visitor printer) {
+		index = 0
+		printer = Printer_new(1, STDOUT, 1)
+		loop {
+			if (this.scope.keys.length == index) break
+			key = this.scope.keys.get(index)
+			value = this.scope.values.get(index)
+			key.print()
+			": <<".println()
+			value.m_visit(printer)
+			">>".println()
+			index++
+		}
+	}
 }

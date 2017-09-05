@@ -124,8 +124,28 @@ nBLOCK
             nNUMBER(#Number#: "0")
       nRETURN
         nIDENTIFIER(#String#: "obj")
-Any
-Character
-Number
-Boolean
-String
+Any: <<
+  nCLASS(Any)
+    nLIST
+    nBLOCK
+>>
+Character: <<
+  nCLASS(Character)
+    nLIST
+    nBLOCK
+>>
+Number: <<
+  nCLASS(Number)
+    nLIST
+    nBLOCK
+>>
+Boolean: <<
+  nCLASS(Boolean)
+    nLIST
+    nBLOCK
+>>
+String: <<
+  nCLASS(String)
+    nLIST
+    nBLOCK
+>>

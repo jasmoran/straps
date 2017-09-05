@@ -33,5 +33,5 @@ func void main()(Stream input, Parser parser, Node root, Visitor v, Scope sc) {
 	v = Printer_new()
 	root.m_visit(v)
 
-	sc.scope.print_keys()
+	sc.print()
 }

@@ -17,7 +17,12 @@ nBLOCK
       nIDENTIFIER(Unknown: "false")
       nIDENTIFIER(Unknown: "true")
   nCLASS(String)
-println
+println: <<
+  nFUNCTION(#Any#: _String_println)
+    nLIST
+    nLIST
+    nBLOCK
+>>
     nLIST
     nBLOCK
   nFUNCTION(#Any#: allocate)
@@ -126,8 +131,34 @@ println
       nIDENTIFIER(#String#: "this")
     nLIST
     nBLOCK
-Any
-Character
-Number
-Boolean
-String
+Any: <<
+  nCLASS(Any)
+    nLIST
+    nBLOCK
+>>
+Character: <<
+  nCLASS(Character)
+    nLIST
+    nBLOCK
+>>
+Number: <<
+  nCLASS(Number)
+    nLIST
+    nBLOCK
+>>
+Boolean: <<
+  nCLASS(Boolean)
+    nLIST
+    nBLOCK
+>>
+String: <<
+  nCLASS(String)
+println: <<
+  nFUNCTION(#Any#: _String_println)
+    nLIST
+    nLIST
+    nBLOCK
+>>
+    nLIST
+    nBLOCK
+>>
