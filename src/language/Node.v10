@@ -46,9 +46,11 @@ class BinaryOperationNode(NodeType type, void m_visit, Type ret_type, Token op, 
 
 	func void visit_children(Visitor v)(Node n) {
 		n = this.lhs
-		n.m_visit(v)
+		n = n.m_visit(v)
+		if (n != 0) this.lhs = n
 		n = this.rhs
-		n.m_visit(v)
+		n = n.m_visit(v)
+		if (n != 0) this.rhs = n
 	}
 
 	func Node toNode()() { return this }
@@ -71,7 +73,8 @@ class UnaryOperationNode(NodeType type, void m_visit, Type ret_type, Token op, N
 
 	func void visit_children(Visitor v)(Node n) {
 		n = this.expr
-		n.m_visit(v)
+		n = n.m_visit(v)
+		if (n != 0) this.expr = n
 	}
 
 	func Node toNode()() { return this }
@@ -112,9 +115,11 @@ class ClassNode(NodeType type, void m_visit, String name, ListNode fields, ListN
 
 	func void visit_children(Visitor v)(Node n) {
 		n = this.fields
-		n.m_visit(v)
+		n = n.m_visit(v)
+		if (n != 0) this.fields = n
 		n = this.block
-		n.m_visit(v)
+		n = n.m_visit(v)
+		if (n != 0) this.block = n
 	}
 
 	func Node toNode()() { return this }
@@ -137,11 +142,14 @@ class FunctionNode(NodeType type, void m_visit, Type ret_type, String name, List
 
 	func void visit_children(Visitor v)(Node n) {
 		n = this.args
-		n.m_visit(v)
+		n = n.m_visit(v)
+		if (n != 0) this.args = n
 		n = this.vars
-		n.m_visit(v)
+		n = n.m_visit(v)
+		if (n != 0) this.vars = n
 		n = this.block
-		n.m_visit(v)
+		n = n.m_visit(v)
+		if (n != 0) this.block = n
 	}
 
 	func Node toNode()() { return this }
@@ -168,7 +176,8 @@ class ListNode(NodeType type, void m_visit, LinkedList children) {
 		loop {
 			if (lln == 0) { break }
 			n = lln.payload
-			n.m_visit(v)
+			n = n.m_visit(v)
+			if (n != 0) lln.payload = n
 			lln = lln.fwrd
 		}
 	}
@@ -204,12 +213,15 @@ class IfNode(NodeType type, void m_visit, Node condition, ListNode block_if, Lis
 
 	func void visit_children(Visitor v)(Node n) {
 		n = this.condition
-		n.m_visit(v)
+		n = n.m_visit(v)
+		if (n != 0) this.condition = n
 		n = this.block_if
-		n.m_visit(v)
+		n = n.m_visit(v)
+		if (n != 0) this.block_if = n
 		n = this.block_else
 		if (n != 0) {
-			n.m_visit(v)
+			n = n.m_visit(v)
+			if (n != 0) this.block_else = n
 		}
 	}
 
@@ -231,7 +243,8 @@ class LoopNode(NodeType type, void m_visit, ListNode block) {
 
 	func void visit_children(Visitor v)(Node n) {
 		n = this.block
-		n.m_visit(v)
+		n = n.m_visit(v)
+		if (n != 0) this.block = n
 	}
 
 	func Node toNode()() { return this }
@@ -252,7 +265,8 @@ class ReturnNode(NodeType type, void m_visit, Node expr) {
 
 	func void visit_children(Visitor v)(Node n) {
 		n = this.expr
-		n.m_visit(v)
+		n = n.m_visit(v)
+		if (n != 0) this.expr = n
 	}
 
 	func Node toNode()() { return this }
@@ -273,7 +287,8 @@ class EnumNode(NodeType type, void m_visit, String name, ListNode values) {
 
 	func void visit_children(Visitor v)(Node n) {
 		n = this.values
-		n.m_visit(v)
+		n = n.m_visit(v)
+		if (n != 0) this.values = n
 	}
 
 	func Node toNode()() { return this }
