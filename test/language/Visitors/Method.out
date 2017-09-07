@@ -4,6 +4,12 @@ nBLOCK
       nIDENTIFIER(#Any#: "deref")
     nBLOCK
   nCLASS(Character)
+toString: <<
+  nFUNCTION(#String#: _Character_toString)
+    nLIST
+    nLIST
+    nBLOCK
+>>
     nLIST
     nBLOCK
   nCLASS(Number)
@@ -11,6 +17,7 @@ nBLOCK
     nBLOCK
   nCLASS(Boolean)
     nLIST
+      nIDENTIFIER(#String#: "as_string")
     nBLOCK
   nENUM(Boolean)
     nBLOCK
@@ -24,6 +31,7 @@ println: <<
     nBLOCK
 >>
     nLIST
+      nIDENTIFIER(#Character#: "random_char")
     nBLOCK
   nFUNCTION(#Any#: allocate)
     nLIST
@@ -36,7 +44,7 @@ println: <<
       nIDENTIFIER(#Any#: "arg2")
     nLIST
       nIDENTIFIER(#Any#: "var1")
-      nIDENTIFIER(#Any#: "var2")
+      nIDENTIFIER(#Number#: "var2")
     nBLOCK
       nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(Unknown: "arg1")
@@ -46,6 +54,23 @@ println: <<
       nBINARYOP(Unknown: ADD)
         nIDENTIFIER(Unknown: "var1")
         nNUMBER(#Number#: "1337")
+      nBINARYOP(Unknown: DOT)
+        nBINARYOP(Unknown: PAREN_OPEN)
+          nBINARYOP(Unknown: DOT)
+            nBINARYOP(Unknown: PAREN_OPEN)
+              nBINARYOP(Unknown: DOT)
+                nBINARYOP(Unknown: DOT)
+                  nBINARYOP(Unknown: DOT)
+                    nIDENTIFIER(Unknown: "true")
+                    nIDENTIFIER(Unknown: "as_string")
+                  nIDENTIFIER(Unknown: "random_char")
+                nIDENTIFIER(Unknown: "toString")
+              nCALL
+            nIDENTIFIER(Unknown: "println")
+          nCALL
+            nNUMBER(#Number#: "77")
+            nIDENTIFIER(Unknown: "var2")
+        nIDENTIFIER(Unknown: "deref")
       nLOOP
         nBLOCK
           nBINARYOP(Unknown: PAREN_OPEN)
@@ -53,6 +78,8 @@ println: <<
               nSTRING(#String#: "oopsy daisy")
               nIDENTIFIER(Unknown: "println")
             nCALL
+              nNUMBER(#Number#: "1")
+              nNUMBER(#Number#: "2")
       nRETURN
         nIDENTIFIER(Unknown: "true")
   nFUNCTION(#Any#: Any_new)
@@ -102,6 +129,7 @@ println: <<
         nIDENTIFIER(#Number#: "obj")
   nFUNCTION(#Boolean#: Boolean_new)
     nLIST
+      nIDENTIFIER(#String#: "as_string")
     nLIST
       nIDENTIFIER(#Boolean#: "obj")
     nBLOCK
@@ -110,11 +138,17 @@ println: <<
         nBINARYOP(Unknown: PAREN_OPEN)
           nIDENTIFIER(#Boolean#: "allocate")
           nCALL
-            nNUMBER(#Number#: "0")
+            nNUMBER(#Number#: "8")
+      nBINARYOP(Unknown: ASSIGN)
+        nBINARYOP(Unknown: DOT)
+          nIDENTIFIER(#Boolean#: "obj")
+          nIDENTIFIER(#String#: "as_string")
+        nIDENTIFIER(#String#: "as_string")
       nRETURN
         nIDENTIFIER(#Boolean#: "obj")
   nFUNCTION(#String#: String_new)
     nLIST
+      nIDENTIFIER(#Character#: "random_char")
     nLIST
       nIDENTIFIER(#String#: "obj")
     nBLOCK
@@ -123,12 +157,24 @@ println: <<
         nBINARYOP(Unknown: PAREN_OPEN)
           nIDENTIFIER(#String#: "allocate")
           nCALL
-            nNUMBER(#Number#: "0")
+            nNUMBER(#Number#: "8")
+      nBINARYOP(Unknown: ASSIGN)
+        nBINARYOP(Unknown: DOT)
+          nIDENTIFIER(#String#: "obj")
+          nIDENTIFIER(#Character#: "random_char")
+        nIDENTIFIER(#Character#: "random_char")
       nRETURN
         nIDENTIFIER(#String#: "obj")
+  nFUNCTION(#String#: _Character_toString)
+    nLIST
+      nIDENTIFIER(#Character#: "this")
+    nLIST
+    nBLOCK
   nFUNCTION(#Any#: _String_println)
     nLIST
       nIDENTIFIER(#String#: "this")
+      nIDENTIFIER(#Number#: "stream")
+      nIDENTIFIER(#Number#: "ilikenumbers")
     nLIST
     nBLOCK
 Any: <<
@@ -138,6 +184,12 @@ Any: <<
 >>
 Character: <<
   nCLASS(Character)
+toString: <<
+  nFUNCTION(#String#: _Character_toString)
+    nLIST
+    nLIST
+    nBLOCK
+>>
     nLIST
     nBLOCK
 >>

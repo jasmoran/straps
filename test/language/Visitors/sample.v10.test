@@ -1,21 +1,27 @@
 class Any (Any deref) {}
-class Character () {}
+class Character () {
+	func String toString()() {}
+}
 class Number () {}
-class Boolean () {}
+class Boolean (String as_string) {}
 enum Boolean { false true }
 
-class String () {
-	func Any println()() {}
+class String (Character random_char) {
+	func Any println(Number stream, Number ilikenumbers)() {}
 }
 
 func Any allocate(Number size)() {}
 
-func Boolean thisisafunction(Any arg1, Any arg2)(Any var1, Any var2) {
+func Boolean thisisafunction(Any arg1, Any arg2)(Any var1, Number var2) {
 	arg1 = var1
 	var2++
 	var1 += 1337
+
+	# Let us test this thing out
+	true.as_string.random_char.toString().println(77, var2).deref
+
 	loop {
-		"oopsy daisy".println()
+		"oopsy daisy".println(1, 2)
 	}
 	return true
 }

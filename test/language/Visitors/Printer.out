@@ -6,11 +6,16 @@ nBLOCK
   nCLASS(Character)
     nLIST
     nBLOCK
+      nFUNCTION(#String#: toString)
+        nLIST
+        nLIST
+        nBLOCK
   nCLASS(Number)
     nLIST
     nBLOCK
   nCLASS(Boolean)
     nLIST
+      nIDENTIFIER(#String#: "as_string")
     nBLOCK
   nENUM(Boolean)
     nBLOCK
@@ -18,9 +23,12 @@ nBLOCK
       nIDENTIFIER(Unknown: "true")
   nCLASS(String)
     nLIST
+      nIDENTIFIER(#Character#: "random_char")
     nBLOCK
       nFUNCTION(#Any#: println)
         nLIST
+          nIDENTIFIER(#Number#: "stream")
+          nIDENTIFIER(#Number#: "ilikenumbers")
         nLIST
         nBLOCK
   nFUNCTION(#Any#: allocate)
@@ -34,7 +42,7 @@ nBLOCK
       nIDENTIFIER(#Any#: "arg2")
     nLIST
       nIDENTIFIER(#Any#: "var1")
-      nIDENTIFIER(#Any#: "var2")
+      nIDENTIFIER(#Number#: "var2")
     nBLOCK
       nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(Unknown: "arg1")
@@ -44,6 +52,23 @@ nBLOCK
       nBINARYOP(Unknown: ADD)
         nIDENTIFIER(Unknown: "var1")
         nNUMBER(#Number#: "1337")
+      nBINARYOP(Unknown: DOT)
+        nBINARYOP(Unknown: PAREN_OPEN)
+          nBINARYOP(Unknown: DOT)
+            nBINARYOP(Unknown: PAREN_OPEN)
+              nBINARYOP(Unknown: DOT)
+                nBINARYOP(Unknown: DOT)
+                  nBINARYOP(Unknown: DOT)
+                    nIDENTIFIER(Unknown: "true")
+                    nIDENTIFIER(Unknown: "as_string")
+                  nIDENTIFIER(Unknown: "random_char")
+                nIDENTIFIER(Unknown: "toString")
+              nCALL
+            nIDENTIFIER(Unknown: "println")
+          nCALL
+            nNUMBER(#Number#: "77")
+            nIDENTIFIER(Unknown: "var2")
+        nIDENTIFIER(Unknown: "deref")
       nLOOP
         nBLOCK
           nBINARYOP(Unknown: PAREN_OPEN)
@@ -51,5 +76,7 @@ nBLOCK
               nSTRING(#String#: "oopsy daisy")
               nIDENTIFIER(Unknown: "println")
             nCALL
+              nNUMBER(#Number#: "1")
+              nNUMBER(#Number#: "2")
       nRETURN
         nIDENTIFIER(Unknown: "true")
