@@ -101,7 +101,7 @@ func Node ClassNode_new(String name, ListNode fields, ListNode block)(void m_vis
 	define N ClassNode
 	include "src/language/nodes/init.v10"
 	sc = scope
-	sc = Scope_new(sc)
+	sc = Scope_new(name, sc)
 	return ClassNode_new(nCLASS, m_visit, name, fields, block, sc)
 }
 
@@ -126,7 +126,7 @@ func Node FunctionNode_new(Type ret_type, String name, ListNode args, ListNode v
 	define N FunctionNode
 	include "src/language/nodes/init.v10"
 	sc = scope
-	sc = Scope_new(sc)
+	sc = Scope_new(name, sc)
 	return FunctionNode_new(nFUNCTION, m_visit, ret_type, name, args, vars, block, sc)
 }
 

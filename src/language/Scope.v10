@@ -1,14 +1,14 @@
 func Scope Scope_new()(Scope sc) {
 	sc = 0
-	return Scope_new(sc)
+	return Scope_new("GLOBAL", sc)
 }
 
-func Scope Scope_new(Scope parent)(Map sc) {
+func Scope Scope_new(String name, Scope parent)(Map sc) {
 	sc = Map_new(2048)
-	return Scope_new(parent, sc)
+	return Scope_new(name, parent, sc)
 }
 
-class Scope (Scope parent, Map scope) {
+class Scope (String name, Scope parent, Map scope) {
 	func Node get(String name)() {
 		return this.scope.get(name)
 	}
