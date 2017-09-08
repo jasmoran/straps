@@ -27,6 +27,11 @@ class Scope (String name, Scope parent, Map scope) {
 			if (res > 0) return res
 			s = s.parent
 		}
+
+		# Add special GLOBAL scope check
+		s = scope
+		res = s.get(name)
+		if (res > 0) return res
 		error("Could not resolve value ", name)
 	}
 

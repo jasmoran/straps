@@ -20,22 +20,30 @@ class Type (String raw, ClassNode res) {
 		}
 	}
 
-	func void resolve(Scope scope)() {
+	func void resolve(Scope sc)() {
 		if (this.res > 0) return 0
-		if (scope == 0) error("Called with null scope")
+		if (this.raw == 0) return 0
+		if (sc == 0) error("Called with null scope")
 		loop {
-			if (scope == 0) break
-			this.res = scope.get(this.raw)
+			if (sc == 0) break
+			this.res = sc.get(this.raw)
 			if (this.res > 0) return 0
 			this.res = 0
-			scope = scope.parent
+			sc = sc.parent
 		}
-		#error("Could not resolve type: ", this.raw)
+
+		# Add special GLOBAL scope check
+		sc = scope
+		this.res = sc.get(this.raw)
+		if (this.res > 0) return 0
+		this.res = 0
+
+		error("Could not resolve type: ", this.raw)
 	}
 
 	func Scope getScope()() {
+		if (this.raw == 0) error("Attempted to fetch scope of Unknown type")
 		if (this.res == 0) error("Attempted to fetch scope of unresolved type ", this.toString())
-		#if (this.res == 0) return 0
 		return this.res.scope
 	}
 
