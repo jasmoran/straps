@@ -44,6 +44,7 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 
 			# Set scope to that of the first items type
 			sn = n.lhs
+			sn.ret_type.resolve(this.scope)
 			this.scope = sn.ret_type.getScope()
 			if (this.scope == 0) this.scope = prev_scope
 
@@ -61,7 +62,13 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 			return n
 		}
 
+		n.visit_children(this.v)
+
 		if (n.op == PAREN_OPEN) {
+			# Inherit ret_type from lhs (function)
+			sn = n.lhs
+			n.ret_type = sn.ret_type
+
 			args = n.rhs
 			if (n.lhs.type == nBINARYOP) {
 				dot = n.lhs
@@ -72,27 +79,8 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 					# rhs of dot becomes new lhs of paren_open
 					n.lhs = dot.rhs
 				}
-			} else if (n.lhs.type == nIDENTIFIER) {
-				
 			}
 		}
-
-		n.rvisit_children(this.v)
-
-		# Handle method calls
-		#if (n.op == PAREN_OPEN) {
-		#	args = n.rhs
-		#	if (n.lhs.type == nBINARYOP) {
-		#		dot = n.lhs
-		#		if (dot.op == DOT) {
-		#			# Add lhs of dot to beginning of arguments
-		#			args.prepend(dot.lhs)
-
-		#			# rhs of dot becomes new lhs of paren_open
-		#			n.lhs = dot.rhs
-		#		}
-		#	}
-		#}
 
 		return n
 	}
@@ -100,41 +88,41 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 
 
 	func void visit(ClassNode n)() {
-		n.rvisit_children(this.v)
-		return n
+		n.visit_children(this.v)
+		return 0
 	}
 
 	func void visit(Node n)() {
-		return n
+		return 0
 	}
 
 	func void visit(UnaryOperationNode n)() {
-		n.rvisit_children(this.v)
-		return n
+		n.visit_children(this.v)
+		return 0
 	}
 
 	func void visit(ListNode n)() {
-		n.rvisit_children(this.v)
-		return n
+		n.visit_children(this.v)
+		return 0
 	}
 
 	func void visit(IfNode n)() {
-		n.rvisit_children(this.v)
-		return n
+		n.visit_children(this.v)
+		return 0
 	}
 
 	func void visit(LoopNode n)() {
-		n.rvisit_children(this.v)
-		return n
+		n.visit_children(this.v)
+		return 0
 	}
 
 	func void visit(ReturnNode n)() {
-		n.rvisit_children(this.v)
-		return n
+		n.visit_children(this.v)
+		return 0
 	}
 
 	func void visit(EnumNode n)() {
-		n.rvisit_children(this.v)
-		return n
+		n.visit_children(this.v)
+		return 0
 	}
 }
