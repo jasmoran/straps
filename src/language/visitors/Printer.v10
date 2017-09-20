@@ -1,10 +1,14 @@
-func Printer Printer_new(Number indent, Stream s, Number depth)(?T) {
+func Printer Printer_new(Number indent, Stream s, Number depth, Boolean print_scope)(?T) {
 	define V Printer
 	include "src/language/visitors/init.v10"
 	depth += indent
-	v = Printer_new(?U, indent, s, depth)
+	v = Printer_new(?U, indent, s, depth, print_scope)
 	v.v = v
 	return v
+}
+
+func Printer Printer_new(Number indent, Stream s, Number depth)() {
+	return Printer_new(indent, s, depth, true)
 }
 
 func Printer Printer_new(Stream s)() {
@@ -15,7 +19,7 @@ func Printer Printer_new()() {
 	return Printer_new(0, STDOUT, 9999)
 }
 
-class Printer(?T, Number indent, Stream s, Number depth) {
+class Printer(?T, Number indent, Stream s, Number depth, Boolean print_scope) {
 	func void pi()(Number i) {
 		i = this.indent loop { if (i <= 0) { break } "  ".print(this.s) i-- }
 	}
@@ -88,7 +92,7 @@ class Printer(?T, Number indent, Stream s, Number depth) {
 		"(".print(this.s)
 		n.name.print(this.s)
 		")\n".print(this.s)
-		n.scope.print()
+		if (this.print_scope == true) n.scope.print()
 
 		this.indent++
 		n.visit_children(this.v)
@@ -106,7 +110,7 @@ class Printer(?T, Number indent, Stream s, Number depth) {
 		": ".print(this.s)
 		n.name.print(this.s)
 		")\n".print(this.s)
-		n.scope.print()
+		if (this.print_scope == true) n.scope.print()
 
 		this.indent++
 		n.visit_children(this.v)
