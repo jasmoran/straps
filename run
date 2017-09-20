@@ -1,0 +1,25 @@
+bin/v10 $1 tmp.run.asm
+
+if [ $? -eq 0 ]; then
+  nasm -f elf64 -o tmp.run.o tmp.run.asm
+
+  if [ $? -eq 0 ]; then
+    rm tmp.run.asm
+    ld -o tmp.run.bin tmp.run.o
+
+    if [ $? -eq 0 ]; then
+      rm tmp.run.o
+      ./tmp.run.bin &&
+
+      rm tmp.run.bin
+    else
+      echo "Failed to link the specified file!"
+    fi
+
+  else
+    echo "Failed to assemble the specified file!"
+  fi
+
+else
+  echo "Failed to v10 compile the specified file!"
+fi
