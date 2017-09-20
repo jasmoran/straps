@@ -57,7 +57,7 @@ class Definition(?T) {
   	return 0
 	}
 
-	func void visit(FunctionNode n)(Number ix, StringNode field, LinkedListNode lln, Scope sc) {
+	func void visit(FunctionNode n)(Number ix, StringNode field, LinkedListNode lln, Scope sc, FunctionNode clone) {
 		#n.name = String_new(128).append(n.name)
 
 		# Loop through arguments
@@ -81,9 +81,17 @@ class Definition(?T) {
 			lln = lln.fwrd
 		}
 
-		# Store FunctionNode in the global scope
+		# Store cloned FunctionNode in the global scope
 		sc = scope
-		sc.set(n.name, n.toNode())
+		clone = FunctionNode_new(
+			n.ret_type,
+			n.name,
+			n.args,
+			n.vars,
+			ListNode_new(nBLOCK)
+		)
+		clone.scope = n.scope
+		sc.set(n.name, clone.toNode())
 		#n.name.println(STDERR)
 
 		# Loop through variables
