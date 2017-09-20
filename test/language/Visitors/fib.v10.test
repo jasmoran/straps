@@ -1,0 +1,20 @@
+class Any (Any deref) {}
+class Character () {}
+class Number () {}
+class String () {}
+class Boolean () {}
+
+func Any allocate(Number size)() {}
+
+func Number fib(Number n)(Number tmp) {
+  if (n == 0 || n == 1) return n
+  n--
+  tmp = fib(n)
+  n--
+  tmp += fib(n)
+  return tmp
+}
+
+func Boolean main()(Number num) {
+	return fib(10)
+}
