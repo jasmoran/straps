@@ -4,6 +4,21 @@ func ReversibleStream ReversibleStream_new(Stream stream, Number size)() {
 	return ReversibleStream_new(stream, CircularBuffer_new(size), 0, 0, 1)
 }
 
+func ReversibleStream ReversibleStream_new(String input)(Character nulchar, Number len, ReversibleStream rs) {
+	load_loop()
+	input.print(LOOPIN)
+	nulchar = 0
+	nulchar.toString().print(LOOPIN)
+	len = input.length
+	len++
+	rs = ReversibleStream_new(LOOPOUT, len)
+	loop {
+		if (rs.get().get_character() == 0) break
+	}
+	rs.rewind()
+	return rs
+}
+
 class ReversibleStream (Stream stream, CircularBuffer buffer, Number nxt_pos, Number col, Number line) {
 	func MetaCharacter get()(Character chr, Any mc) {
 		# Get a character from the underlying Stream if necessary
