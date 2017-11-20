@@ -1,4 +1,4 @@
-func Dump Dump_new()(?T, Any a, Array binops, Boolean top) {
+func Dump Dump_new(Stream stream)(?T, Any a, Array binops, Boolean top) {
 	define V Dump
 	include "src/language/visitors/init.v10"
 
@@ -16,12 +16,12 @@ func Dump Dump_new()(?T, Any a, Array binops, Boolean top) {
 
 	top = true
 
-	v = Dump_new(?U, binops, top, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true)
+	v = Dump_new(?U, binops, top, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true, stream)
 	v.v = v
 	return v
 }
 
-class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, String falseLabel, String target, Boolean negate) {
+class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, String falseLabel, String target, Boolean negate, Stream stream) {
 	func void visit(Node n)() {
   	return 0
 	}
@@ -29,16 +29,16 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
 	func void visit(BinaryOperationNode n)(String op, Number ix, Node nn, FunctionNode fun, String lastTrue, String lastFalse) {
 		if (n.op == PAREN_OPEN) {
 			fun = n.lhs
-			"call ".print()
-			fun.name.println()
+			"call ".print(this.stream)
+			fun.name.println(this.stream)
 		} else if (n.op == DOT) {
-			"QWORD[".print()
+			"QWORD[".print(this.stream)
 			n.visit_children(this.v)
-			"]".print()
+			"]".print(this.stream)
 		} else if (n.op == SQUARE_OPEN) {
-			"QWORD[".print()
+			"QWORD[".print(this.stream)
 			n.visit_children(this.v)
-			"]".print()
+			"]".print(this.stream)
 		} else if (n.op == OR) {
 			lastFalse = this.falseLabel
 			this.falseLabel = this.createLabel(".falseCond")
@@ -48,8 +48,8 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
 			nn = n.lhs
 			nn.m_visit(this)
 
-			this.falseLabel.print()
-			":".println()
+			this.falseLabel.print(this.stream)
+			":".println(this.stream)
 			this.falseLabel = lastFalse
 
 			this.target = this.trueLabel
@@ -57,8 +57,8 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
 			nn = n.rhs
 			nn.m_visit(this)
 
-			"jmp ".print()
-			this.falseLabel.println()
+			"jmp ".print(this.stream)
+			this.falseLabel.println(this.stream)
 		} else if (n.op == AND) {
 			lastTrue = this.trueLabel
 			this.trueLabel = this.createLabel(".trueCond")
@@ -68,17 +68,17 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
 			nn = n.lhs
 			nn.m_visit(this)
 
-			this.trueLabel.print()
-			":".println()
+			this.trueLabel.print(this.stream)
+			":".println(this.stream)
 			this.trueLabel = lastTrue
 
 			this.target = this.falseLabel
 			this.negate = true
 			nn = n.rhs
 			nn.m_visit(this)
-			"jmp ".print()
+			"jmp ".print(this.stream)
 
-			this.trueLabel.println()
+			this.trueLabel.println(this.stream)
 		} else {
 			# Standard binops
 			if (n.op >= ADD)
@@ -88,44 +88,44 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
 				ix -= ADD
 				op = this.binops.get(ix)
 
-				op.print()
+				op.print(this.stream)
 				nn = n.lhs
 				nn.m_visit(this)
-				", ".print()
+				", ".print(this.stream)
 				nn = n.rhs
 				nn.m_visit(this)
-				"\n".print()
+				"\n".print(this.stream)
 				return 0
 			}
 
 			# Comparisons
 			if (n.op >= EQUAL)
 			if (n.op <= LESS_EQ) {
-				"cmp ".print()
+				"cmp ".print(this.stream)
 				nn = n.lhs
 				nn.m_visit(this)
-				", ".print()
+				", ".print(this.stream)
 				nn = n.rhs
 				nn.m_visit(this)
-				"\n".print()
+				"\n".print(this.stream)
 
 				if (this.negate == true) {
-					if (n.op == EQUAL)      "jne ".print()
-					if (n.op == NOT_EQUAL)  "je  ".print()
-					if (n.op == GREATER)    "jle ".print()
-					if (n.op == GREATER_EQ) "jl  ".print()
-					if (n.op == LESS)       "jge ".print()
-					if (n.op == LESS_EQ)    "jg  ".print()
+					if (n.op == EQUAL)      "jne ".print(this.stream)
+					if (n.op == NOT_EQUAL)  "je  ".print(this.stream)
+					if (n.op == GREATER)    "jle ".print(this.stream)
+					if (n.op == GREATER_EQ) "jl  ".print(this.stream)
+					if (n.op == LESS)       "jge ".print(this.stream)
+					if (n.op == LESS_EQ)    "jg  ".print(this.stream)
 				} else {
-					if (n.op == EQUAL)      "je  ".print()
-					if (n.op == NOT_EQUAL)  "jne ".print()
-					if (n.op == GREATER)    "jg  ".print()
-					if (n.op == GREATER_EQ) "jge ".print()
-					if (n.op == LESS)       "jl  ".print()
-					if (n.op == LESS_EQ)    "jle ".print()
+					if (n.op == EQUAL)      "je  ".print(this.stream)
+					if (n.op == NOT_EQUAL)  "jne ".print(this.stream)
+					if (n.op == GREATER)    "jg  ".print(this.stream)
+					if (n.op == GREATER_EQ) "jge ".print(this.stream)
+					if (n.op == LESS)       "jl  ".print(this.stream)
+					if (n.op == LESS_EQ)    "jle ".print(this.stream)
 				}
 
-				this.target.println()
+				this.target.println(this.stream)
 				return 0
 			}
 
@@ -137,28 +137,28 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
 	}
 
 	func void visit(UnaryOperationNode n)() {
-		if (n.op == INCREMENT) "inc ".print()
-		else if (n.op == DECREMENT) "dec ".print()
-		else if (n.op == PUSH) "push ".print()
+		if (n.op == INCREMENT) "inc ".print(this.stream)
+		else if (n.op == DECREMENT) "dec ".print(this.stream)
+		else if (n.op == PUSH) "push ".print(this.stream)
 		else error("Can't use ", n.op.toString(), " as a unary operator")
 
 		n.visit_children(this.v)
-		"\n".print()
+		"\n".print(this.stream)
   	return 0
 	}
 
 	func void visit(StringNode n)() {
 		if (n.type == nNUMBER) {
 			if (n.string.get(0) != '-') {
-				"+".print()
+				"+".print(this.stream)
 			}
 		}
 		if (n.type == nINDEX) {
 			if (n.string.get(0) != '-') {
-				"+".print()
+				"+".print(this.stream)
 			}
 		}
-		n.string.print()
+		n.string.print(this.stream)
   	return 0
 	}
 
@@ -168,34 +168,34 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
 
 	func void visit(FunctionNode n)(Number size) {
 		if (n.name.equal("main") == 1) {
-			"_start".print()
+			"_start".print(this.stream)
 		} else {
-			n.name.print()
+			n.name.print(this.stream)
 		}
-		":\npush rbp\nmov rbp, rsp\nsub rsp, ".print()
+		":\npush rbp\nmov rbp, rsp\nsub rsp, ".print(this.stream)
 		size = n.vars.children.length
 		size << 3
-		size.toString().println()
-		"push r12\npush r13".println()
+		size.toString().println(this.stream)
+		"push r12\npush r13".println(this.stream)
 
 		# Dump block
 		n.block.visit(this.v)
 
-		".ret:".println()
+		".ret:".println(this.stream)
 		if (n.name.equal("main") == 1) {
-			"mov rdi, rax\nmov rax, 60\nsyscall".println()
+			"mov rdi, rax\nmov rax, 60\nsyscall".println(this.stream)
 		} else {
-			"pop r13\npop r12\nmov rsp, rbp\npop rbp\nret ".print()
+			"pop r13\npop r12\nmov rsp, rbp\npop rbp\nret ".print(this.stream)
 			size = n.args.children.length
 			size << 3
-			size.toString().println()
+			size.toString().println(this.stream)
 		}
   	return 0
 	}
 
 	func void visit(ListNode n)() {
 		if (this.top == true) {
-			"global _start".println()
+			"global _start".println(this.stream)
 			this.top = false
 		}
 
@@ -213,21 +213,21 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
 		nn = n.condition
 		nn.m_visit(this)
 
-		this.trueLabel.print()
-		":".println()
+		this.trueLabel.print(this.stream)
+		":".println(this.stream)
 		n.block_if.visit(this.v)
 
 		endLabel = this.createLabel("endIf")
 		if (n.block_else != 0) {
-			"jmp ".print()
-			endLabel.println()
+			"jmp ".print(this.stream)
+			endLabel.println(this.stream)
 		}
-		this.falseLabel.print()
-		":".println()
+		this.falseLabel.print(this.stream)
+		":".println(this.stream)
 		if (n.block_else != 0) {
 			n.block_else.visit(this.v)
-			endLabel.print()
-			":".println()
+			endLabel.print(this.stream)
+			":".println(this.stream)
 		}
 
   	return 0
@@ -239,9 +239,9 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
 	}
 
 	func void visit(ReturnNode n)() {
-		"mov rax, ".print()
+		"mov rax, ".print(this.stream)
 		n.visit_children(this.v)
-		"\njmp .ret".println()
+		"\njmp .ret".println(this.stream)
   	return 0
 	}
 

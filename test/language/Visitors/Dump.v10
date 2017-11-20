@@ -16,7 +16,7 @@ include "src/language/visitors/Resolving.v10"
 include "src/language/visitors/IndexCall.v10"
 include "src/language/visitors/Dump.v10"
 
-global(Scope scope, Node root_node)
+global(Scope scope)
 
 func void main()(Stream input, Parser parser, Node root, Visitor v, Scope sc) {
 	# Open input file
@@ -28,7 +28,6 @@ func void main()(Stream input, Parser parser, Node root, Visitor v, Scope sc) {
 
 	parser = Parser_new("sample.v10", input)
 	root = parser.parse()
-	root_node = root
 	sc = Scope_new()
 	scope = sc
 
@@ -44,6 +43,6 @@ func void main()(Stream input, Parser parser, Node root, Visitor v, Scope sc) {
 	root.m_visit(v)
 	v = IndexCall_new()
 	root.m_visit(v)
-	v = Dump_new()
+	v = Dump_new(STDOUT)
 	root.m_visit(v)
 }

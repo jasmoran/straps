@@ -1,8 +1,21 @@
 include "src/stdlib/stdlib.v10"
 include "src/language/parser/Parser.v10"
-include "src/language/visitors/Visitor.v10"
+include "src/language/Scope.v10"
+include "src/language/Type.v10"
 
-func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, Stream output, Parser parser, Node root, Visitor v) {
+include "src/language/visitors/Visitor.v10"
+include "src/language/visitors/Printer.v10"
+include "src/language/visitors/Constructor.v10"
+include "src/language/visitors/Typing.v10"
+include "src/language/visitors/Method.v10"
+include "src/language/visitors/Definition.v10"
+include "src/language/visitors/Resolving.v10"
+include "src/language/visitors/IndexCall.v10"
+include "src/language/visitors/Dump.v10"
+
+global(Scope scope)
+
+func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, Stream output, Parser parser, Node root, Visitor v, Scope sc) {
 	# Open input file
 	input = File_open(in_path)
 	if (input < 0) { return 1 }
@@ -13,11 +26,23 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, St
 
 	parser = Parser_new(String_fromTerminated(in_path), input)
 	root = parser.parse()
+	sc = Scope_new()
+	scope = sc
 
 	load_loop()
 
 	v = Constructor_new()
 	root.m_visit(v)
-	v = Printer_new()
+	v = Typing_new()
+	root.m_visit(v)
+	v = Method_new()
+	root.m_visit(v)
+	v = Definition_new()
+	root.m_visit(v)
+	v = Resolving_new()
+	root.m_visit(v)
+	v = IndexCall_new()
+	root.m_visit(v)
+	v = Dump_new(output)
 	root.m_visit(v)
 }
