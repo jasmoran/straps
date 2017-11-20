@@ -18,11 +18,14 @@ class Token(void type){
 		}
 }
 
-func Tokenizer Tokenizer_new(String stream_name, Stream s)() {
-	return Tokenizer_new(stream_name, ReversibleStream_new(s, 1024), NONE, String_new(1024), MetaCharacter_new(' ', 0, 0))
+func Tokenizer Tokenizer_new(String stream_name, Stream s)(ReversibleStream rs_old) {
+	rs_old = 0
+	return Tokenizer_new(stream_name, ReversibleStream_new(s, 1024), NONE, String_new(1024), MetaCharacter_new(' ', 0, 0), rs_old, Map_new(256))
 }
 
-class Tokenizer(String stream_name, ReversibleStream rs, Token type, String image, MetaCharacter first_char) {
+class Tokenizer(String stream_name, ReversibleStream rs, Token type,
+								String image, MetaCharacter first_char, ReversibleStream rs_old,
+								Map macros) {
 	func Token peek()() {
 		if (this.type == NONE) {
 			this.type = this.load()
@@ -226,17 +229,39 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 		return true
 	}
 
-	func Token load()(Character c) {
+	func Token load()(Character c, String macro, Any any, Character qmark, Number ix) {
 		# Skip whitespace
 		loop {
 			this.first_char = this.rs.get()
 			c = this.first_char.get_character()
-			if (c == 0) return EOF
+			if (c == 0) {
+				if (this.rs_old == 0) {
+					return EOF
+				} else {
+					this.rs = this.rs_old
+					this.rs_old = 0
+				}
+			}
 			if (c == 10) return NEW_LINE
 			if (c > ' ') break
 		}
 		this.rs.rewind(1)
 		this.rs.flush()
+
+		# Define macros
+		if (this.match("define") == true) {
+			if (this.load() != IDENTIFIER)
+				error("Malformed definition at ", this.rs.get().get_character().toString())
+			qmark = 63
+			macro = this.image.clone(1).prepend(qmark)
+			this.image.clear()
+			if (this.load() != STRING)
+				error("Malformed definition at ", this.rs.get().get_character().toString())
+			any = this.image.clone()
+			this.image.clear()
+			this.macros.set(macro, any)
+			return this.load()
+		}
 
 		if (this.match("break") == true) { return BREAK }
 		if (this.match("case") == true) { return CASE }
@@ -298,6 +323,21 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 		if (this.match_character() == true) { return CHARACTER }
 		if (this.match_identifier() == true) { return IDENTIFIER }
 		if (this.match_comment() == true) { return this.load() }
+
+		# Use macros
+		ix = 0
+		loop {
+			if (this.macros.keys.length == ix) break
+			macro = this.macros.keys.get(ix)
+			if (this.match(macro) == true) {
+				macro = this.macros.values.get(ix)
+				this.rs_old = this.rs
+				this.rs = ReversibleStream_new(macro)
+				return this.load()
+			}
+
+			ix++
+		}
 
 		"Error: invalid character: '".print(STDERR)
 		this.rs.get().get_character().toString().print(STDERR)
