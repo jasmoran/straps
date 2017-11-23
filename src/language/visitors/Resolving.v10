@@ -32,7 +32,10 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 		return n
 	}
 
-	func void visit(BinaryOperationNode n)(Scope prev_scope, StringNode sn, BinaryOperationNode dot, ListNode args) {
+	func void visit(BinaryOperationNode n)(Scope prev_scope, StringNode sn,
+																				 BinaryOperationNode dot, ListNode args,
+																				 LinkedListNode lln, StringNode field,
+																				 Node nn, String method) {
 		# Handle fields
 		if (n.op == DOT) {
 			# Resolve first item
@@ -62,25 +65,55 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 			return n
 		}
 
-		n.visit_children(this.v)
-
 		if (n.op == PAREN_OPEN) {
-			# Inherit ret_type from lhs (function)
-			sn = n.lhs
-			n.ret_type = sn.ret_type
-
+			# Resolve args
 			args = n.rhs
+			n.rhs = args.m_visit(this)
+
+			method = String_new(128)
+			dot = n.lhs
 			if (n.lhs.type == nBINARYOP) {
-				dot = n.lhs
 				if (dot.op == DOT) {
+					# Resolve lhs of dot
+					sn = dot.lhs
+					sn = sn.m_visit(this)
+					method.append('_').append(sn.ret_type.raw).append('_')
+
 					# Add lhs of dot to beginning of arguments
-					args.prepend(dot.lhs)
+					args.prepend(sn.toNode())
 
 					# rhs of dot becomes new lhs of paren_open
 					n.lhs = dot.rhs
 				}
 			}
+
+			# Lengthen function name
+			sn = n.lhs
+			sn.string = String_new(128).append(method).append(sn.string)
+
+			# Add args to function name
+			lln = args.children.first
+			loop {
+				if (lln == 0) { break }
+				field = lln.payload
+
+				# Append type to function name
+				sn.string.append('_').append(field.ret_type.raw)
+
+				lln = lln.fwrd
+			}
+
+			# Resolve function
+			n.lhs = sn.m_visit(this)
+
+			# Inherit ret_type from function
+			sn = n.lhs
+			n.ret_type = sn.ret_type
+
+			return n
 		}
+
+		n.visit_children(this.v)
 
 		return n
 	}
@@ -89,40 +122,40 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 
 	func void visit(ClassNode n)() {
 		n.visit_children(this.v)
-		return 0
+		return n
 	}
 
 	func void visit(Node n)() {
-		return 0
+		return n
 	}
 
 	func void visit(UnaryOperationNode n)() {
 		n.visit_children(this.v)
-		return 0
+		return n
 	}
 
 	func void visit(ListNode n)() {
 		n.visit_children(this.v)
-		return 0
+		return n
 	}
 
 	func void visit(IfNode n)() {
 		n.visit_children(this.v)
-		return 0
+		return n
 	}
 
 	func void visit(LoopNode n)() {
 		n.visit_children(this.v)
-		return 0
+		return n
 	}
 
 	func void visit(ReturnNode n)() {
 		n.visit_children(this.v)
-		return 0
+		return n
 	}
 
 	func void visit(EnumNode n)() {
 		n.visit_children(this.v)
-		return 0
+		return n
 	}
 }

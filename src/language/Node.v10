@@ -152,6 +152,12 @@ class FunctionNode(NodeType type, void m_visit, Type ret_type, String name, List
 		if (n != 0) this.block = n
 	}
 
+	func FunctionNode shallow_clone()(FunctionNode fn) {
+		fn = FunctionNode_new(this.ret_type, this.name, this.args, this.vars, ListNode_new(nBLOCK))
+		fn.scope = this.scope
+		return fn
+	}
+
 	func Node toNode()() { return this }
 }
 

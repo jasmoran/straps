@@ -24,7 +24,7 @@ class Method(?T, ListNode pb, ClassNode cls) {
 	func void visit(FunctionNode n)(Number length) {
 		if (this.cls != 0) {
 			# Add method to scope of class
-			this.cls.scope.set(n.name, n.toNode())
+			this.cls.scope.set(n.name, n.shallow_clone().toNode())
 
 			# Save new method name "_CLASS_METHOD"
 			length = n.name.length
