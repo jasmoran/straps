@@ -29,6 +29,17 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, St
 	sc = Scope_new()
 	scope = sc
 
+	sc.set("rax", StringNode_new(nREGISTER, Type_new(), "rax").toNode())
+	sc.set("rbx", StringNode_new(nREGISTER, Type_new(), "rbx").toNode())
+	sc.set("rcx", StringNode_new(nREGISTER, Type_new(), "rcx").toNode())
+	sc.set("rdx", StringNode_new(nREGISTER, Type_new(), "rdx").toNode())
+	sc.set("rsp", StringNode_new(nREGISTER, Type_new(), "rsp").toNode())
+	sc.set("rbp", StringNode_new(nREGISTER, Type_new(), "rbp").toNode())
+	sc.set("rsi", StringNode_new(nREGISTER, Type_new(), "rsi").toNode())
+	sc.set("rdi", StringNode_new(nREGISTER, Type_new(), "rdi").toNode())
+	sc.set("r12", StringNode_new(nREGISTER, Type_new(), "r12").toNode())
+	sc.set("r13", StringNode_new(nREGISTER, Type_new(), "r13").toNode())
+
 	load_loop()
 
 	v = Constructor_new()
