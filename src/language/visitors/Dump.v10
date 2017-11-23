@@ -26,18 +26,33 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
   	return 0
 	}
 
-	func void visit(BinaryOperationNode n)(String op, Number ix, Node nn, FunctionNode fun, String lastTrue, String lastFalse) {
+	func void visit(BinaryOperationNode n)(String op, Number ix, Node nn, FunctionNode fun, String lastTrue, String lastFalse, StringNode num) {
 		if (n.op == PAREN_OPEN) {
-			fun = n.lhs
 			"call ".print(this.stream)
-			fun.name.println(this.stream)
+			if (n.lhs.type == nFUNCTION) {
+				fun = n.lhs
+				fun.name.println(this.stream)
+			} else {
+				nn = n.lhs
+				nn.m_visit(this)
+			}
 		} else if (n.op == DOT) {
 			"QWORD[".print(this.stream)
-			n.visit_children(this.v)
+			nn = n.lhs
+			nn.m_visit(this)
+			num = n.rhs
+			if (num.string.get(0) != '-')
+				"+".print(this.stream)
+			num.string.print(this.stream)
 			"]".print(this.stream)
 		} else if (n.op == SQUARE_OPEN) {
 			"QWORD[".print(this.stream)
-			n.visit_children(this.v)
+			nn = n.lhs
+			nn.m_visit(this)
+			num = n.rhs
+			if (num.string.get(0) != '-')
+				"+".print(this.stream)
+			num.string.print(this.stream)
 			"]".print(this.stream)
 		} else if (n.op == OR) {
 			lastFalse = this.falseLabel
@@ -148,17 +163,15 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
 	}
 
 	func void visit(StringNode n)() {
-		if (n.type == nNUMBER) {
-			if (n.string.get(0) != '-') {
-				"+".print(this.stream)
-			}
+		if (n.type == nCHARACTER) {
+			"'".print(this.stream)
+			n.string.print(this.stream)
+			"'".print(this.stream)
+		} else if (n.type == nNASM) {
+			n.string.println(this.stream)
+		} else {
+			n.string.print(this.stream)
 		}
-		if (n.type == nINDEX) {
-			if (n.string.get(0) != '-') {
-				"+".print(this.stream)
-			}
-		}
-		n.string.print(this.stream)
   	return 0
 	}
 
@@ -195,7 +208,7 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
 
 	func void visit(ListNode n)() {
 		if (this.top == true) {
-			"global _start".println(this.stream)
+			"section .text\nglobal _start".println(this.stream)
 			this.top = false
 		}
 
