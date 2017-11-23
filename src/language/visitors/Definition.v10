@@ -58,7 +58,7 @@ class Definition(?T) {
 	}
 
 	func void visit(FunctionNode n)(Number ix, StringNode field, LinkedListNode lln, Scope sc) {
-		n.name = String_new(128).append(n.name)
+		n.name = String_new(256).append(n.name)
 
 		# Loop through arguments
 		ix = 16

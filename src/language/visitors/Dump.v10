@@ -1,4 +1,4 @@
-func Dump Dump_new(Stream stream)(?T, Any a, Array binops, Boolean top) {
+func Dump Dump_new(Stream stream)(?T, Any a, Array binops, Array scallreg, Boolean top) {
 	define V Dump
 	include "src/language/visitors/init.v10"
 
@@ -14,14 +14,30 @@ func Dump Dump_new(Stream stream)(?T, Any a, Array binops, Boolean top) {
 	a = "mov "
 	binops.append(a)
 
+	scallreg = Array_new(7)
+	a = "rax"
+	scallreg.append(a)
+	a = "rdi"
+	scallreg.append(a)
+	a = "rsi"
+	scallreg.append(a)
+	a = "rdx"
+	scallreg.append(a)
+	a = "r10"
+	scallreg.append(a)
+	a = "r8"
+	scallreg.append(a)
+	a = "r9"
+	scallreg.append(a)
+
 	top = true
 
-	v = Dump_new(?U, binops, top, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true, stream)
+	v = Dump_new(?U, binops, scallreg, top, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true, stream)
 	v.v = v
 	return v
 }
 
-class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, String falseLabel, String target, Boolean negate, Stream stream) {
+class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter, String trueLabel, String falseLabel, String target, Boolean negate, Stream stream) {
 	func void visit(Node n)() {
   	return 0
 	}
@@ -206,13 +222,33 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
   	return 0
 	}
 
-	func void visit(ListNode n)() {
+	func void visit(ListNode n)(LinkedListNode lln, Node nn, Number ix, String s) {
 		if (this.top == true) {
 			"section .text\nglobal _start".println(this.stream)
 			this.top = false
 		}
 
-		n.visit_children(this.v)
+		if (n.type == nSYS) {
+			lln = n.children.first
+			ix = 0
+			loop {
+				if (lln == 0) { break }
+				nn = lln.payload
+				"mov ".print(this.stream)
+				s = this.scallreg.get(ix)
+				s.print(this.stream)
+				", ".print(this.stream)
+				nn.m_visit(this)
+				"\n".print(this.stream)
+				ix++
+
+				lln = lln.fwrd
+			}
+			"syscall".println(this.stream)
+		} else {
+			n.visit_children(this.v)
+		}
+
   	return 0
 	}
 
@@ -230,7 +266,7 @@ class Dump(?T, Array binops, Boolean top, Number counter, String trueLabel, Stri
 		":".println(this.stream)
 		n.block_if.visit(this.v)
 
-		endLabel = this.createLabel("endIf")
+		endLabel = this.createLabel(".endIf")
 		if (n.block_else != 0) {
 			"jmp ".print(this.stream)
 			endLabel.println(this.stream)

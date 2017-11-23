@@ -3,7 +3,7 @@ func fix_args(node)(children, sub_child, sub_node, new_name) {
 	node_type(var node)
 
 	if (rax == nFUNCTION) {
-		var new_name = string_new(128)
+		var new_name = string_new(256)
 		node_data(var node)
 
 		# Leave main function alone
@@ -42,7 +42,7 @@ func fix_args(node)(children, sub_child, sub_node, new_name) {
 
 	if (rax == nCALL) {
 		# Get name
-		var new_name = string_new(128)
+		var new_name = string_new(256)
 		ll_get(var children, 0)
 		node_data(rax)
 

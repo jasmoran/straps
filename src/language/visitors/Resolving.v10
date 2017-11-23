@@ -89,7 +89,7 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 
 			# Lengthen function name
 			sn = n.lhs
-			sn.string = String_new(128).append(method).append(sn.string)
+			sn.string = String_new(256).append(method).append(sn.string)
 
 			# Add args to function name
 			lln = args.children.first
