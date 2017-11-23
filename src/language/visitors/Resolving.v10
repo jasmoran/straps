@@ -118,6 +118,14 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 		return n
 	}
 
+	func void visit(ListNode n)() {
+		if (n.type != nGLOBAL) {
+			n.visit_children(this.v)
+		}
+
+		return n
+	}
+
 
 
 	func void visit(ClassNode n)() {
@@ -130,11 +138,6 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 	}
 
 	func void visit(UnaryOperationNode n)() {
-		n.visit_children(this.v)
-		return n
-	}
-
-	func void visit(ListNode n)() {
 		n.visit_children(this.v)
 		return n
 	}
