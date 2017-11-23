@@ -38,7 +38,13 @@ class Array (Number length, Number size, void data) {
 			}
 
 			# Detect match
-			if (compare(val, this.get(index)) == true) {
+			rax = this.get(index)
+			nasm("push rax")
+			rax = val
+			nasm("push rax")
+			rax = compare
+			nasm("call rax")
+			if (rax == true) {
 				return index
 			}
 
