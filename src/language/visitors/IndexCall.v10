@@ -116,7 +116,12 @@ class IndexCall(?T, LinkedList parent_list, LinkedListNode parent_lln, Node scra
 
 				this.parent_lln = prev_lln
 
-				if (n != 0) lln.payload = n
+				if (n != 0) {
+					# Guard against function return rax being placed directly in a block
+					if (n.type == nREGISTER) n = ListNode_new(nBLOCK)
+
+					lln.payload = n
+				}
 				lln = lln.fwrd
 			}
 
