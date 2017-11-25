@@ -1,18 +1,23 @@
 func Strings Strings_new()(?T) {
 	define V Strings
 	include "src/language/visitors/init.v10"
-	v = Strings_new(?U, 0, ListNode_new(nSTRINGS), true)
+	v = Strings_new(?U, 0, ListNode_new(nSTRINGS), true, false)
 	v.v = v
 	return v
 }
 
-class Strings(?T, Number counter, ListNode strings, Boolean root) {
+class Strings(?T, Number counter, ListNode strings, Boolean root, Boolean do_idents) {
+	func void addString(StringNode n)() {
+		this.strings.append(StringNode_new(nSTRING, Type_new(), n.string).toNode())
+		n.string = "string_".clone(4).append(this.counter.toString())
+		n.type = nIDENTIFIER
+		this.counter++
+	}
+
 	func void visit(StringNode n)() {
-		if (n.type == nSTRING) {
-			this.strings.append(StringNode_new(nSTRING, Type_new(), n.string).toNode())
-			n.string = "string_".clone(4).append(this.counter.toString())
-			n.type = nIDENTIFIER
-			this.counter++
+		if (n.type == nSTRING) this.addString(n)
+		if (n.type == nIDENTIFIER) {
+			if (this.do_idents == true) this.addString(n)
 		}
 
 		return 0
@@ -31,6 +36,14 @@ class Strings(?T, Number counter, ListNode strings, Boolean root) {
 		n.visit_children(this.v)
   	return 0
 	}
+
+	func void visit(EnumNode n)() {
+		this.do_idents = true
+		n.visit_children(this.v)
+		this.do_idents = false
+		return 0
+	}
+
 
 
 
@@ -71,10 +84,5 @@ class Strings(?T, Number counter, ListNode strings, Boolean root) {
 	func void visit(ReturnNode n)() {
 		n.visit_children(this.v)
   	return 0
-	}
-
-	func void visit(EnumNode n)() {
-		n.visit_children(this.v)
-		return 0
 	}
 }

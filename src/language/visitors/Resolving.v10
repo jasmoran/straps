@@ -126,6 +126,9 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 		return n
 	}
 
+	func void visit(EnumNode n)() {
+		return n
+	}
 
 
 	func void visit(ClassNode n)() {
@@ -157,8 +160,4 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 		return n
 	}
 
-	func void visit(EnumNode n)() {
-		n.visit_children(this.v)
-		return n
-	}
 }

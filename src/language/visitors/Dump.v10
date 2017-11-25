@@ -330,8 +330,27 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter, String
   	return 0
 	}
 
-	func void visit(EnumNode n)() {
-		#n.visit_children(this.v)
+	func void visit(EnumNode n)(String len, LinkedListNode lln, Node nn) {
+		"section .data".println(this.stream)
+		n.name.print(this.stream)
+		":\ndq ".print(this.stream)
+		len = n.values.children.length.toString()
+		len.print(this.stream)
+		", ".print(this.stream)
+		len.print(this.stream)
+		", 24+".print(this.stream)
+		n.name.print(this.stream)
+
+		lln = n.values.children.first
+		loop {
+			if (lln == 0) { break }
+			nn = lln.payload
+			", ".print(this.stream)
+			nn.m_visit(this)
+			lln = lln.fwrd
+		}
+
+		"\nsection .text".println(this.stream)
 		return 0
 	}
 
