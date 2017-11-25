@@ -222,7 +222,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter, String
   	return 0
 	}
 
-	func void visit(ListNode n)(LinkedListNode lln, Node nn, Number ix, String s) {
+	func void visit(ListNode n)(LinkedListNode lln, StringNode nn, Number ix, String s) {
 		if (this.top == true) {
 			"section .text\nglobal _start".println(this.stream)
 			this.top = false
@@ -253,6 +253,30 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter, String
 				nn = lln.payload
 				nn.m_visit(this)
 				": resq 1".println(this.stream)
+
+				lln = lln.fwrd
+			}
+			"section .text".println(this.stream)
+		} else if (n.type == nSTRINGS) {
+			"section .data".println(this.stream)
+			lln = n.children.first
+			ix = 0
+			loop {
+				if (lln == 0) { break }
+				"string_".print(this.stream)
+				ix.toString().print(this.stream)
+				":\ndq ".print(this.stream)
+				nn = lln.payload
+				s = nn.string.unescaped_length().toString()
+				s.print(this.stream)
+				", ".print(this.stream)
+				s.print(this.stream)
+				", 24+string_".print(this.stream)
+				ix.toString().println(this.stream)
+				"db \`".print(this.stream)
+				nn.string.print(this.stream)
+				"\`\n".print(this.stream)
+				ix++
 
 				lln = lln.fwrd
 			}

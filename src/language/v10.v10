@@ -12,6 +12,7 @@ include "src/language/visitors/Definition.v10"
 include "src/language/visitors/Resolving.v10"
 include "src/language/visitors/IndexCall.v10"
 include "src/language/visitors/Dump.v10"
+include "src/language/visitors/Strings.v10"
 
 global(Scope scope)
 
@@ -53,6 +54,8 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, St
 	v = Resolving_new()
 	root.m_visit(v)
 	v = IndexCall_new()
+	root.m_visit(v)
+	v = Strings_new()
 	root.m_visit(v)
 	v = Dump_new(output)
 	root.m_visit(v)
