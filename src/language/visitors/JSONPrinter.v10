@@ -1,5 +1,5 @@
 func JSONPrinter JSONPrinter_new(Stream s)(?T) {
-	define V JSONPrinter
+	define V "JSONPrinter"
 	include "src/language/visitors/init.v10"
 	v = JSONPrinter_new(?U, s)
 	v.v = v

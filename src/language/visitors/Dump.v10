@@ -1,5 +1,5 @@
 func Dump Dump_new(Stream stream)(?T, Any a, Array binops, Array scallreg, Boolean top) {
-	define V Dump
+	define V "Dump"
 	include "src/language/visitors/init.v10"
 
 	binops = Array_new(5)

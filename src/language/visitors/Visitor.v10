@@ -2,7 +2,7 @@ define T "Visitor v, void m_visit_Node, void m_visit_BinaryOperationNode, void m
 define U "v, m_visit_Node, m_visit_BinaryOperationNode, m_visit_UnaryOperationNode, m_visit_StringNode, m_visit_ClassNode, m_visit_FunctionNode, m_visit_ListNode, m_visit_IfNode, m_visit_LoopNode, m_visit_ReturnNode, m_visit_EnumNode"
 
 func Visitor Visitor_new()(?T) {
-	define V Visitor
+	define V "Visitor"
 	include "src/language/visitors/init.v10"
 	return Visitor_new(?U)
 }

@@ -15,7 +15,7 @@ class NodeType() {
 }
 
 func Node Node_new(NodeType type)(void m_visit) {
-	define N Node
+	define N "Node"
 	include "src/language/nodes/init.v10"
 	return Node_new(type, m_visit)
 }
@@ -34,7 +34,7 @@ func BinaryOperationNode BinaryOperationNode_new(Token op, Node lhs, Node rhs)()
 	return BinaryOperationNode_new(Type_new(), op, lhs, rhs)
 }
 func BinaryOperationNode BinaryOperationNode_new(Type ret_type, Token op, Node lhs, Node rhs)(void m_visit) {
-	define N BinaryOperationNode
+	define N "BinaryOperationNode"
 	include "src/language/nodes/init.v10"
 	return BinaryOperationNode_new(nBINARYOP, m_visit, ret_type, op, lhs, rhs)
 }
@@ -61,7 +61,7 @@ func UnaryOperationNode UnaryOperationNode_new(Token op, Node expr, Boolean left
 	return UnaryOperationNode_new(Type_new(), op, expr, left)
 }
 func UnaryOperationNode UnaryOperationNode_new(Type ret_type, Token op, Node expr, Boolean left)(void m_visit) {
-	define N UnaryOperationNode
+	define N "UnaryOperationNode"
 	include "src/language/nodes/init.v10"
 	return UnaryOperationNode_new(nUNARYOP, m_visit, ret_type, op, expr, left)
 }
@@ -83,7 +83,7 @@ class UnaryOperationNode(NodeType type, void m_visit, Type ret_type, Token op, N
 
 
 func StringNode StringNode_new(NodeType type, Type ret_type, String string)(void m_visit) {
-	define N StringNode
+	define N "StringNode"
 	include "src/language/nodes/init.v10"
 	return StringNode_new(type, m_visit, ret_type, string)
 }
@@ -101,7 +101,7 @@ class StringNode(NodeType type, void m_visit, Type ret_type, String string) {
 
 
 func Node ClassNode_new(String name, ListNode fields, ListNode block)(void m_visit, Scope sc) {
-	define N ClassNode
+	define N "ClassNode"
 	include "src/language/nodes/init.v10"
 	sc = scope
 	sc = Scope_new(name, sc)
@@ -128,7 +128,7 @@ class ClassNode(NodeType type, void m_visit, String name, ListNode fields, ListN
 
 
 func Node FunctionNode_new(Type ret_type, String name, ListNode args, ListNode vars, ListNode block)(void m_visit, Scope sc) {
-	define N FunctionNode
+	define N "FunctionNode"
 	include "src/language/nodes/init.v10"
 	sc = scope
 	sc = Scope_new(name, sc)
@@ -163,12 +163,12 @@ class FunctionNode(NodeType type, void m_visit, Type ret_type, String name, List
 
 
 
-func Node ListNode_new(NodeType type, LinkedList children)(void m_visit) {
-	define N ListNode
+func ListNode ListNode_new(NodeType type, LinkedList children)(void m_visit) {
+	define N "ListNode"
 	include "src/language/nodes/init.v10"
 	return ListNode_new(type, m_visit, children)
 }
-func Node ListNode_new(NodeType type)() {
+func ListNode ListNode_new(NodeType type)() {
 	return ListNode_new(type, LinkedList_new())
 }
 
@@ -206,7 +206,7 @@ class ListNode(NodeType type, void m_visit, LinkedList children) {
 
 
 func Node IfNode_new(Node condition, ListNode block_if)(ListNode l, void m_visit) {
-	define N IfNode
+	define N "IfNode"
 	include "src/language/nodes/init.v10"
 	l = 0
 	return IfNode_new(nIF, m_visit, condition, block_if, l)
@@ -237,7 +237,7 @@ class IfNode(NodeType type, void m_visit, Node condition, ListNode block_if, Lis
 
 
 func Node LoopNode_new(ListNode block)(void m_visit) {
-	define N LoopNode
+	define N "LoopNode"
 	include "src/language/nodes/init.v10"
 	return LoopNode_new(nLOOP, m_visit, block)
 }
@@ -259,7 +259,7 @@ class LoopNode(NodeType type, void m_visit, ListNode block) {
 
 
 func Node ReturnNode_new(Node expr)(void m_visit) {
-	define N ReturnNode
+	define N "ReturnNode"
 	include "src/language/nodes/init.v10"
 	return ReturnNode_new(nRETURN, m_visit, expr)
 }
@@ -281,7 +281,7 @@ class ReturnNode(NodeType type, void m_visit, Node expr) {
 
 
 func Node EnumNode_new(String name, ListNode values)(void m_visit) {
-	define N EnumNode
+	define N "EnumNode"
 	include "src/language/nodes/init.v10"
 	return EnumNode_new(nENUM, m_visit, name, values)
 }

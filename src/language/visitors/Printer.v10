@@ -1,5 +1,5 @@
 func Printer Printer_new(Number indent, Stream s, Number depth, Boolean print_scope)(?T) {
-	define V Printer
+	define V "Printer"
 	include "src/language/visitors/init.v10"
 	depth += indent
 	v = Printer_new(?U, indent, s, depth, print_scope)

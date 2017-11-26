@@ -1,5 +1,5 @@
 func Strings Strings_new()(?T) {
-	define V Strings
+	define V "Strings"
 	include "src/language/visitors/init.v10"
 	v = Strings_new(?U, 0, ListNode_new(nSTRINGS), true, false)
 	v.v = v

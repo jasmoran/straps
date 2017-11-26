@@ -23,9 +23,7 @@ func Tokenizer Tokenizer_new(String stream_name, Stream s)(ReversibleStream rs_o
 	return Tokenizer_new(stream_name, ReversibleStream_new(s, 1024), NONE, String_new(1024), MetaCharacter_new(' ', 0, 0), rs_old, Map_new(256))
 }
 
-class Tokenizer(String stream_name, ReversibleStream rs, Token type,
-								String image, MetaCharacter first_char, ReversibleStream rs_old,
-								Map macros) {
+class Tokenizer(String stream_name, ReversibleStream rs, Token type, String image, MetaCharacter first_char, ReversibleStream rs_old, Map macros) {
 	func Token peek()() {
 		if (this.type == NONE) {
 			this.type = this.load()
@@ -251,12 +249,12 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type,
 		# Define macros
 		if (this.match("define") == true) {
 			if (this.load() != IDENTIFIER)
-				error("Malformed definition at ", this.rs.get().get_character().toString())
+				error("Malformed definition at ", this.rs.get().toString(), " in stream ", this.stream_name)
 			qmark = 63
 			macro = this.image.clone(1).prepend(qmark)
 			this.image.clear()
 			if (this.load() != STRING)
-				error("Malformed definition at ", this.rs.get().get_character().toString())
+				error("Malformed definition at ", this.rs.get().toString(), " in stream ", this.stream_name)
 			any = this.image.clone()
 			this.image.clear()
 			this.macros.set(macro, any)

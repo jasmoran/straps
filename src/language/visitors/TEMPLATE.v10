@@ -1,5 +1,5 @@
 func TEMPLATE TEMPLATE_new()(?T) {
-	define V TEMPLATE
+	define V "TEMPLATE"
 	include "src/language/visitors/init.v10"
 	v = TEMPLATE_new(?U)
 	v.v = v

@@ -1,5 +1,5 @@
 func FixArgs FixArgs_new()(?T) {
-	define V FixArgs
+	define V "FixArgs"
 	include "src/language/visitors/init.v10"
 	v = FixArgs_new(?U)
 	v.v = v

@@ -1,5 +1,5 @@
 func IndexCall IndexCall_new()(?T, LinkedList pl, LinkedListNode plln) {
-	define V IndexCall
+	define V "IndexCall"
 	include "src/language/visitors/init.v10"
 	pl = 0
 	plln = 0

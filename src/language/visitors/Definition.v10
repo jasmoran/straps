@@ -1,5 +1,5 @@
 func Definition Definition_new()(?T) {
-	define V Definition
+	define V "Definition"
 	include "src/language/visitors/init.v10"
 	v = Definition_new(?U)
 	v.v = v

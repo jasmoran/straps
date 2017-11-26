@@ -1,5 +1,5 @@
 func Functions Functions_new()(?T) {
-	define V Functions
+	define V "Functions"
 	include "src/language/visitors/init.v10"
 	v = Functions_new(?U, ListNode_new(nFUNCTIONS), true)
 	v.v = v

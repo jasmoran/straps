@@ -1,5 +1,5 @@
 func Resolving Resolving_new()(?T, Scope sc) {
-	define V Resolving
+	define V "Resolving"
 	include "src/language/visitors/init.v10"
 	sc = scope
 	v = Resolving_new(?U, sc, true)

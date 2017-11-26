@@ -1,5 +1,5 @@
 func Constructor Constructor_new()(?T, ListNode ln, Node n) {
-	define V Constructor
+	define V "Constructor"
 	include "src/language/visitors/init.v10"
 	ln = 0
 	n = 0

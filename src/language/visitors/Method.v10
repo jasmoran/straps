@@ -1,5 +1,5 @@
 func Method Method_new()(?T, ListNode ln, ClassNode cn) {
-	define V Method
+	define V "Method"
 	include "src/language/visitors/init.v10"
 	ln = 0
 	cn = 0

@@ -1,5 +1,5 @@
 func Typing Typing_new()(?T) {
-	define V Typing
+	define V "Typing"
 	include "src/language/visitors/init.v10"
 
 	v = Typing_new(?U)
