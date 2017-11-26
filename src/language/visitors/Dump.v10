@@ -325,7 +325,12 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter, String
   	return 0
 	}
 
-	func void visit(IfNode n)(Node nn, String endLabel) {
+	func void visit(IfNode n)(Node nn, String endLabel, String old_trueLabel, String old_falseLabel, String old_target, Boolean old_negate) {
+		old_trueLabel = this.trueLabel
+		old_falseLabel = this.falseLabel
+		old_target = this.target
+		old_negate = this.negate
+
 		this.trueLabel = this.createLabel(".trueLabel")
 		this.falseLabel = this.createLabel(".falseLabel")
 		this.counter++
@@ -351,6 +356,11 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter, String
 			endLabel.print(this.stream)
 			":".println(this.stream)
 		}
+
+		this.trueLabel = old_trueLabel
+		this.falseLabel = old_falseLabel
+		this.target = old_target
+		this.negate = old_negate
 
   	return 0
 	}
