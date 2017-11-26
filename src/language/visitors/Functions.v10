@@ -1,0 +1,78 @@
+func Functions Functions_new()(?T) {
+	define V Functions
+	include "src/language/visitors/init.v10"
+	v = Functions_new(?U, ListNode_new(nFUNCTIONS), true)
+	v.v = v
+	return v
+}
+
+class Functions(?T, ListNode lfuncs, Boolean root) {
+	func void visit(FunctionNode n)(String name) {
+		name = n.name
+		if (n.name.equal("main") == true) name = "_start"
+		this.lfuncs.append(StringNode_new(nIDENTIFIER, Type_new(), name).toNode())
+		this.lfuncs.append(StringNode_new(nSTRING, Type_new(), n.name).toNode())
+
+		return 0
+	}
+
+	func void visit(ListNode n)() {
+		if (n.type == nBLOCK) {
+			if (this.root == true) {
+				n.append(this.lfuncs.toNode())
+				this.root = false
+			}
+		}
+
+		n.visit_children(this.v)
+  	return 0
+	}
+
+
+
+
+
+
+	func void visit(Node n)() {
+  	return 0
+	}
+
+	func void visit(BinaryOperationNode n)() {
+		n.visit_children(this.v)
+  	return 0
+	}
+
+	func void visit(UnaryOperationNode n)() {
+		n.visit_children(this.v)
+  	return 0
+	}
+
+	func void visit(StringNode n)() {
+  	return 0
+	}
+
+	func void visit(ClassNode n)() {
+		n.visit_children(this.v)
+  	return 0
+	}
+
+	func void visit(IfNode n)() {
+		n.visit_children(this.v)
+  	return 0
+	}
+
+	func void visit(LoopNode n)() {
+		n.visit_children(this.v)
+  	return 0
+	}
+
+	func void visit(ReturnNode n)() {
+		n.visit_children(this.v)
+  	return 0
+	}
+
+	func void visit(EnumNode n)() {
+		n.visit_children(this.v)
+		return 0
+	}
+}

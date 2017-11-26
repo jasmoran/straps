@@ -281,6 +281,43 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter, String
 				lln = lln.fwrd
 			}
 			"section .text".println(this.stream)
+		} else if (n.type == nFUNCTIONS) {
+			"section .data\n_FUNCTIONLIST:\ndq ".print(this.stream)
+			ix = n.children.length
+			ix >> 1
+			s = ix.toString()
+			s.print(this.stream)
+			", ".print(this.stream)
+			s.print(this.stream)
+			", 24+_FUNCTIONLIST".print(this.stream)
+
+			lln = n.children.first
+			loop {
+				if (lln == 0) { break }
+				nn = lln.payload
+				", ".print(this.stream)
+				nn.m_visit(this)
+				lln = lln.fwrd.fwrd
+			}
+
+			"\n_FUNCTIONNAMELIST:\ndq ".print(this.stream)
+			s.print(this.stream)
+			", ".print(this.stream)
+			s.print(this.stream)
+			", 24+_FUNCTIONNAMELIST".print(this.stream)
+
+			lln = n.children.first.fwrd
+			loop {
+				if (lln == 0) { break }
+				nn = lln.payload
+				", ".print(this.stream)
+				nn.m_visit(this)
+				lln = lln.fwrd
+				if (lln == 0) { break }
+				lln = lln.fwrd
+			}
+
+			"\nsection .text".println(this.stream)
 		} else {
 			n.visit_children(this.v)
 		}
