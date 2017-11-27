@@ -21,20 +21,42 @@ class Method(?T, ListNode pb, ClassNode cls) {
   	return 0
 	}
 
-	func void visit(FunctionNode n)(Number length) {
+	func void visit(FunctionNode n)(Number length, LinkedListNode lln, StringNode arg, FunctionNode clone) {
+		# Leave main function alone
+		if (n.name.equal("main") == true) return 0
+		if (n.name.get(0) == '_') return 0
+
+		if (this.cls != 0) {
+			# Add 'this' to arguments
+			n.args.prepend(
+				StringNode_new(nIDENTIFIER, Type_new(this.cls.name), "this").toNode()
+			)
+		}
+
+		n.name = String_new(256).append(n.name)
+
+		# Loop through arguments
+		lln = n.args.children.first
+		loop {
+			if (lln == 0) { break }
+			arg = lln.payload
+
+			# Append arguments type to function name
+			n.name.append('_').append(arg.ret_type.raw)
+
+			lln = lln.fwrd
+		}
+
 		if (this.cls != 0) {
 			# Add method to scope of class
-			this.cls.scope.set(n.name, n.shallow_clone().toNode())
+			clone = n.shallow_clone()
+			this.cls.scope.set(n.name, clone.toNode())
 
 			# Save new method name "_CLASS_METHOD"
 			length = n.name.length
 			length += 2
 			n.name = this.cls.name.clone(length).prepend('_').append('_').append(n.name)
-
-			# Add 'this' to arguments
-			n.args.prepend(
-				StringNode_new(nIDENTIFIER, Type_new(this.cls.name), "this").toNode()
-			)
+			clone.name = n.name
 
 			# Copy method to parent block
 			this.pb.append(n.toNode())

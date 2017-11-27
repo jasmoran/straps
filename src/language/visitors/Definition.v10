@@ -58,17 +58,12 @@ class Definition(?T) {
 	}
 
 	func void visit(FunctionNode n)(Number ix, StringNode field, LinkedListNode lln, Scope sc) {
-		n.name = String_new(256).append(n.name)
-
 		# Loop through arguments
 		ix = 16
 		lln = n.args.children.first
 		loop {
 			if (lln == 0) { break }
 			field = lln.payload
-
-			# Append type to function name
-			n.name.append('_').append(field.ret_type.raw)
 
 			# Store value in function scope
 			n.scope.set(

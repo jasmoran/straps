@@ -33,9 +33,9 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 	}
 
 	func void visit(BinaryOperationNode n)(Scope prev_scope, StringNode sn,
-																				 BinaryOperationNode dot, ListNode args,
+																				 BinaryOperationNode binop, ListNode args,
 																				 LinkedListNode lln, StringNode field,
-																				 Node nn, String method) {
+																				 Node nn, Boolean fixargs, Number num) {
 		# Handle fields
 		if (n.op == DOT) {
 			# Resolve first item
@@ -66,45 +66,59 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 		}
 
 		if (n.op == PAREN_OPEN) {
-			# Resolve args
+			# Target of arg fixing, default to normal function
+			sn = n.lhs
 			args = n.rhs
-			n.rhs = args.m_visit(this)
 
-			method = String_new(128)
-			dot = n.lhs
+			# If LHS is a DOT, add its LHS to arguments (this)
 			if (n.lhs.type == nBINARYOP) {
-				if (dot.op == DOT) {
-					# Resolve lhs of dot
-					sn = dot.lhs
-					sn = sn.m_visit(this)
-					method.append('_').append(sn.ret_type.raw).append('_')
+				binop = n.lhs
+				if (binop.op == DOT) {
+					# If a method, args fixing target is different
+					sn = binop.rhs
 
-					# Add lhs of dot to beginning of arguments
-					args.prepend(sn.toNode())
-
-					# rhs of dot becomes new lhs of paren_open
-					n.lhs = dot.rhs
+					if (sn.type == nIDENTIFIER)
+						args.prepend(binop.lhs)
 				}
 			}
 
-			# Lengthen function name
-			sn = n.lhs
-			sn.string = String_new(256).append(method).append(sn.string)
+			# Resolve arguments
+			n.rhs = args.m_visit(this)
 
-			# Add args to function name
-			lln = args.children.first
-			loop {
-				if (lln == 0) { break }
-				field = lln.payload
+			# Detect "pointer" methods, marked with m_
+			fixargs = true
+			if (sn.string.get(0) == 'm')
+			if (sn.string.get(1) == '_')
+				fixargs = false
 
-				# Append type to function name
-				sn.string.append('_').append(field.ret_type.raw)
+			# Fix arguments into function name
+			if (sn.type == nIDENTIFIER)
+			if (fixargs == true) {
+				# Extend function name
+				sn.string = sn.string.clone(256)
 
-				lln = lln.fwrd
+				# Add args to function name
+				lln = args.children.first
+				loop {
+					if (lln == 0) { break }
+					field = lln.payload
+
+					# Append type to function name
+					sn.string.append('_').append(field.ret_type.raw)
+
+					lln = lln.fwrd
+				}
 			}
 
 			# Resolve function
-			n.lhs = sn.m_visit(this)
+			nn = n.lhs
+			n.lhs = nn.m_visit(this)
+
+			# Fix up dot if it resolved to a function
+			if (n.lhs.type == nBINARYOP)
+			if (binop.op == DOT)
+			if (binop.rhs.type == nFUNCTION)
+				n.lhs = binop.rhs
 
 			# Inherit ret_type from function
 			sn = n.lhs
