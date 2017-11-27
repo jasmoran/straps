@@ -1,0 +1,510 @@
+func dump(node, out_stream)(children, ix, data) {
+	var children = node_children(var node)
+
+	node_type(var node)
+
+	if (rax == nBREAK) {
+		string_print(var out_stream, "jmp .loop_end_")
+		printer_number(var out_stream, enclosing_loo[0])
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nCALL) {
+		string_print(var out_stream, "call ")
+		dump_children(var out_stream, var children)
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nCOMMENT) {
+		string_print(var out_stream, ";")
+		node_data(var node)
+		string_print(var out_stream, rax)
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nCOMPARISON) {
+		string_print(var out_stream, "cmp ")
+
+		# Print LHS
+		ll_get(var children, 0)
+		dump(var out_stream, rax)
+
+		string_print(var out_stream, ", ")
+
+		# Print RHS
+		ll_get(var children, 1)
+		dump(var out_stream, rax)
+
+		string_print(var out_stream, new_line)
+
+		node_data(var node)
+		rax -= EQUAL
+		array_get(jump_types[0], rax)
+		string_print(var out_stream, rax)
+
+		return
+	}
+
+	if (rax == nCHARACTER) {
+		node_data(var node)
+		string_print(var out_stream, rax)
+		return
+	}
+
+	if (rax == nENUM) {
+		string_print(var out_stream, "section .data")
+		string_print(var out_stream, new_line)
+		node_data(var node)
+		string_print(var out_stream, rax)
+		string_print(var out_stream, ":")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "dq ")
+		ll_length(var children)
+		printer_number(var out_stream, rax)
+		string_print(var out_stream, ", ")
+		ll_length(var children)
+		printer_number(var out_stream, rax)
+		string_print(var out_stream, ", 24+")
+		node_data(var node)
+		string_print(var out_stream, rax)
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "dq ")
+
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			var data = node_data(rax)
+
+			if (var ix > 0) { string_print(var out_stream, ", ") }
+			string_print(var out_stream, var data)
+
+			var ix++
+		}
+
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "section .text")
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nFUNCTION) {
+		node_data(var node)
+		string_equal(rax, "main")
+		if (rax == 1) {
+			string_print(var out_stream, "_start")
+			var ix = 1
+		} else {
+			node_data(var node)
+			string_print(var out_stream, rax)
+			var ix = 0
+		}
+		string_print(var out_stream, ":")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "push rbp")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "mov rbp, rsp")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "sub rsp, ")
+
+		# Get number of arguments
+		ll_get(var children, 0)
+		node_parent(rax)
+		node_children(rax)
+		ret_size[0] = ll_length(rax)
+		ret_size[0] << 3
+
+		# Get number of variables
+		ll_get(var children, 1)
+		node_parent(rax)
+		node_children(rax)
+		ll_length(rax)
+		rax << 3
+		printer_number(var out_stream, rax)
+		string_print(var out_stream, new_line)
+
+		string_print(var out_stream, "push r12")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "push r13")
+		string_print(var out_stream, new_line)
+
+		# Dump statements
+		ll_get(var children, 2)
+		dump(var out_stream, rax)
+
+		string_print(var out_stream, new_line)
+
+		string_print(var out_stream, ".ret:")
+		string_print(var out_stream, new_line)
+		if (var ix == 1) {
+			string_print(var out_stream, "mov rax, 60")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "mov rdi, 0")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "syscall")
+			string_print(var out_stream, new_line)
+		} else {
+			string_print(var out_stream, "pop r13")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "pop r12")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "mov rsp, rbp")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "pop rbp")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "ret ")
+			printer_number(var out_stream, ret_size[0])
+			string_print(var out_stream, new_line)
+		}
+		return
+	}
+
+	if (rax == nFUNCTIONS) {
+		string_print(var out_stream, "section .data")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "_FUNCTIONLIST:")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "dq ")
+		ll_length(var children)
+		printer_number(var out_stream, rax)
+		string_print(var out_stream, ", ")
+		ll_length(var children)
+		printer_number(var out_stream, rax)
+		string_print(var out_stream, ", 24+_FUNCTIONLIST")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "dq ")
+
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			var data = node_scope(rax)
+
+			if (var ix > 0) { string_print(var out_stream, ", ") }
+			string_equal(var data, "main")
+			if (rax == 1) {
+				string_print(var out_stream, "_start")
+			} else {
+				string_print(var out_stream, var data)
+			}
+
+			var ix++
+		}
+
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "_FUNCTIONNAMELIST:")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "dq ")
+		ll_length(var children)
+		printer_number(var out_stream, rax)
+		string_print(var out_stream, ", ")
+		ll_length(var children)
+		printer_number(var out_stream, rax)
+		string_print(var out_stream, ", 24+_FUNCTIONNAMELIST")
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "dq ")
+
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			var data = node_data(rax)
+
+			if (var ix > 0) { string_print(var out_stream, ", ") }
+			string_print(var out_stream, var data)
+
+			var ix++
+		}
+
+		string_print(var out_stream, new_line)
+		string_print(var out_stream, "section .text")
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nGLOBAL) {
+		string_print(var out_stream, "section .bss")
+		string_print(var out_stream, new_line)
+
+		ll_get(var children, 0)
+		node_children(rax)
+		var children = rax
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			dump(var out_stream, rax)
+			string_print(var out_stream, ": resq 1")
+			string_print(var out_stream, new_line)
+			var ix++
+		}
+
+		string_print(var out_stream, "section .text")
+		string_print(var out_stream, new_line)
+
+		return
+	}
+
+	if (rax == nIDENTIFIER) {
+		node_data(var node)
+		string_print(var out_stream, rax)
+		return
+	}
+
+	if (rax == nIF) {
+		ll_get(var children, 0)
+		dump(var out_stream, rax)
+
+		# Write end if label
+		string_print(var out_stream, " .end_if_")
+
+		# Print block id number
+		var ix = block_cnt[0]
+		block_cnt[0]++
+		printer_number(var out_stream, var ix)
+
+		string_print(var out_stream, new_line)
+
+		# Dump if block
+		ll_get(var children, 1)
+		dump(var out_stream, rax)
+
+		# Detect else block
+		ll_length(var children)
+		if (rax > 2) {
+			string_print(var out_stream, "jmp .end_else_")
+			printer_number(var out_stream, var ix)
+			string_print(var out_stream, new_line)
+		}
+
+		# Write end_if label
+		string_print(var out_stream, ".end_if_")
+		printer_number(var out_stream, var ix)
+		string_print(var out_stream, ":")
+		string_print(var out_stream, new_line)
+
+		# Detect else block
+		ll_length(var children)
+		if (rax > 2) {
+			# Dump else block
+			ll_get(var children, 2)
+			dump(var out_stream, rax)
+
+			# Write end else label
+			string_print(var out_stream, ".end_else_")
+			printer_number(var out_stream, var ix)
+			string_print(var out_stream, ":")
+			string_print(var out_stream, new_line)
+		}
+
+		return
+	}
+
+	if (rax == nLOOP) {
+		# Save enclosing loop value
+		var ix = enclosing_loo[0]
+
+		# Reserve block id number
+		enclosing_loo[0] = block_cnt[0]
+		block_cnt[0]++
+
+		# Write label
+		string_print(var out_stream, ".loop_")
+		printer_number(var out_stream, enclosing_loo[0])
+		string_print(var out_stream, ":")
+		string_print(var out_stream, new_line)
+
+		ll_get(var children, 0)
+		dump(var out_stream, rax)
+
+		# Write jump
+		string_print(var out_stream, "jmp .loop_")
+		printer_number(var out_stream, enclosing_loo[0])
+		string_print(var out_stream, new_line)
+
+		# Write loop end label
+		string_print(var out_stream, ".loop_end_")
+		printer_number(var out_stream, enclosing_loo[0])
+		string_print(var out_stream, ":")
+		string_print(var out_stream, new_line)
+
+		# Restore enclosing loop
+		enclosing_loo[0] = var ix
+
+		return
+	}
+
+	if (rax == nMEM_ACCESS) {
+		string_print(var out_stream, "QWORD[")
+		dump_children(var out_stream, var children)
+		string_print(var out_stream, "]")
+		return
+	}
+
+	if (rax == nNASM) {
+		node_data(var node)
+		string_print(var out_stream, rax)
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nNEXT) {
+		string_print(var out_stream, "jmp .loop_")
+		printer_number(var out_stream, enclosing_loo[0])
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nNONE) {
+		return
+	}
+
+	if (rax == nNUMBER) {
+		node_data(var node)
+		string_print(var out_stream, rax)
+		return
+	}
+
+	if (rax == nOPERATION) {
+		node_data(var node)
+		rax -= INCREMENT
+		array_get(operations[0], rax)
+		string_print(var out_stream, rax)
+
+		# Print LHS
+		ll_get(var children, 0)
+		dump(var out_stream, rax)
+
+		ll_length(var children)
+		if (rax == 2) {
+			string_print(var out_stream, ", ")
+
+			# Print RHS
+			ll_get(var children, 1)
+			dump(var out_stream, rax)
+		}
+
+		string_print(var out_stream, new_line)
+
+		return
+	}
+
+	if (rax == nPOP) {
+		string_print(var out_stream, "pop ")
+		dump_children(var out_stream, var children)
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nPUSH) {
+		string_print(var out_stream, "push ")
+		dump_children(var out_stream, var children)
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nREGISTER) {
+		node_data(var node)
+		string_print(var out_stream, rax)
+		return
+	}
+
+	if (rax == nRETURN) {
+		ll_length(var children)
+
+		if (rax != 0) {
+			string_print(var out_stream, "mov rax, ")
+			ll_get(var children, 0)
+			dump(var out_stream, rax)
+			string_print(var out_stream, new_line)
+		}
+
+		string_print(var out_stream, "jmp .ret")
+
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nSTATEMENTS) {
+		dump_children(var out_stream, var children)
+		return
+	}
+
+	if (rax == nSTRINGS) {
+		string_print(var out_stream, "section .data")
+		string_print(var out_stream, new_line)
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			var data = node_data(rax)
+
+			string_print(var out_stream, "string_")
+			printer_number(var out_stream, var ix)
+			string_print(var out_stream, ":")
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "dq ")
+			string_unescaped_length(var data)
+			printer_number(var out_stream, rax)
+			string_print(var out_stream, ", ")
+			string_unescaped_length(var data)
+			printer_number(var out_stream, rax)
+			string_print(var out_stream, ", 24+string_")
+			printer_number(var out_stream, var ix)
+			string_print(var out_stream, new_line)
+			string_print(var out_stream, "db `")
+			string_print(var out_stream, var data)
+			string_print(var out_stream, "`")
+			string_print(var out_stream, new_line)
+
+			var ix++
+		}
+
+		string_print(var out_stream, "section .text")
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	if (rax == nSYS) {
+		if (var children != 0) {
+			var ix = 0
+			loop {
+				if (var ix == ll_length(var children)) { break }
+				string_print(var out_stream, "mov ")
+				array_get(registers[0], var ix)
+				string_print(var out_stream, rax)
+
+				ll_get(var children, var ix)
+				dump(var out_stream, rax)
+
+				string_print(var out_stream, new_line)
+				var ix++
+			}
+		}
+		string_print(var out_stream, "syscall")
+
+		string_print(var out_stream, new_line)
+		return
+	}
+
+	string_print(var out_stream, "#")
+
+	return
+}
+
+func dump_children(children, out_stream)(ix) {
+	if (var children != 0) {
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			dump(var out_stream, rax)
+			var ix++
+		}
+	}
+
+	return
+}

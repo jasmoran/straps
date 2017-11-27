@@ -1,0 +1,252 @@
+class CharArr(void data) {}
+
+enum String {
+	NullString
+}
+
+func String String_new(Number size)(CharArr data) {
+	data = allocate(size)
+	return String_new(0, size, data)
+}
+
+func String String_fromTerminated(CharArr source)(String addr, Number length) {
+	# Get string length
+	rdi = source
+	rax = 0
+	rcx = 1000000
+	nasm("repne scasb
+	")
+	length = 999999
+	length -= rcx
+
+	addr = String_new(length)
+
+	# Copy main data
+	rsi = source
+	rdi = addr.data
+	rcx = length
+	nasm("rep movsb
+	")
+
+	# Set length of new string
+	addr.length = length
+
+	return addr
+}
+
+func Boolean String_equal(String a, String b)() {
+	return a.equal(b)
+}
+
+class Character (void data) {
+	func String toString()(String s) {
+		s = String_new(1)
+		s.append(this)
+		return s
+	}
+}
+
+class String (Number length, Number size, CharArr data) {
+	func Character get(Number ix)() {
+		rax = this.data
+		rax += ix
+		rbx = 0
+		nasm("mov bl, BYTE[rax]
+		")
+
+		return rbx
+	}
+
+	func void set(Number ix, Character character)() {
+		rax = this.data
+		rax += ix
+		rbx = character
+		nasm("mov BYTE[rax], bl
+		")
+	}
+
+	func String append(Character character)() {
+		# TODO: check size is large enough
+
+		this.set(this.length, character)
+		this.length++
+
+		return this
+	}
+
+	func String prepend(Character character)() {
+		this.shift_right(1)
+		this.set(0, character)
+		return this
+	}
+
+	func String shift_right(Number n)() {
+		# Shifts characters in the string n bytes to the right
+		rcx = this.length
+		rsi = this.data
+		rsi += rcx
+		rsi--
+		rdi = rsi
+		rdi += n
+		nasm("std")
+		nasm("rep movsb")
+		nasm("cld")
+		this.length += n
+		return this
+	}
+
+	func String shift_left(Number n)() {
+		# Shifts characters in the string n bytes to the left
+		rsi = this.data
+		rdi = rsi
+		rsi += n
+		rcx = this.length
+		nasm("rep movsb")
+		this.length -= n
+		return this
+	}
+
+	func void print()() {
+		this.print(STDOUT)
+	}
+
+	func void print(Stream out)() {
+		if (this == NullString) { return this }
+		sys(1, out, this.data, this.length)
+	}
+
+	func void println()() {
+		this.println(STDOUT)
+	}
+
+	func void println(Stream out)(String new_line) {
+		this.print(out)
+		new_line = "\n"
+		new_line.print(out)
+	}
+
+	func void copyTo(String dest)() {
+		# Copy main data
+		rsi = this.data
+		rdi = dest.data
+		rcx = this.length
+		nasm("rep movsb
+		")
+
+		# Set length of destination
+		dest.length = this.length
+	}
+
+	func String clone()() {
+		return this.clone(0)
+	}
+
+	func String clone(Number extra)(Number len, String str) {
+		len = this.length
+		len += extra
+		str = String_new(len)
+		this.copyTo(str)
+		return str
+	}
+
+	func void clear()() {
+		this.length = 0
+	}
+
+	func String append(String string)() {
+		# Copy main data
+		rsi = string.data
+		rdi = this.data
+		rdi += this.length
+		rcx = string.length
+		nasm("rep movsb
+		")
+
+		# Set length of destination
+		this.length += string.length
+
+		return this
+	}
+
+	func Number hash()() {
+		# Load string
+		r12 = this.length
+		rcx = this.data
+
+		# Load hash constants
+		rax = 14695981039346656037
+		rbx = 1099511628211
+		loop {
+			if (r12 == 0) {
+				break
+			}
+			nasm("xor al, BYTE[rcx]
+			mul rbx")
+			rcx++
+			r12--
+		}
+
+		return rax
+	}
+
+	func Boolean equal(String other)() {
+		# Compare addresses
+		if (this == other) {
+			return true
+		}
+
+		# Compare lengths
+		rbx = this.length
+		rcx = other.length
+		if (rbx != rcx) {
+			return false
+		}
+
+		rsi = this.data
+		rdi = other.data
+
+		# Compare byte by byte
+		nasm("repe cmpsb
+		jne .str_not_eq
+		")
+		return true
+		nasm(".str_not_eq:
+		")
+		return false
+	}
+
+	func Number unescaped_length()(Number ix, Number escaped) {
+		escaped = 0
+		ix = 0
+		loop {
+			if (ix >= this.length) { break }
+
+			# Backslash
+			if (this.get(ix) == 92) {
+				# Skip next character
+				ix++
+				escaped++
+			}
+
+			ix++
+		}
+
+		rax = this.length
+		rax -= escaped
+		return rax
+	}
+
+	func CharArr toTerminated()(Number len, CharArr c) {
+		len = this.length
+		len++
+		c = allocate(len)
+		rsi = this.data
+		rdi = c
+		rcx = this.length
+		nasm("rep movsb")
+		rax = c
+		rax += this.length
+		nasm("mov BYTE[rax], 0")
+		return c
+	}
+}

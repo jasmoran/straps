@@ -1,0 +1,165 @@
+nBLOCK
+  nCLASS(Any)
+    nLIST
+      nIDENTIFIER(#Any#: "deref")
+    nBLOCK
+  nCLASS(Character)
+    nLIST
+    nBLOCK
+      nFUNCTION(#String#: toString)
+        nLIST
+        nLIST
+        nBLOCK
+  nCLASS(Number)
+    nLIST
+    nBLOCK
+  nCLASS(Boolean)
+    nLIST
+      nIDENTIFIER(#String#: "as_string")
+    nBLOCK
+  nENUM(Boolean)
+    nBLOCK
+      nIDENTIFIER(Unknown: "false")
+      nIDENTIFIER(Unknown: "true")
+  nCLASS(String)
+    nLIST
+      nIDENTIFIER(#Character#: "random_char")
+    nBLOCK
+      nFUNCTION(#Any#: println)
+        nLIST
+          nIDENTIFIER(#Number#: "stream")
+          nIDENTIFIER(#Number#: "ilikenumbers")
+        nLIST
+        nBLOCK
+  nFUNCTION(#Any#: allocate)
+    nLIST
+      nIDENTIFIER(#Number#: "size")
+    nLIST
+    nBLOCK
+  nFUNCTION(#Boolean#: thisisafunction)
+    nLIST
+      nIDENTIFIER(#Any#: "arg1")
+      nIDENTIFIER(#Any#: "arg2")
+    nLIST
+      nIDENTIFIER(#Any#: "var1")
+      nIDENTIFIER(#Number#: "var2")
+    nBLOCK
+      nBINARYOP(Unknown: ASSIGN)
+        nIDENTIFIER(Unknown: "arg1")
+        nIDENTIFIER(Unknown: "var1")
+      nUNARYOP(Unknown: INCREMENT, right)
+        nIDENTIFIER(Unknown: "var2")
+      nBINARYOP(Unknown: ADD)
+        nIDENTIFIER(Unknown: "var1")
+        nNUMBER(#Number#: "1337")
+      nBINARYOP(Unknown: DOT)
+        nBINARYOP(Unknown: PAREN_OPEN)
+          nBINARYOP(Unknown: DOT)
+            nBINARYOP(Unknown: PAREN_OPEN)
+              nBINARYOP(Unknown: DOT)
+                nBINARYOP(Unknown: DOT)
+                  nBINARYOP(Unknown: DOT)
+                    nIDENTIFIER(Unknown: "true")
+                    nIDENTIFIER(Unknown: "as_string")
+                  nIDENTIFIER(Unknown: "random_char")
+                nIDENTIFIER(Unknown: "toString")
+              nCALL
+            nIDENTIFIER(Unknown: "println")
+          nCALL
+            nNUMBER(#Number#: "77")
+            nIDENTIFIER(Unknown: "var2")
+        nIDENTIFIER(Unknown: "deref")
+      nLOOP
+        nBLOCK
+          nBINARYOP(Unknown: PAREN_OPEN)
+            nBINARYOP(Unknown: DOT)
+              nSTRING(#String#: "oopsy daisy")
+              nIDENTIFIER(Unknown: "println")
+            nCALL
+              nNUMBER(#Number#: "1")
+              nNUMBER(#Number#: "2")
+      nRETURN
+        nIDENTIFIER(Unknown: "true")
+  nFUNCTION(#Any#: Any_new)
+    nLIST
+      nIDENTIFIER(#Any#: "deref")
+    nLIST
+      nIDENTIFIER(#Any#: "obj")
+    nBLOCK
+      nBINARYOP(Unknown: ASSIGN)
+        nIDENTIFIER(#Any#: "obj")
+        nBINARYOP(Unknown: PAREN_OPEN)
+          nIDENTIFIER(#Any#: "allocate")
+          nCALL
+            nNUMBER(#Number#: "8")
+      nBINARYOP(Unknown: ASSIGN)
+        nBINARYOP(Unknown: DOT)
+          nIDENTIFIER(#Any#: "obj")
+          nIDENTIFIER(#Any#: "deref")
+        nIDENTIFIER(#Any#: "deref")
+      nRETURN
+        nIDENTIFIER(#Any#: "obj")
+  nFUNCTION(#Character#: Character_new)
+    nLIST
+    nLIST
+      nIDENTIFIER(#Character#: "obj")
+    nBLOCK
+      nBINARYOP(Unknown: ASSIGN)
+        nIDENTIFIER(#Character#: "obj")
+        nBINARYOP(Unknown: PAREN_OPEN)
+          nIDENTIFIER(#Character#: "allocate")
+          nCALL
+            nNUMBER(#Number#: "0")
+      nRETURN
+        nIDENTIFIER(#Character#: "obj")
+  nFUNCTION(#Number#: Number_new)
+    nLIST
+    nLIST
+      nIDENTIFIER(#Number#: "obj")
+    nBLOCK
+      nBINARYOP(Unknown: ASSIGN)
+        nIDENTIFIER(#Number#: "obj")
+        nBINARYOP(Unknown: PAREN_OPEN)
+          nIDENTIFIER(#Number#: "allocate")
+          nCALL
+            nNUMBER(#Number#: "0")
+      nRETURN
+        nIDENTIFIER(#Number#: "obj")
+  nFUNCTION(#Boolean#: Boolean_new)
+    nLIST
+      nIDENTIFIER(#String#: "as_string")
+    nLIST
+      nIDENTIFIER(#Boolean#: "obj")
+    nBLOCK
+      nBINARYOP(Unknown: ASSIGN)
+        nIDENTIFIER(#Boolean#: "obj")
+        nBINARYOP(Unknown: PAREN_OPEN)
+          nIDENTIFIER(#Boolean#: "allocate")
+          nCALL
+            nNUMBER(#Number#: "8")
+      nBINARYOP(Unknown: ASSIGN)
+        nBINARYOP(Unknown: DOT)
+          nIDENTIFIER(#Boolean#: "obj")
+          nIDENTIFIER(#String#: "as_string")
+        nIDENTIFIER(#String#: "as_string")
+      nRETURN
+        nIDENTIFIER(#Boolean#: "obj")
+  nFUNCTION(#String#: String_new)
+    nLIST
+      nIDENTIFIER(#Character#: "random_char")
+    nLIST
+      nIDENTIFIER(#String#: "obj")
+    nBLOCK
+      nBINARYOP(Unknown: ASSIGN)
+        nIDENTIFIER(#String#: "obj")
+        nBINARYOP(Unknown: PAREN_OPEN)
+          nIDENTIFIER(#String#: "allocate")
+          nCALL
+            nNUMBER(#Number#: "8")
+      nBINARYOP(Unknown: ASSIGN)
+        nBINARYOP(Unknown: DOT)
+          nIDENTIFIER(#String#: "obj")
+          nIDENTIFIER(#Character#: "random_char")
+        nIDENTIFIER(#Character#: "random_char")
+      nRETURN
+        nIDENTIFIER(#String#: "obj")

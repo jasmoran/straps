@@ -1,0 +1,94 @@
+func node_new(parent, data_len, type)(addr) {
+	# Allocate memory
+	var addr = allocate(48)
+
+	# Set attributes
+	var addr[0] = var type
+
+	if (var data_len > 0) {
+		var addr[8] = string_new(var data_len)
+	} else {
+		var addr[8] = 0
+	}
+
+	var addr[16] = var parent
+	ll_new()
+	var addr[24] = rax
+
+	return var addr
+}
+
+func node_type(node)() {
+	return var node[0]
+}
+
+func node_data(node)() {
+	return var node[8]
+}
+
+func node_parent(node)() {
+	return var node[16]
+}
+
+func node_children(node)() {
+	return var node[24]
+}
+
+func node_scope(node)() {
+	return var node[32]
+}
+
+func node_class(node)() {
+	return var node[40]
+}
+
+func node_adopt(new_parent, child_node)() {
+	var child_node[16] = var new_parent
+	ll_append(var new_parent[24], var child_node)
+
+	return
+}
+
+func node_print(indent, node, out_stream)(ix, children, data, class) {
+	var ix = var indent
+	loop {
+		if (var ix == 0) { break }
+		string_print(var out_stream, "  ")
+		var ix--
+	}
+
+	node_type(var node)
+	array_get(NODE, rax)
+	string_print(var out_stream, rax)
+	string_print(var out_stream, " - ")
+	var data = node_data(var node)
+	if (var data < 1024) {
+		printer_number(var out_stream, var data)
+	} else {
+		string_print(var out_stream, quote)
+		string_print(var out_stream, var data)
+		string_print(var out_stream, quote)
+	}
+
+	var class = node_class(var node)
+	if (var class > 0) {
+		string_print(var out_stream, " - ")
+		node_data(var class)
+		string_print(var out_stream, rax)
+	}
+	string_print(var out_stream, new_line)
+
+	var children = node_children(var node)
+	if (var children != 0) {
+		var indent++
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			node_print(var out_stream, rax, var indent)
+			var ix++
+		}
+	}
+
+	return
+}

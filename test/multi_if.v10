@@ -1,0 +1,23 @@
+#-1
+#-2
+#-4
+#-9
+#-
+
+include "src/stdlib/stdlib.v10"
+
+func void main()(Number ix) {
+	ix = 0
+	loop {
+		ix++
+		if (ix == 10) break
+
+		if (ix != 1)
+		if (ix != 2)
+		if (ix != 4)
+		if (ix != 9) next
+
+		ix.toString().println()
+
+	}
+}

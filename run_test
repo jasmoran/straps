@@ -1,0 +1,125 @@
+#!/usr/bin/env ruby
+require 'colored'
+require 'open3'
+require 'diffy'
+
+def run(program, leave_asm, leave_bin, input = [])
+	bin = 'bin/' + program.gsub(/.*\//, '').gsub(/\.v10$/, '')
+	asm = bin + '.asm'
+	o = bin + '.o'
+
+	# Execution
+	res = `./bin/v10 #{program} #{asm} 2>&1`
+	if $?.to_i == 256
+		puts "Failed to compile #{program}:\n#{res}".red_on_black
+		return
+	end
+
+	res = `nasm -f elf64 -o #{o} #{asm} 2>&1`
+	if $?.to_i == 256
+		puts "Failed to assemble #{asm}:\n#{res}".red_on_black
+		return
+	end
+
+	res = `ld -o #{bin} #{o} 2>&1`
+	if $?.to_i == 256
+		puts "Failed to link #{o}:\n#{res}".red_on_black
+		return
+	end
+
+	Open3.popen2e(bin) do |stdin, out|
+		begin
+			input.each { |line| stdin.puts line }
+			stdin.close
+		rescue Errno::EPIPE
+			puts "Unable to feed given input to program".red_on_black
+		end
+		output = out.read
+
+		# Cleanup
+		File.delete(bin) unless leave_bin
+		File.delete(asm) unless leave_asm
+		File.delete(o)
+
+		return output
+	end
+end
+
+def test(program, leave_asm, leave_bin)
+	data = File.open(program).read
+	lines = data.split("\n")
+	pretty_out = ''
+	outputs = '\A'
+	inputs = []
+	lines.each do |l|
+		case l[0..1]
+		when '#-'
+			outputs << Regexp.escape(l[2..-1]) + "\n"
+			pretty_out << l[2..-1] + "\n"
+		when '#*'
+			outputs << ".*\n"
+		when '#+'
+			inputs << l[2..-1]
+		when '#!'
+			path = l[2..-1]
+			path = File.dirname(program) + '/' + path unless File.exist? path
+			ftext = File.open(path).read
+			outputs << Regexp.escape(ftext)
+			pretty_out << ftext
+		else
+			break
+		end
+	end
+	expected = Regexp.new(outputs[0..-2] + '\Z', Regexp::MULTILINE)
+	actual = run(program, leave_asm, leave_bin, inputs)
+
+	if expected === actual
+		{
+			passed: true,
+			message: "#{program} - PASSED"
+		}
+	else
+		{
+			passed: false,
+			message: "#{program} - FAILED",
+			expected: pretty_out[0..-2],
+			actual: actual
+		}
+	end
+end
+
+files = ARGV.select {|f| f[-4..-1] == '.v10'}
+quiet = ARGV[0].include? 'q'
+verbose = ARGV[0].include? 'v'
+leave_asm = ARGV[0].include? 'a'
+leave_bin = ARGV[0].include? 'b'
+force_finish = ARGV[0].include? 'f'
+diff = ARGV[0].include? 'd'
+
+passed = 0
+
+# Run on all files in test directory by default
+files = Dir['test/**/*.v10'] if files.empty?
+
+files.each do |f|
+	res = test(f, leave_asm, leave_bin)
+
+	if res[:passed]
+		passed += 1
+		puts res[:message].blue unless quiet
+	else
+		puts res[:message].red_on_black
+
+		if verbose
+			if diff
+				puts Diffy::Diff.new(res[:expected], res[:actual], context: 2).to_s(:color)
+			else
+				puts "EXPECTED:\n#{res[:expected]}\nACTUAL:\n#{res[:actual]}\n"
+			end
+		end
+		break unless force_finish
+	end
+end
+
+failed = files.length - passed
+puts "PASSED: #{passed}, FAILED: #{failed}".blue_on_black.bold unless quiet && failed == 0

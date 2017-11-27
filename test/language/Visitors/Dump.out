@@ -1,0 +1,147 @@
+global _start
+allocate:
+push rbp
+mov rbp, rsp
+sub rsp, 0
+push r12
+push r13
+.ret:
+pop r13
+pop r12
+mov rsp, rbp
+pop rbp
+ret 8
+fib:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+push r12
+push r13
+cmp QWORD[rbp+16], +0
+je  .trueLabel0
+.falseCond3:
+cmp QWORD[rbp+16], +1
+je  .trueLabel0
+jmp .falseLabel1
+.trueLabel0:
+mov rax, QWORD[rbp+16]
+jmp .ret
+.falseLabel1:
+dec QWORD[rbp+16]
+push QWORD[rbp+16]
+call fib
+mov QWORD[rbp-8], rax
+dec QWORD[rbp+16]
+push QWORD[rbp+16]
+call fib
+add QWORD[rbp-8], rax
+mov rax, QWORD[rbp-8]
+jmp .ret
+.ret:
+pop r13
+pop r12
+mov rsp, rbp
+pop rbp
+ret 8
+_start:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+push r12
+push r13
+push +10
+call fib
+mov rax, rax
+jmp .ret
+.ret:
+mov rdi, rax
+mov rax, 60
+syscall
+Any_new:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+push r12
+push r13
+push +8
+call allocate
+mov QWORD[rbp-8], rax
+mov r12, QWORD[rbp-8]
+mov r13, QWORD[rbp+16]
+mov QWORD[r12+0], r13
+mov rax, QWORD[rbp-8]
+jmp .ret
+.ret:
+pop r13
+pop r12
+mov rsp, rbp
+pop rbp
+ret 8
+Character_new:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+push r12
+push r13
+push +0
+call allocate
+mov QWORD[rbp-8], rax
+mov rax, QWORD[rbp-8]
+jmp .ret
+.ret:
+pop r13
+pop r12
+mov rsp, rbp
+pop rbp
+ret 0
+Number_new:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+push r12
+push r13
+push +0
+call allocate
+mov QWORD[rbp-8], rax
+mov rax, QWORD[rbp-8]
+jmp .ret
+.ret:
+pop r13
+pop r12
+mov rsp, rbp
+pop rbp
+ret 0
+String_new:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+push r12
+push r13
+push +0
+call allocate
+mov QWORD[rbp-8], rax
+mov rax, QWORD[rbp-8]
+jmp .ret
+.ret:
+pop r13
+pop r12
+mov rsp, rbp
+pop rbp
+ret 0
+Boolean_new:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+push r12
+push r13
+push +0
+call allocate
+mov QWORD[rbp-8], rax
+mov rax, QWORD[rbp-8]
+jmp .ret
+.ret:
+pop r13
+pop r12
+mov rsp, rbp
+pop rbp
+ret 0

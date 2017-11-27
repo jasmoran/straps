@@ -1,0 +1,9 @@
+#--8912378807323491678
+
+include "src/stdlib/stdlib.v10"
+
+func void main()(String str, Number hash) {
+	str = "abcdefghijklmnopqrstuvwxyz"
+	hash = str.hash()
+	hash.toString(false).print(STDOUT)
+}

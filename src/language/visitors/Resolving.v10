@@ -1,0 +1,177 @@
+func Resolving Resolving_new()(?T, Scope sc) {
+	define V "Resolving"
+	include "src/language/visitors/init.v10"
+	sc = scope
+	v = Resolving_new(?U, sc, true)
+	v.v = v
+	return v
+}
+
+class Resolving(?T, Scope scope, Boolean resolve_idents) {
+	func void visit(StringNode n)(Node replacement) {
+		n.ret_type.resolve(this.scope)
+		if (n.type == nIDENTIFIER) {
+			if (this.resolve_idents == true) n = this.scope.resolve(n.string)
+		}
+		return n
+	}
+
+	func void visit(FunctionNode n)(Scope prev_scope, ListNode block) {
+		prev_scope = this.scope
+		this.scope = n.scope
+		n.ret_type.resolve(this.scope)
+
+		# Dont resolve identifiers in vars and args
+		this.resolve_idents = false
+		n.args.visit(this.v)
+		n.vars.visit(this.v)
+		this.resolve_idents = true
+		n.block.visit(this.v)
+
+		this.scope = prev_scope
+		return n
+	}
+
+	func void visit(BinaryOperationNode n)(Scope prev_scope, StringNode sn,
+																				 BinaryOperationNode binop, ListNode args,
+																				 LinkedListNode lln, StringNode field,
+																				 Node nn, Boolean fixargs, Number num) {
+		# Handle fields
+		if (n.op == DOT) {
+			# Resolve first item
+			sn = n.lhs
+			n.lhs = sn.m_visit(this)
+
+			# Save current scope
+			prev_scope = this.scope
+
+			# Set scope to that of the first items type
+			sn = n.lhs
+			sn.ret_type.resolve(this.scope)
+			this.scope = sn.ret_type.getScope()
+			if (this.scope == 0) this.scope = prev_scope
+
+			# Resolve second item
+			sn = n.rhs
+			n.rhs = sn.m_visit(this)
+
+			# Inherit ret_type from rhs
+			sn = n.rhs
+			n.ret_type = sn.ret_type
+
+			# Restore scope
+			this.scope = prev_scope
+
+			return n
+		}
+
+		if (n.op == PAREN_OPEN) {
+			# Target of arg fixing, default to normal function
+			sn = n.lhs
+			args = n.rhs
+
+			# If LHS is a DOT, add its LHS to arguments (this)
+			if (n.lhs.type == nBINARYOP) {
+				binop = n.lhs
+				if (binop.op == DOT) {
+					# If a method, args fixing target is different
+					sn = binop.rhs
+
+					if (sn.type == nIDENTIFIER)
+						args.prepend(binop.lhs)
+				}
+			}
+
+			# Resolve arguments
+			n.rhs = args.m_visit(this)
+
+			# Detect "pointer" methods, marked with m_
+			fixargs = true
+			if (sn.string.get(0) == 'm')
+			if (sn.string.get(1) == '_')
+				fixargs = false
+
+			# Fix arguments into function name
+			if (sn.type == nIDENTIFIER)
+			if (fixargs == true) {
+				# Extend function name
+				sn.string = sn.string.clone(256)
+
+				# Add args to function name
+				lln = args.children.first
+				loop {
+					if (lln == 0) { break }
+					field = lln.payload
+
+					# Append type to function name
+					sn.string.append('_').append(field.ret_type.raw)
+
+					lln = lln.fwrd
+				}
+			}
+
+			# Resolve function
+			nn = n.lhs
+			n.lhs = nn.m_visit(this)
+
+			# Fix up dot if it resolved to a function
+			if (n.lhs.type == nBINARYOP)
+			if (binop.op == DOT)
+			if (binop.rhs.type == nFUNCTION)
+				n.lhs = binop.rhs
+
+			# Inherit ret_type from function
+			sn = n.lhs
+			n.ret_type = sn.ret_type
+
+			return n
+		}
+
+		n.visit_children(this.v)
+
+		return n
+	}
+
+	func void visit(ListNode n)() {
+		if (n.type != nGLOBAL) {
+			n.visit_children(this.v)
+		}
+
+		return n
+	}
+
+	func void visit(EnumNode n)() {
+		return n
+	}
+
+
+	func void visit(ClassNode n)() {
+		n.visit_children(this.v)
+		return n
+	}
+
+	func void visit(Node n)() {
+		return n
+	}
+
+	func void visit(UnaryOperationNode n)() {
+		n.visit_children(this.v)
+		return n
+	}
+
+	func void visit(IfNode n)() {
+		n.visit_children(this.v)
+		return n
+	}
+
+	func void visit(LoopNode n)() {
+		n.visit_children(this.v)
+		return n
+	}
+
+	func void visit(ReturnNode n)() {
+		n.visit_children(this.v)
+		return n
+	}
+
+}

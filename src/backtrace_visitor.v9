@@ -1,0 +1,40 @@
+func backtrace(node)(fnctions) {
+	var fnctions = node_new(nFUNCTIONS, 0, var node)
+	node_children(var fnctions)
+	backtrace_recurse(var node, rax)
+	node_children(var node)
+	ll_append(rax, var fnctions)
+	return
+}
+
+func backtrace_recurse(fnctions, node)(orig_data, new_string) {
+	node_type(var node)
+	if (rax == nFUNCTION) {
+		var new_string = node_new(nSTRING, 0, 0)
+		var new_string[8] = var node[8]
+		# Misusing the scope space to store a copy of the string
+		var new_string[32] = var node[8]
+		ll_append(var fnctions, var new_string)
+
+		return
+	}
+
+	node_children(var node)
+	backtrace_children(rax, var fnctions)
+
+	return
+}
+
+func backtrace_children(fnctions, children)(ix) {
+	if (var children != 0) {
+		var ix = 0
+		loop {
+			if (var ix == ll_length(var children)) { break }
+			ll_get(var children, var ix)
+			backtrace_recurse(rax, var fnctions)
+			var ix++
+		}
+	}
+
+	return
+}

@@ -1,0 +1,52 @@
+func Scope Scope_new()(Scope sc) {
+	sc = 0
+	return Scope_new("GLOBAL", sc)
+}
+
+func Scope Scope_new(String name, Scope parent)(Map sc) {
+	sc = Map_new(2048)
+	return Scope_new(name, parent, sc)
+}
+
+class Scope (String name, Scope parent, Map scope) {
+	func Node get(String name)() {
+		return this.scope.get(name)
+	}
+
+	func void set(String name, Node node)(Any a) {
+		a = node
+		this.scope.set(name, a)
+	}
+
+	func Node resolve(String name)(Scope s, Node res) {
+		s = this
+		if (s == 0) error("Attempted to resolve on NULL scope")
+		loop {
+			if (s == 0) break
+			res = s.get(name)
+			if (res > 0) return res
+			s = s.parent
+		}
+
+		# Add special GLOBAL scope check
+		s = scope
+		res = s.get(name)
+		if (res > 0) return res
+		error("Could not resolve value ", name)
+	}
+
+	func void print()(Number index, String key, Node value, Visitor printer) {
+		index = 0
+		printer = Printer_new(1, STDOUT, 1)
+		loop {
+			if (this.scope.keys.length == index) break
+			key = this.scope.keys.get(index)
+			value = this.scope.values.get(index)
+			key.print()
+			": <<".println()
+			value.m_visit(printer)
+			">>".println()
+			index++
+		}
+	}
+}

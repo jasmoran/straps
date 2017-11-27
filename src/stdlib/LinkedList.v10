@@ -1,0 +1,159 @@
+func LinkedList LinkedList_new()(LinkedListNode n) {
+	n = 0
+	return LinkedList_new(n, n, 0)
+}
+
+func LinkedListNode LinkedListNode_new(Any payload)(LinkedListNode n) {
+	n = 0
+	return LinkedListNode_new(n, n, payload)
+}
+
+class LinkedListNode (LinkedListNode fwrd, LinkedListNode back, Any payload) {}
+
+class LinkedList (LinkedListNode first, LinkedListNode last, Number length) {
+	func Any get(Number ix)() {
+		return this.fetch(ix).payload
+	}
+
+	func void set(Number ix, Any payload)() {
+		this.fetch(ix).payload = payload
+	}
+
+	func LinkedListNode append(Any payload)(LinkedListNode node) {
+		node = LinkedListNode_new(payload)
+
+		node.back = this.last
+		if (this.last != 0) {
+			this.last.fwrd = node
+		}
+		this.last = node
+
+		# Set first if empty
+		if (this.first == 0) {
+			this.first = node
+		}
+
+		this.length++
+
+		return node
+	}
+
+	func LinkedListNode prepend(Any payload)() {
+		return this.insert_before(this.first, payload)
+	}
+
+	func LinkedListNode insert_before(LinkedListNode anchor, Any payload)(LinkedListNode node) {
+		node = LinkedListNode_new(payload)
+
+		if (anchor != 0) {
+			# Set up node
+			node.fwrd = anchor
+			node.back = anchor.back
+
+			# Update anchor.back
+			if (anchor.back != 0) {
+				anchor.back.fwrd = node
+			}
+
+			# Update anchor
+			anchor.back = node
+		}
+
+		# Update list
+		if (this.first == anchor) {
+			this.first = node
+		}
+		if (this.last == 0) {
+			this.last = node
+		}
+		this.length++
+
+		return node
+	}
+
+	func void remove(LinkedListNode node)() {
+		if (node.fwrd == 0) {
+			this.last = node.back
+		} else {
+			node.fwrd.back = node.back
+		}
+
+		if (node.back == 0) {
+			this.first = node.fwrd
+		} else {
+			node.back.fwrd = node.fwrd
+		}
+
+		this.length--
+	}
+
+	func void remove(Number ix)(LinkedListNode node) {
+		node = this.fetch(ix)
+		this.remove(node)
+	}
+
+	func void remove_last()() {
+		this.remove(this.last)
+	}
+
+	func LinkedListNode fetch(Number ix)(LinkedListNode node) {
+		node = this.first
+		loop {
+			if (node == 0) {
+				node = this.first
+			}
+
+			if (ix == 0) {
+				return node
+			}
+
+			node = node.fwrd
+			ix--
+		}
+	}
+
+	func LinkedListNode fetch_by_data(Any data)(LinkedListNode node) {
+		node = this.first
+		loop {
+			# Return -1 if node not found
+			if (node == 0) {
+				nasm("mov rax, -1")
+				return rax
+			}
+
+			# Compare data
+			if (node.payload == data) {
+				return node
+			}
+
+			node = node.fwrd
+		}
+	}
+
+	func void clear()() {
+		this.first = 0
+		this.last = 0
+		this.length = 0
+	}
+
+	func void print(Stream stream, String sep)(LinkedListNode node, String str_cast) {
+		# Prints all list elements
+		# WARNING: Assumes that all elements are strings
+
+		node = this.first
+		if (node != 0) {
+			loop {
+				str_cast = node.payload
+				str_cast.print(stream)
+
+				node = node.fwrd
+
+				if (node == 0) {
+					break
+				}
+
+				sep.print(stream)
+			}
+		}
+	}
+}

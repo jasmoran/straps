@@ -1,0 +1,36 @@
+#-A
+#-B
+#-C
+#-Error: Attempted to add to a full CircularBuffer
+#*
+
+include "src/stdlib/stdlib.v10"
+
+func void main()(CircularBuffer cb, Any a, String s) {
+	cb = CircularBuffer_new(3)
+	# cb = []
+
+	a = "A"
+	cb.push_back(a)
+	# cb = [A]
+
+	s = cb.peek(0)
+	s.println()
+
+	a = "B"
+	cb.push_back(a)
+	# cb = [A B]
+
+	s = cb.peek(1)
+	s.println()
+
+	a = "C"
+	cb.push_back(a)
+	# cb = [A B C]
+
+	s = cb.peek(2)
+	s.println()
+
+	a = "D"
+	cb.push_back(a)
+}

@@ -1,0 +1,21 @@
+#+This is much too long!!!
+#-This is much too long!!!
+
+include "src/stdlib/stdlib.v10"
+include "src/language/ReversibleStream.v10"
+
+func void main()(ReversibleStream rs, Number count) {
+	rs = ReversibleStream_new(STDIN, 4)
+
+	count = 6
+	loop {
+		rs.get().get_character().toString().print()
+		rs.get().get_character().toString().print()
+		rs.get().get_character().toString().print()
+		rs.get().get_character().toString().print()
+		rs.flush()
+
+		count--
+		if (count == 0) break
+	}
+}

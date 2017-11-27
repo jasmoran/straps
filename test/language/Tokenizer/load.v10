@@ -1,0 +1,42 @@
+#+    break case class else enum
+#+   for func global if include
+#+  loop nasm next return switch
+#+ sys while ( ) {
+#+  } [ ] , .
+#+   != ! <= << <
+#+    >= >> > == =
+#+   += ++ + -= --
+#+  - * / && ||
+#-BREAK CASE CLASS ELSE ENUM
+#-FOR FUNC GLOBAL IF INCLUDE
+#-LOOP NASM NEXT RETURN SWITCH
+#-SYS WHILE PAREN_OPEN PAREN_CLOSE CURLY_OPEN
+#-CURLY_CLOSE SQUARE_OPEN SQUARE_CLOSE COMMA DOT
+#-NOT_EQUAL NOT LESS_EQ SHIFTL LESS
+#-GREATER_EQ SHIFTR GREATER EQUAL ASSIGN
+#-ADD INCREMENT PLUS SUB DECREMENT
+#-MINUS ASTERISK FWD_SLASH AND OR
+#-
+
+include "src/stdlib/stdlib.v10"
+include "src/language/Tokenizer.v10"
+
+func void main()(Tokenizer tk, Token t) {
+	tk = Tokenizer_new("STDIN", STDIN)
+	loop {
+		t = tk.load()
+		if (t == EOF) break
+		t.toString().print()
+		" ".print()
+		tk.load().toString().print()
+		" ".print()
+		tk.load().toString().print()
+		" ".print()
+		tk.load().toString().print()
+		" ".print()
+		tk.load().toString().println()
+
+		# New Line
+		tk.load()
+	}
+}

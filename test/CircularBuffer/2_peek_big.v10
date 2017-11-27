@@ -1,0 +1,24 @@
+#-A
+#-Error: Peek index too large for CircularBuffer
+#*
+
+include "src/stdlib/stdlib.v10"
+
+func void main()(CircularBuffer cb, Any a, String s, Number n) {
+	cb = CircularBuffer_new(4)
+	a = "A"
+	cb.push_front(a)
+	a = "B"
+	cb.push_front(a)
+	a = "C"
+	cb.push_front(a)
+	a = "D"
+	cb.push_front(a)
+	# cb = [D C B A]
+
+	s = cb.peek(3)
+	s.println()
+
+	s = cb.peek(10)
+	s.println()
+}

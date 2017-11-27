@@ -1,0 +1,11 @@
+#-Hello World
+#-
+
+include "src/stdlib/stdlib.v10"
+
+func void main()(String str) {
+	str = "Hello World\n"
+	str.print(STDOUT)
+	str.clear()
+	str.print(STDOUT)
+}

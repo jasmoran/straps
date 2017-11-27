@@ -1,0 +1,10 @@
+#-olleH
+#-
+
+include "src/stdlib/stdlib.v10"
+
+func void main()(String str, Character nl) {
+	str = String_new(6)
+	nl = 10
+	str.append('l').append('l').prepend('o').append('e').append('H').append(nl).print(STDOUT)
+}

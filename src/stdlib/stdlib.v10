@@ -1,0 +1,75 @@
+include "src/stdlib/Boolean.v10"
+include "src/stdlib/Memory.v10"
+include "src/stdlib/Number.v10"
+include "src/stdlib/Stream.v10"
+include "src/stdlib/String.v10"
+include "src/stdlib/File.v10"
+include "src/stdlib/Array.v10"
+include "src/stdlib/LinkedList.v10"
+include "src/stdlib/Map.v10"
+include "src/stdlib/CircularBuffer.v10"
+
+class void () {}
+class Any (Any deref) {}
+class Function () {}
+
+func void exit(Number exit_code)() {
+	sys(60, exit_code)
+}
+func void exit()() exit(0)
+
+func void error(String s1, String s2, String s3, String s4, String s5)() {
+	"Error: ".print(STDERR)
+	if(s1 > 0) s1.print(STDERR)
+	if(s2 > 0) s2.print(STDERR)
+	if(s3 > 0) s3.print(STDERR)
+	if(s4 > 0) s4.print(STDERR)
+	if(s5 > 0) s5.println(STDERR)
+	backtrace()
+	exit(1)
+}
+func void error(String s1, String s2, String s3, String s4)() error(NullString, s1, s2, s3, s4)
+func void error(String s1, String s2, String s3)() error(NullString, NullString, s1, s2, s3)
+func void error(String s1, String s2)() error(NullString, NullString, NullString, s1, s2)
+func void error(String s1)() error(NullString, NullString, NullString, NullString, s1)
+func void error()() error(NullString, NullString, NullString, NullString, NullString)
+
+func void backtrace()(Array flist, Array fnamelist, Any addr, Number index, String fname, Any curr_rbp) {
+	# Get list of function pointers
+	nasm("mov rax, _FUNCTIONLIST")
+	flist = rax
+
+	# Get list of function names
+	nasm("mov rax, _FUNCTIONNAMELIST")
+	fnamelist = rax
+
+	curr_rbp = rbp
+
+	loop {
+		# Get address of current function
+		addr = curr_rbp
+		addr += 8
+		addr = addr.deref
+
+		if (addr < 1000) break
+
+		index = flist.length
+		loop {
+			index--
+			# Detect end of array
+			if (index < 0) {
+				"Unknown Function".println(STDERR)
+				return false
+			}
+
+			# Detect match
+			if (flist.get(index) < addr) {
+				fname = fnamelist.get(index)
+				fname.println()
+				break
+			}
+		}
+
+		curr_rbp = curr_rbp.deref
+	}
+}

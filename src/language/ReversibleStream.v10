@@ -1,0 +1,64 @@
+include "src/language/MetaCharacter.v10"
+
+func ReversibleStream ReversibleStream_new(Stream stream, Number size)() {
+	return ReversibleStream_new(stream, CircularBuffer_new(size), 0, 0, 1)
+}
+
+func ReversibleStream ReversibleStream_new(String input)(Character nulchar, Number len, ReversibleStream rs) {
+	load_loop()
+	input.print(LOOPIN)
+	nulchar = 0
+	nulchar.toString().print(LOOPIN)
+	len = input.length
+	len++
+	rs = ReversibleStream_new(LOOPOUT, len)
+	loop {
+		if (rs.get().get_character() == 0) break
+	}
+	rs.rewind()
+	return rs
+}
+
+class ReversibleStream (Stream stream, CircularBuffer buffer, Number nxt_pos, Number col, Number line) {
+	func MetaCharacter get()(Character chr, Any mc) {
+		# Get a character from the underlying Stream if necessary
+		if (this.nxt_pos == this.buffer.length) {
+			chr = this.stream.get()
+			this.col++
+			mc = MetaCharacter_new(chr, this.col, this.line)
+
+			# Handle new lines
+			if (chr == 10) {
+				this.line++
+				this.col = 0
+			}
+
+			this.buffer.push_back(mc)
+		} else {
+			mc = this.buffer.peek(this.nxt_pos)
+		}
+
+		this.nxt_pos++
+
+		return mc
+	}
+
+	func void rewind(Number amount)() {
+		# Rewind specified amount of characters
+		this.nxt_pos -= amount
+		if (this.nxt_pos < 0) error("Rewound ReversibleStream too far")
+	}
+
+	func void rewind()() {
+		# Reverse to beginning of buffer
+		this.nxt_pos = 0
+	}
+
+	func void flush()() {
+		loop {
+			if (this.nxt_pos == 0) break
+			this.buffer.pop_front()
+			this.nxt_pos--
+		}
+	}
+}

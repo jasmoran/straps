@@ -1,0 +1,441 @@
+func Dump Dump_new(Stream stream)(?T, Any a, Array binops, Array scallreg, Boolean top) {
+	define V "Dump"
+	include "src/language/visitors/init.v10"
+
+	binops = Array_new(5)
+	a = "add "
+	binops.append(a)
+	a = "sub "
+	binops.append(a)
+	a = "shl "
+	binops.append(a)
+	a = "shr "
+	binops.append(a)
+	a = "mov "
+	binops.append(a)
+
+	scallreg = Array_new(7)
+	a = "rax"
+	scallreg.append(a)
+	a = "rdi"
+	scallreg.append(a)
+	a = "rsi"
+	scallreg.append(a)
+	a = "rdx"
+	scallreg.append(a)
+	a = "r10"
+	scallreg.append(a)
+	a = "r8"
+	scallreg.append(a)
+	a = "r9"
+	scallreg.append(a)
+
+	top = true
+
+	v = Dump_new(?U, binops, scallreg, top, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true, stream, " ")
+	v.v = v
+	return v
+}
+
+class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
+					 String trueLabel, String falseLabel, String target, Boolean negate,
+					 Stream stream, String idloop) {
+	func void visit(Node n)() {
+		if (n.type == nNEXT) {
+			"jmp .loop_".print(this.stream)
+			this.idloop.println(this.stream)
+		} else if (n.type == nBREAK) {
+			"jmp .loop_end_".print(this.stream)
+			this.idloop.println(this.stream)
+		}
+
+  	return 0
+	}
+
+	func void visit(BinaryOperationNode n)(String op, Number ix, Node nn, FunctionNode fun, String lastTrue, String lastFalse, StringNode num) {
+		if (n.op == PAREN_OPEN) {
+			"call ".print(this.stream)
+			if (n.lhs.type == nFUNCTION) {
+				fun = n.lhs
+				fun.name.print(this.stream)
+			} else {
+				nn = n.lhs
+				nn.m_visit(this)
+			}
+			"\n".print(this.stream)
+		} else if (n.op == DOT) {
+			"QWORD[".print(this.stream)
+			nn = n.lhs
+			nn.m_visit(this)
+			num = n.rhs
+			if (num.string.get(0) != '-')
+				"+".print(this.stream)
+			num.string.print(this.stream)
+			"]".print(this.stream)
+		} else if (n.op == SQUARE_OPEN) {
+			"QWORD[".print(this.stream)
+			nn = n.lhs
+			nn.m_visit(this)
+			num = n.rhs
+			if (num.string.get(0) != '-')
+				"+".print(this.stream)
+			num.string.print(this.stream)
+			"]".print(this.stream)
+		} else if (n.op == OR) {
+			lastFalse = this.falseLabel
+			this.falseLabel = this.createLabel(".falseCond")
+
+			this.target = this.trueLabel
+			this.negate = false
+			nn = n.lhs
+			nn.m_visit(this)
+
+			this.falseLabel.print(this.stream)
+			":".println(this.stream)
+			this.falseLabel = lastFalse
+
+			this.target = this.trueLabel
+			this.negate = false
+			nn = n.rhs
+			nn.m_visit(this)
+
+			"jmp ".print(this.stream)
+			this.falseLabel.println(this.stream)
+		} else if (n.op == AND) {
+			lastTrue = this.trueLabel
+			this.trueLabel = this.createLabel(".trueCond")
+
+			this.target = this.falseLabel
+			this.negate = true
+			nn = n.lhs
+			nn.m_visit(this)
+
+			this.trueLabel.print(this.stream)
+			":".println(this.stream)
+			this.trueLabel = lastTrue
+
+			this.target = this.falseLabel
+			this.negate = true
+			nn = n.rhs
+			nn.m_visit(this)
+			"jmp ".print(this.stream)
+
+			this.trueLabel.println(this.stream)
+		} else {
+			# Standard binops
+			if (n.op >= ADD)
+			if (n.op <= ASSIGN) {
+				# Retrieve string representation of op
+				ix = n.op
+				ix -= ADD
+				op = this.binops.get(ix)
+
+				op.print(this.stream)
+				nn = n.lhs
+				nn.m_visit(this)
+				", ".print(this.stream)
+				nn = n.rhs
+				nn.m_visit(this)
+				"\n".print(this.stream)
+				return 0
+			}
+
+			# Comparisons
+			if (n.op >= EQUAL)
+			if (n.op <= LESS_EQ) {
+				"cmp ".print(this.stream)
+				nn = n.lhs
+				nn.m_visit(this)
+				", ".print(this.stream)
+				nn = n.rhs
+				nn.m_visit(this)
+				"\n".print(this.stream)
+
+				if (this.negate == true) {
+					if (n.op == EQUAL)      "jne ".print(this.stream)
+					if (n.op == NOT_EQUAL)  "je  ".print(this.stream)
+					if (n.op == GREATER)    "jle ".print(this.stream)
+					if (n.op == GREATER_EQ) "jl  ".print(this.stream)
+					if (n.op == LESS)       "jge ".print(this.stream)
+					if (n.op == LESS_EQ)    "jg  ".print(this.stream)
+				} else {
+					if (n.op == EQUAL)      "je  ".print(this.stream)
+					if (n.op == NOT_EQUAL)  "jne ".print(this.stream)
+					if (n.op == GREATER)    "jg  ".print(this.stream)
+					if (n.op == GREATER_EQ) "jge ".print(this.stream)
+					if (n.op == LESS)       "jl  ".print(this.stream)
+					if (n.op == LESS_EQ)    "jle ".print(this.stream)
+				}
+
+				this.target.println(this.stream)
+				return 0
+			}
+
+			# Check op token is valid
+			error("Can't use ", n.op.toString(), " as a binary operator")
+		}
+
+  	return 0
+	}
+
+	func void visit(UnaryOperationNode n)() {
+		if (n.op == INCREMENT) "inc ".print(this.stream)
+		else if (n.op == DECREMENT) "dec ".print(this.stream)
+		else if (n.op == PUSH) "push ".print(this.stream)
+		else error("Can't use ", n.op.toString(), " as a unary operator")
+
+		n.visit_children(this.v)
+		"\n".print(this.stream)
+  	return 0
+	}
+
+	func void visit(StringNode n)() {
+		if (n.type == nCHARACTER) {
+			"'".print(this.stream)
+			n.string.print(this.stream)
+			"'".print(this.stream)
+		} else if (n.type == nNASM) {
+			n.string.println(this.stream)
+		} else {
+			n.string.print(this.stream)
+		}
+  	return 0
+	}
+
+	func void visit(ClassNode n)() {
+  	return 0
+	}
+
+	func void visit(FunctionNode n)(Number size) {
+		if (n.name.equal("main") == 1) {
+			"_start".print(this.stream)
+		} else {
+			n.name.print(this.stream)
+		}
+		":\npush rbp\nmov rbp, rsp\nsub rsp, ".print(this.stream)
+		size = n.vars.children.length
+		size << 3
+		size.toString().println(this.stream)
+		"push r12\npush r13".println(this.stream)
+
+		# Dump block
+		n.block.visit(this.v)
+
+		".ret:".println(this.stream)
+		if (n.name.equal("main") == 1) {
+			"mov rdi, rax\nmov rax, 60\nsyscall".println(this.stream)
+		} else {
+			"pop r13\npop r12\nmov rsp, rbp\npop rbp\nret ".print(this.stream)
+			size = n.args.children.length
+			size << 3
+			size.toString().println(this.stream)
+		}
+  	return 0
+	}
+
+	func void visit(ListNode n)(LinkedListNode lln, StringNode nn, Number ix, String s) {
+		if (this.top == true) {
+			"section .text\nglobal _start".println(this.stream)
+			this.top = false
+		}
+
+		if (n.type == nSYS) {
+			lln = n.children.first
+			ix = 0
+			loop {
+				if (lln == 0) { break }
+				nn = lln.payload
+				"mov ".print(this.stream)
+				s = this.scallreg.get(ix)
+				s.print(this.stream)
+				", ".print(this.stream)
+				nn.m_visit(this)
+				"\n".print(this.stream)
+				ix++
+
+				lln = lln.fwrd
+			}
+			"syscall".println(this.stream)
+		} else if (n.type == nGLOBAL) {
+			"section .bss".println(this.stream)
+			lln = n.children.first
+			loop {
+				if (lln == 0) { break }
+				nn = lln.payload
+				nn.m_visit(this)
+				": resq 1".println(this.stream)
+
+				lln = lln.fwrd
+			}
+			"section .text".println(this.stream)
+		} else if (n.type == nSTRINGS) {
+			"section .data".println(this.stream)
+			lln = n.children.first
+			ix = 0
+			loop {
+				if (lln == 0) { break }
+				"string_".print(this.stream)
+				ix.toString().print(this.stream)
+				":\ndq ".print(this.stream)
+				nn = lln.payload
+				s = nn.string.unescaped_length().toString()
+				s.print(this.stream)
+				", ".print(this.stream)
+				s.print(this.stream)
+				", 24+string_".print(this.stream)
+				ix.toString().println(this.stream)
+				"db \`".print(this.stream)
+				nn.string.print(this.stream)
+				"\`\n".print(this.stream)
+				ix++
+
+				lln = lln.fwrd
+			}
+			"section .text".println(this.stream)
+		} else if (n.type == nFUNCTIONS) {
+			"section .data\n_FUNCTIONLIST:\ndq ".print(this.stream)
+			ix = n.children.length
+			ix >> 1
+			s = ix.toString()
+			s.print(this.stream)
+			", ".print(this.stream)
+			s.print(this.stream)
+			", 24+_FUNCTIONLIST".print(this.stream)
+
+			lln = n.children.first
+			loop {
+				if (lln == 0) { break }
+				nn = lln.payload
+				", ".print(this.stream)
+				nn.m_visit(this)
+				lln = lln.fwrd.fwrd
+			}
+
+			"\n_FUNCTIONNAMELIST:\ndq ".print(this.stream)
+			s.print(this.stream)
+			", ".print(this.stream)
+			s.print(this.stream)
+			", 24+_FUNCTIONNAMELIST".print(this.stream)
+
+			lln = n.children.first.fwrd
+			loop {
+				if (lln == 0) { break }
+				nn = lln.payload
+				", ".print(this.stream)
+				nn.m_visit(this)
+				lln = lln.fwrd
+				if (lln == 0) { break }
+				lln = lln.fwrd
+			}
+
+			"\nsection .text".println(this.stream)
+		} else {
+			n.visit_children(this.v)
+		}
+
+  	return 0
+	}
+
+	func void visit(IfNode n)(Node nn, String endLabel, String old_trueLabel, String old_falseLabel, String old_target, Boolean old_negate) {
+		old_trueLabel = this.trueLabel
+		old_falseLabel = this.falseLabel
+		old_target = this.target
+		old_negate = this.negate
+
+		this.trueLabel = this.createLabel(".trueLabel")
+		this.falseLabel = this.createLabel(".falseLabel")
+		this.counter++
+
+		this.target = this.falseLabel
+		this.negate = true
+		nn = n.condition
+		nn.m_visit(this)
+
+		this.trueLabel.print(this.stream)
+		":".println(this.stream)
+		n.block_if.visit(this.v)
+
+		endLabel = this.createLabel(".endIf")
+		if (n.block_else != 0) {
+			"jmp ".print(this.stream)
+			endLabel.println(this.stream)
+		}
+		this.falseLabel.print(this.stream)
+		":".println(this.stream)
+		if (n.block_else != 0) {
+			n.block_else.visit(this.v)
+			endLabel.print(this.stream)
+			":".println(this.stream)
+		}
+
+		this.trueLabel = old_trueLabel
+		this.falseLabel = old_falseLabel
+		this.target = old_target
+		this.negate = old_negate
+
+  	return 0
+	}
+
+	func void visit(LoopNode n)(String oldid) {
+		oldid = this.idloop
+		this.idloop = this.counter.toString()
+		this.counter++
+
+		".loop_".print(this.stream)
+		this.idloop.print(this.stream)
+		":\n".print(this.stream)
+
+		n.visit_children(this.v)
+
+		"jmp .loop_".print(this.stream)
+		this.idloop.println(this.stream)
+		".loop_end_".print(this.stream)
+		this.idloop.print(this.stream)
+		":".println(this.stream)
+
+		this.idloop = oldid
+
+  	return 0
+	}
+
+	func void visit(ReturnNode n)() {
+		"mov rax, ".print(this.stream)
+		n.visit_children(this.v)
+		"\njmp .ret".println(this.stream)
+  	return 0
+	}
+
+	func void visit(EnumNode n)(String len, LinkedListNode lln, Node nn) {
+		"section .data".println(this.stream)
+		n.name.print(this.stream)
+		":\ndq ".print(this.stream)
+		len = n.values.children.length.toString()
+		len.print(this.stream)
+		", ".print(this.stream)
+		len.print(this.stream)
+		", 24+".print(this.stream)
+		n.name.print(this.stream)
+
+		lln = n.values.children.first
+		loop {
+			if (lln == 0) { break }
+			nn = lln.payload
+			", ".print(this.stream)
+			nn.m_visit(this)
+			lln = lln.fwrd
+		}
+
+		"\nsection .text".println(this.stream)
+		return 0
+	}
+
+	func String createLabel(String orig)(String num, Number len, String joined) {
+		num = this.counter.toString()
+		len = num.length
+		len += orig.length
+		joined = String_new(len)
+		joined.append(orig).append(num)
+		this.counter++
+		return joined
+	}
+}

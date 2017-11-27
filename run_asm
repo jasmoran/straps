@@ -1,0 +1,19 @@
+nasm -f elf64 -o tmp.run.o run.asm
+
+if [ $? -eq 0 ]; then
+  ld -o tmp.run.bin tmp.run.o
+
+  if [ $? -eq 0 ]; then
+    rm tmp.run.o
+    ./tmp.run.bin
+
+    echo $?
+
+    #rm tmp.run.bin
+  else
+    echo "Failed to link the specified file!"
+  fi
+
+else
+  echo "Failed to assemble the specified file!"
+fi

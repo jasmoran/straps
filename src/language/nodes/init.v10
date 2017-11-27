@@ -1,0 +1,2 @@
+nasm("mov rax, _?N_visit_?N_Visitor")
+m_visit = rax

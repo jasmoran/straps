@@ -11,13 +11,16 @@ func string_new(size)(addr) {
 	return var addr
 }
 
-func string_length(str)() {	return var str[0]
+func string_length(str)() {
+	return var str[0]
 }
 
-func string_size(str)() {	return var str[8]
+func string_size(str)() {
+	return var str[8]
 }
 
-func string_data(str)() {	return var str[16]
+func string_data(str)() {
+	return var str[16]
 }
 
 func string_append(character, string)() {
@@ -31,6 +34,27 @@ func string_append(character, string)() {
 	rbx = var character
 	nasm("mov BYTE[rax], bl
 	")
+
+	return
+}
+
+func string_prepend(character, string)() {
+	# Copy main data
+	rsi = var string
+	rsi += 16
+	rdi = rsi
+	rdi++
+	rcx = var string[0]
+	nasm("rep movsb
+	")
+
+	rax = var string
+	rax += 16
+	rbx = var character
+	nasm("mov BYTE[rax], bl
+	")
+
+	var string[0]++
 
 	return
 }
@@ -110,10 +134,20 @@ func string_join(dest, source)() {
 
 }
 
-func string_from_number(str_out, int_in)(digit_count) {
-	rax = var int_in
+func string_from_number(plus, str_out, int_in)(digit_count) {
 	rcx = 10
 	var digit_count = 0
+
+	if (var int_in < 0) {
+		string_append(var str_out, '-')
+		rax = 0
+		rax -= var int_in
+	} else {
+		if (var plus == 1) {
+			string_append(var str_out, '+')
+		}
+		rax = var int_in
+	}
 
 	loop {
 		rdx = 0
@@ -220,4 +254,33 @@ func string_clone_nullterm(source)(addr, length) {
 	var addr[0] = var length
 
 	return var addr
+}
+
+func string_unescaped_length(str)(ix, escaped) {
+	var escaped = 0
+	var ix = 0
+	loop {
+		if (var ix == string_length(var str)) { break }
+
+		# Get character
+		rax = var str
+		rax += 16
+		rax += var ix
+		rbx = 0
+		nasm("mov bl, BYTE[rax]
+		")
+
+		# Backslash
+		if (rbx == 92) {
+			# Skip next character
+			var ix++
+			var escaped++
+		}
+
+		var ix++
+	}
+
+	string_length(var str)
+	rax -= var escaped
+	return rax
 }

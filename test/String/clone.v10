@@ -1,0 +1,10 @@
+#-Hello World
+#-
+
+include "src/stdlib/stdlib.v10"
+
+func void main()(String str1, String str2) {
+	str1 = "Hello World\n"
+	str2 = str1.clone()
+	str2.print(STDOUT)
+}

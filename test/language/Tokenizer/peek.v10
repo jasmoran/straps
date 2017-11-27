@@ -1,0 +1,13 @@
+#+break case class else
+#-BREAK
+#-BREAK
+#-
+
+include "src/stdlib/stdlib.v10"
+include "src/language/Tokenizer.v10"
+
+func void main()(Tokenizer tk) {
+	tk = Tokenizer_new("STDIN", STDIN)
+	tk.peek().toString().println()
+	tk.peek().toString().println()
+}

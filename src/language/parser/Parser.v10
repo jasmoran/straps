@@ -1,0 +1,366 @@
+include "src/language/Node.v10"
+include "src/language/Tokenizer.v10"
+
+func Parser Parser_new(String stream_name, Stream input)() {
+	return Parser_new(stream_name, Tokenizer_new(stream_name, input))
+}
+
+func Node Parser_parse(String stream_name, Stream input)(Parser p) {
+	p = Parser_new(stream_name, input)
+	return p.parse()
+}
+
+class Parser(String name, Tokenizer t) {
+	func Node nt_class()(String name, ListNode fields, ListNode block) {
+		this.t.consume(CLASS)
+
+		name = this.t.consume(IDENTIFIER)
+		fields = this.typed_list(nLIST)
+		block = this.block(nBLOCK)
+
+		return ClassNode_new(name, fields, block)
+	}
+
+	func Node nt_enum()(String name, ListNode values) {
+		this.t.consume(ENUM)
+
+		name = this.t.consume(IDENTIFIER)
+		values = this.block(nBLOCK)
+
+		return EnumNode_new(name, values)
+	}
+
+	func Node nt_function()(String ret_type, String name, ListNode args, ListNode vars, ListNode block) {
+		this.t.consume(FUNC)
+
+		ret_type = this.t.consume(IDENTIFIER)
+		name = this.t.consume(IDENTIFIER)
+		args = this.typed_list(nLIST)
+		vars = this.typed_list(nLIST)
+		block = this.block(nBLOCK)
+
+		return FunctionNode_new(Type_new(ret_type), name, args, vars, block)
+	}
+
+	func Node nt_if()(IfNode node, Node expr, ListNode block_if) {
+		this.t.consume(IF)
+
+		expr = this.expression()
+		block_if = this.block(nBLOCK)
+		node = IfNode_new(expr, block_if)
+
+		this.skip_newlines()
+		if (this.t.peek() == ELSE) {
+			this.t.consume(ELSE)
+			node.block_else = this.block(nBLOCK)
+		}
+
+		return node
+	}
+
+	func Node nt_include()(String path, Parser parser) {
+		this.t.consume(INCLUDE)
+		path = this.t.consume(STRING)
+		parser = Parser_new(path, File_open(path))
+		parser.t.macros = this.t.macros
+		return parser.parse()
+	}
+
+	func Node nt_nasm()(Node node) {
+		this.t.consume(NASM)
+		this.t.consume(PAREN_OPEN)
+		node = StringNode_new(nNASM, Type_new("void"), this.t.consume(STRING))
+		this.t.consume(PAREN_CLOSE)
+		return node
+	}
+
+
+
+
+
+
+	func Node parse()(ListNode l, Any expr) {
+		l = ListNode_new(nBLOCK)
+
+		loop {
+			expr = this.expression()
+			if (expr == EOF) { break }
+			l.children.append(expr)
+		}
+
+		return l
+	}
+
+	func ListNode block(NodeType t)(ListNode l, Any expr) {
+		l = ListNode_new(t)
+		this.skip_newlines()
+
+		if (this.t.peek() == CURLY_OPEN) {
+			this.t.consume(CURLY_OPEN)
+
+			loop {
+				if (this.t.peek() == CURLY_CLOSE) { break }
+				if (this.t.peek() == EOF) { break }
+				expr = this.expression()
+				l.children.append(expr)
+				this.skip_newlines()
+			}
+
+			this.t.consume(CURLY_CLOSE)
+		} else {
+			expr = this.expression()
+			l.children.append(expr)
+		}
+
+		return l
+	}
+
+	func ListNode typed_list(NodeType t)(ListNode l, Any n, String type, String var) {
+		this.t.consume(PAREN_OPEN)
+		l = ListNode_new(t)
+
+		loop {
+			if (this.t.peek() == PAREN_CLOSE) { break }
+
+			type = this.t.consume(IDENTIFIER)
+			var = this.t.consume(IDENTIFIER)
+			n = StringNode_new(nIDENTIFIER, Type_new(type), var)
+
+			l.children.append(n)
+
+			if (this.t.peek() != COMMA) { break }
+
+			this.t.consume(COMMA)
+		}
+
+		this.t.consume(PAREN_CLOSE)
+
+		return l
+	}
+
+	func LinkedList expression_list()(LinkedList l, Any expr) {
+		this.t.consume(PAREN_OPEN)
+		l = LinkedList_new()
+
+		loop {
+			if (this.t.peek() == PAREN_CLOSE) { break }
+			expr = this.expression()
+			l.append(expr)
+			if (this.t.peek() != COMMA) { break }
+			this.t.consume(COMMA)
+		}
+
+		this.t.consume(PAREN_CLOSE)
+
+		return l
+	}
+
+
+
+
+
+	func void skip_newlines()() {
+		loop {
+			if (this.t.peek() != NEW_LINE) break
+			this.t.consume(NEW_LINE)
+		}
+	}
+
+	func Node expression()(Node node, Token tk) {
+		node = this.logic_expr()
+		loop {
+			tk = this.t.peek()
+			if (tk != ASSIGN)
+			if (tk != ADD)
+			if (tk != SUB)
+			if (tk != SHIFTL)
+			if (tk != SHIFTR) break
+			this.t.consume(tk)
+			node = BinaryOperationNode_new(tk, node, this.logic_expr())
+		}
+		return node
+	}
+
+	func Node logic_expr()(Node node, Token tk) {
+		node = this.comp_expr()
+		loop {
+			tk = this.t.peek()
+			if (tk != AND)
+			if (tk != OR) break
+			this.t.consume(tk)
+			node = BinaryOperationNode_new(tk, node, this.comp_expr())
+		}
+		return node
+	}
+
+	func Node comp_expr()(Node node, Token tk) {
+		node = this.add_expr()
+		loop {
+			tk = this.t.peek()
+			if (tk != EQUAL)
+			if (tk != NOT_EQUAL)
+			if (tk != GREATER)
+			if (tk != GREATER_EQ)
+			if (tk != LESS)
+			if (tk != LESS_EQ) break
+			this.t.consume(tk)
+			node = BinaryOperationNode_new(tk, node, this.add_expr())
+		}
+		return node
+	}
+
+	func Node add_expr()(Node node, Token tk) {
+		node = this.mult_expr()
+
+		loop {
+			tk = this.t.peek()
+			if (tk != PLUS)
+			if (tk != MINUS) break
+			this.t.consume(tk)
+			node = BinaryOperationNode_new(tk, node, this.mult_expr())
+		}
+		return node
+	}
+
+	func Node mult_expr()(Node node, Token tk) {
+		node = this.snd_expr()
+		loop {
+			tk = this.t.peek()
+			if (tk != ASTERISK)
+			if (tk != FWD_SLASH) break
+			this.t.consume(tk)
+			node = BinaryOperationNode_new(tk, node, this.snd_expr())
+		}
+		return node
+	}
+
+	func Node snd_expr()(Node node, Token tk) {
+		tk = this.t.peek()
+		if (tk != PLUS)
+		if (tk != MINUS)
+		if (tk != NOT)
+		if (tk != ASTERISK) return this.top_expr()
+
+		this.t.consume(tk)
+		return UnaryOperationNode_new(tk, this.snd_expr(), true)
+	}
+
+	func Node top_expr()(Node node, Node list, Token tk) {
+		node = this.value()
+		loop {
+			tk = this.t.peek()
+			if (tk == PAREN_OPEN) {
+				list = ListNode_new(nCALL, this.expression_list())
+				node = BinaryOperationNode_new(PAREN_OPEN, node, list)
+			} else if (tk == SQUARE_OPEN) {
+				this.t.consume(SQUARE_OPEN)
+				node = BinaryOperationNode_new(SQUARE_OPEN, node, this.expression())
+				this.t.consume(SQUARE_CLOSE)
+			} else if (tk == DOT) {
+				this.t.consume(DOT)
+				node = BinaryOperationNode_new(DOT, node, this.value())
+			} else if (tk == INCREMENT) {
+				this.t.consume(INCREMENT)
+				node = UnaryOperationNode_new(INCREMENT, node, false)
+			} else if (tk == DECREMENT) {
+				this.t.consume(DECREMENT)
+				node = UnaryOperationNode_new(DECREMENT, node, false)
+			} else break
+		}
+		return node
+	}
+
+	func Node value()(Token tk, Node node) {
+		this.skip_newlines()
+
+		tk = this.t.peek()
+
+		# Bracketed expression
+		if (tk == PAREN_OPEN) {
+			this.t.consume(PAREN_OPEN)
+			node = this.expression()
+			this.t.consume(PAREN_CLOSE)
+			return node
+		}
+
+		if (tk == EOF) return EOF
+
+		if (tk == BREAK) {
+			this.t.consume(BREAK)
+			return Node_new(nBREAK)
+		}
+
+		if (tk == CHARACTER) {
+			return StringNode_new(nCHARACTER, Type_new("Character"), this.t.consume(CHARACTER))
+		}
+
+		if (tk == CLASS) {
+			return this.nt_class()
+		}
+
+		if (tk == ENUM) {
+			return this.nt_enum()
+		}
+
+		# TODO: add FOR
+
+		if (tk == FUNC) {
+			return this.nt_function()
+		}
+
+		if (tk == GLOBAL) {
+			this.t.consume(GLOBAL)
+			return this.typed_list(nGLOBAL)
+		}
+
+		if (tk == IDENTIFIER) {
+			return StringNode_new(nIDENTIFIER, Type_new(), this.t.consume(IDENTIFIER))
+		}
+
+		if (tk == IF) {
+			return this.nt_if()
+		}
+
+		if (tk == INCLUDE) {
+			return this.nt_include()
+		}
+
+		if (tk == LOOP) {
+			this.t.consume(LOOP)
+			return LoopNode_new(this.block(nBLOCK))
+		}
+
+		if (tk == NASM) {
+			return this.nt_nasm()
+		}
+
+		if (tk == NEXT) {
+			this.t.consume(NEXT)
+			return Node_new(nNEXT)
+		}
+
+		if (tk == NUMBER) {
+			return StringNode_new(nNUMBER, Type_new("Number"), this.t.consume(NUMBER))
+		}
+
+		if (tk == RETURN) {
+			this.t.consume(RETURN)
+			return ReturnNode_new(this.expression())
+		}
+
+		if (tk == STRING) {
+			return StringNode_new(nSTRING, Type_new("String"), this.t.consume(STRING))
+		}
+
+		# TODO: add SWITCH/CASE
+
+		if (tk == SYS) {
+			this.t.consume(SYS)
+			return ListNode_new(nSYS, this.expression_list())
+		}
+
+		# TODO: add WHILE
+
+		error("Unknown value expression! (Token: ", tk.toString(), ")\n")
+	}
+}

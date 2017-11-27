@@ -1,0 +1,189 @@
+func JSONPrinter JSONPrinter_new(Stream s)(?T) {
+	define V "JSONPrinter"
+	include "src/language/visitors/init.v10"
+	v = JSONPrinter_new(?U, s)
+	v.v = v
+	return v
+}
+
+func JSONPrinter JSONPrinter_new()() {
+	return JSONPrinter_new(STDOUT)
+}
+
+class JSONPrinter(?T, Stream s) {
+	func void V(Node n)(Visitor v) {
+		v = this
+		n.m_visit(v)
+	}
+
+	func void print_scope(Scope scope)(Number ix, String key, FunctionNode fvalue, ClassNode cvalue) {
+		ix = 0
+		"\"_scope\":{".print(this.s)
+		loop {
+			if (ix >= scope.scope.keys.length) break
+
+			key = scope.scope.keys.get(ix)
+
+			"\"".print(this.s)
+			key.print(this.s)
+			"\":".print(this.s)
+			fvalue = scope.scope.values.get(ix)
+
+			if (fvalue.type == nFUNCTION) {
+				"{\"_class\":\"FunctionNodeREF\",\"ret_type\":\"".print(this.s)
+				fvalue.ret_type.toString().print(this.s)
+				"\",\"name\":\"".print(this.s)
+				fvalue.name.print(this.s)
+				"\",\"args\":".print(this.s)
+				this.V(fvalue.args.toNode())
+				"}".print(this.s)
+			} else if (fvalue.type == nCLASS) {
+				cvalue = scope.scope.values.get(ix)
+
+				"{\"_class\":\"ClassNodeREF\",\"name\":\"".print(this.s)
+				cvalue.name.print(this.s)
+				"\",\"fields\":".print(this.s)
+				this.V(cvalue.fields.toNode())
+				"}".print(this.s)
+			} else {
+				fvalue.m_visit(this)
+			}
+
+			ix++
+
+			if (ix != scope.scope.keys.length) ",".print(this.s)
+		}
+		"}".print(this.s)
+	}
+
+	func void visit(Node n)() {
+		"{\"_class\":\"Node\",\"type\":\"".print(this.s)
+		n.type.toString().print(this.s)
+		"\"}".print(this.s)
+	}
+
+	func void visit(BinaryOperationNode n)() {
+		"{\"_class\":\"BinaryOperationNode\",\"type\":\"".print(this.s)
+		n.type.toString().print(this.s)
+		"\",\"ret_type\":\"".print(this.s)
+		n.ret_type.toString().print(this.s)
+		"\",\"op\":\"".print(this.s)
+		n.op.toString().print(this.s)
+		"\",\"lhs\":".print(this.s)
+		this.V(n.lhs)
+		",\"rhs\":".print(this.s)
+		this.V(n.rhs)
+		"}".print(this.s)
+	}
+
+	func void visit(UnaryOperationNode n)() {
+		"{\"_class\":\"UnaryOperationNode\",\"type\":\"".print(this.s)
+		n.type.toString().print(this.s)
+		"\",\"op\":\"".print(this.s)
+		n.op.toString().print(this.s)
+		"\",\"left\":".print(this.s)
+		n.left.toString().print(this.s)
+		",\"expr\":".print(this.s)
+		this.V(n.expr)
+		"}".print(this.s)
+	}
+
+	func void visit(StringNode n)() {
+		"{\"_class\":\"StringNode\",\"type\":\"".print(this.s)
+		n.type.toString().print(this.s)
+		"\",\"ret_type\":\"".print(this.s)
+		n.ret_type.toString().print(this.s)
+		"\",\"string\":\"".print(this.s)
+		n.string.print(this.s)
+		"\"}".print(this.s)
+		return 69
+	}
+
+	func void visit(ClassNode n)() {
+		"{\"_class\":\"ClassNode\",\"type\":\"".print(this.s)
+		n.type.toString().print(this.s)
+		"\",\"name\":\"".print(this.s)
+		n.name.print(this.s)
+		"\",\"fields\":".print(this.s)
+		this.V(n.fields.toNode())
+		",\"block\":".print(this.s)
+		this.V(n.block.toNode())
+		",".print(this.s)
+		this.print_scope(n.scope)
+		"}".print(this.s)
+	}
+
+	func void visit(FunctionNode n)() {
+		"{\"_class\":\"FunctionNode\",\"type\":\"".print(this.s)
+		n.type.toString().print(this.s)
+		"\",\"ret_type\":\"".print(this.s)
+		n.ret_type.toString().print(this.s)
+		"\",\"name\":\"".print(this.s)
+		n.name.print(this.s)
+		"\",\"args\":".print(this.s)
+		this.V(n.args.toNode())
+		",\"vars\":".print(this.s)
+		this.V(n.vars.toNode())
+		",\"block\":".print(this.s)
+		this.V(n.block.toNode())
+		",".print(this.s)
+		this.print_scope(n.scope)
+		"}".print(this.s)
+	}
+
+	func void visit(ListNode n)(LinkedListNode lln) {
+		"{\"_class\":\"ListNode\",\"type\":\"".print(this.s)
+		n.type.toString().print(this.s)
+		"\",\"children\":[".print(this.s)
+		lln = n.children.first
+		loop {
+			if (lln == 0) break
+			n = lln.payload
+			this.V(n.toNode())
+			lln = lln.fwrd
+			if (lln != 0) ",".print(this.s)
+		}
+		"]}".print(this.s)
+	}
+
+	func void visit(IfNode n)() {
+		"{\"_class\":\"IfNode\",\"type\":\"".print(this.s)
+		n.type.toString().print(this.s)
+		"\",\"condition\":".print(this.s)
+		this.V(n.condition)
+		",\"block_if\":".print(this.s)
+		this.V(n.block_if.toNode())
+		n = n.block_else
+		if (n != 0) {
+			",\"block_else\":".print(this.s)
+			this.V(n.toNode())
+		}
+		"}".print(this.s)
+	}
+
+	func void visit(LoopNode n)() {
+		"{\"_class\":\"LoopNode\",\"type\":\"".print(this.s)
+		n.type.toString().print(this.s)
+		"\",\"block\":".print(this.s)
+		this.V(n.block.toNode())
+		"}".print(this.s)
+	}
+
+	func void visit(ReturnNode n)() {
+		"{\"_class\":\"ReturnNode\",\"type\":\"".print(this.s)
+		n.type.toString().print(this.s)
+		"\",\"expr\":".print(this.s)
+		this.V(n.expr)
+		"}".print(this.s)
+	}
+
+	func void visit(EnumNode n)() {
+		"{\"_class\":\"EnumNode\",\"type\":\"".print(this.s)
+		n.type.toString().print(this.s)
+		"\",\"name\":\"".print(this.s)
+		n.name.print(this.s)
+		"\",\"values\":".print(this.s)
+		this.V(n.values.toNode())
+		"}".print(this.s)
+	}
+}

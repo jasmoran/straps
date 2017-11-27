@@ -1,0 +1,363 @@
+include "src/language/ReversibleStream.v10"
+
+enum Token {
+	NONE BREAK CASE ELSE FOR FUNC IF LOOP NASM NEXT
+	RETURN SWITCH SYS WHILE NUMBER IDENTIFIER STRING PAREN_OPEN PAREN_CLOSE COMMA
+	COMMENT CURLY_OPEN CURLY_CLOSE EQUAL NOT_EQUAL GREATER GREATER_EQ LESS LESS_EQ CHARACTER
+	INCLUDE NOT INCREMENT DECREMENT ADD SUB SHIFTL SHIFTR ASSIGN PLUS
+	MINUS SQUARE_OPEN SQUARE_CLOSE ENUM CLASS DOT GLOBAL ASTERISK FWD_SLASH AND
+	OR NEW_LINE EOF PUSH POP
+}
+
+class Token(void type){
+		func String toString()(Array a, Number ix) {
+			nasm("mov rax, Token")
+			a = rax
+			ix = this
+			return a.get(ix)
+		}
+}
+
+func Tokenizer Tokenizer_new(String stream_name, Stream s)(ReversibleStream rs_old) {
+	rs_old = 0
+	return Tokenizer_new(stream_name, ReversibleStream_new(s, 1024), NONE, String_new(1024), MetaCharacter_new(' ', 0, 0), rs_old, Map_new(256))
+}
+
+class Tokenizer(String stream_name, ReversibleStream rs, Token type, String image, MetaCharacter first_char, ReversibleStream rs_old, Map macros) {
+	func Token peek()() {
+		if (this.type == NONE) {
+			this.type = this.load()
+		}
+		return this.type
+	}
+
+	func String consume()(String copy) {
+		this.peek()
+
+		if (this.type == EOF) {
+			error("Attempting to read past end of file")
+		}
+
+		copy = NullString
+		if (this.image.length > 0) {
+			copy = this.image.clone()
+		}
+
+		this.type = NONE
+		this.image.clear()
+
+		return copy
+	}
+
+	func String consume(Token type)(Token peek) {
+		peek = this.peek()
+		if (peek != type) {
+			"Error: Expected token ".print(STDERR)
+			type.toString().print(STDERR)
+			" got ".print(STDERR)
+			peek.toString().print(STDERR)
+			" in stream ".print(STDERR)
+			this.stream_name.print(STDERR)
+			" ".print(STDERR)
+			this.first_char.toString().println(STDERR)
+			error()
+		}
+		return this.consume()
+	}
+
+	func Boolean match(String token)(Number ix, Character c) {
+		ix = 0
+		loop {
+			# Check for end of string
+			if (ix == token.length) { break }
+
+			# Rewind if characters dont match
+			c = this.rs.get().get_character()
+			if (c != token.get(ix)) {
+				this.rs.rewind()
+				return false
+			}
+
+			ix++
+		}
+
+		# Flush and return true if string matched
+		this.rs.flush()
+		return true
+	}
+
+	func Boolean match_number()(Character c) {
+		c = this.rs.get().get_character()
+
+		# Must have at least one digit
+		if (c < '0') {
+			this.rs.rewind()
+			return false
+		}
+		if (c > '9') {
+			this.rs.rewind()
+			return false
+		}
+
+		loop {
+			this.image.append(c)
+			c = this.rs.get().get_character()
+			if (c < '0') { break }
+			if (c > '9') { break }
+		}
+
+		this.rs.rewind(1)
+		this.rs.flush()
+		return true
+	}
+
+	func Boolean match_identifier()(Character c) {
+		loop {
+			c = this.rs.get().get_character()
+
+			if (c >= 'a') {
+				if (c <= 'z') {
+					this.image.append(c)
+					next
+				}
+			}
+
+			if (c >= 'A') {
+				if (c <= 'Z') {
+					this.image.append(c)
+					next
+				}
+			}
+
+			if (c >= '0') {
+				if (c <= '9') {
+					this.image.append(c)
+					next
+				}
+			}
+
+			if (c == '_') {
+				this.image.append(c)
+				next
+			}
+
+			break
+		}
+
+		this.rs.rewind(1)
+		this.rs.flush()
+
+		if (this.image.length > 0) {
+			return true
+		} else {
+			return false
+		}
+	}
+
+	func Boolean match_string()(Character c, String macro) {
+		if (this.rs.get().get_character() != '"') {
+			this.rs.rewind()
+			return false
+		}
+
+		loop {
+			c = this.rs.get().get_character()
+
+			if (c == 0) {
+				if (this.rs_old == 0) {
+					break
+				} else {
+					this.rs = this.rs_old
+					this.rs_old = 0
+					next
+				}
+			}
+			if (c == '"') { break }
+
+			# Use macros
+			if (c == 63) {
+				macro = c.toString().clone(1).append(this.rs.get().get_character())
+				macro = this.macros.get(macro)
+				this.rs_old = this.rs
+				this.rs = ReversibleStream_new(macro)
+				next
+			}
+
+			# 92 = backslash
+			if (rax == 92) {
+				this.image.append(c)
+				c = this.rs.get().get_character()
+			}
+
+			this.image.append(c)
+		}
+
+		this.rs.flush()
+		return true
+	}
+
+	func Boolean match_comment()(Character c) {
+		c = this.rs.get().get_character()
+		if (c == '/') {
+			if (this.rs.get().get_character() != '/') {
+				this.rs.rewind()
+				return false
+			}
+		} else {
+			if (c != '#') {
+				this.rs.rewind()
+				return false
+			}
+		}
+
+		loop {
+			c = this.rs.get().get_character()
+
+			if (rax == 0) { break }
+			if (rax == 10) { break }
+		}
+
+		this.rs.flush()
+		return true
+	}
+
+	func Boolean match_character()(Character c) {
+		if (this.rs.get().get_character() != 39) {
+			this.rs.rewind()
+			return false
+		}
+
+		c = this.rs.get().get_character()
+		this.image.append(c)
+
+		# Handle backslashes
+		if (c == 92) {
+			this.image.append(this.rs.get().get_character())
+		}
+
+		if (this.rs.get().get_character() != 39) {
+			this.rs.rewind()
+			return false
+		}
+
+		this.rs.flush()
+		return true
+	}
+
+	func Token load()(Character c, String macro, Any any, Character qmark, Number ix) {
+		# Skip whitespace
+		loop {
+			this.first_char = this.rs.get()
+			c = this.first_char.get_character()
+			if (c == 0) {
+				if (this.rs_old == 0) {
+					return EOF
+				} else {
+					this.rs = this.rs_old
+					this.rs_old = 0
+				}
+			}
+			#if (c == 10) return NEW_LINE
+			if (c > ' ') break
+		}
+		this.rs.rewind(1)
+		this.rs.flush()
+
+		# Define macros
+		if (this.match("define") == true) {
+			if (this.load() != IDENTIFIER)
+				error("Malformed definition at ", this.rs.get().toString(), " in stream ", this.stream_name)
+			qmark = 63
+			macro = this.image.clone(1).prepend(qmark)
+			this.image.clear()
+			if (this.load() != STRING)
+				error("Malformed definition at ", this.rs.get().toString(), " in stream ", this.stream_name)
+			any = this.image.clone()
+			this.image.clear()
+			this.macros.set(macro, any)
+			return this.load()
+		}
+
+		if (this.match("break") == true) { return BREAK }
+		if (this.match("case") == true) { return CASE }
+		if (this.match("class") == true) { return CLASS }
+		if (this.match("else") == true) { return ELSE }
+		if (this.match("enum") == true) { return ENUM }
+		if (this.match("for") == true) { return FOR }
+		if (this.match("func") == true) { return FUNC }
+		if (this.match("global") == true) { return GLOBAL }
+		if (this.match("if") == true) { return IF }
+		if (this.match("include") == true) { return INCLUDE }
+		if (this.match("loop") == true) { return LOOP }
+		if (this.match("nasm") == true) { return NASM }
+		if (this.match("next") == true) { return NEXT }
+		if (this.match("return") == true) { return RETURN }
+		if (this.match("switch") == true) { return SWITCH }
+		if (this.match("sys") == true) { return SYS }
+		if (this.match("while") == true) { return WHILE }
+
+		if (this.match("(") == true) { return PAREN_OPEN }
+		if (this.match(")") == true) { return PAREN_CLOSE }
+		if (this.match("{") == true) { return CURLY_OPEN }
+		if (this.match("}") == true) { return CURLY_CLOSE }
+		if (this.match("[") == true) { return SQUARE_OPEN }
+		if (this.match("]") == true) { return SQUARE_CLOSE }
+
+		if (this.match(",") == true) { return COMMA }
+		if (this.match(".") == true) { return DOT }
+
+		if (this.match("!=") == true) { return NOT_EQUAL }
+		if (this.match("!") == true) { return NOT }
+
+		if (this.match("<=") == true) { return LESS_EQ }
+		if (this.match("<<") == true) { return SHIFTL }
+		if (this.match("<") == true) { return LESS }
+
+		if (this.match(">=") == true) { return GREATER_EQ }
+		if (this.match(">>") == true) { return SHIFTR }
+		if (this.match(">") == true) { return GREATER }
+
+		if (this.match("==") == true) { return EQUAL }
+		if (this.match("=") == true) { return ASSIGN }
+
+		if (this.match("+=") == true) { return ADD }
+		if (this.match("++") == true) { return INCREMENT }
+		if (this.match("+") == true) { return PLUS }
+
+		if (this.match("-=") == true) { return SUB }
+		if (this.match("--") == true) { return DECREMENT }
+		if (this.match("-") == true) { return MINUS }
+
+		if (this.match("*") == true) { return ASTERISK }
+		if (this.match("/") == true) { return FWD_SLASH }
+		if (this.match("&&") == true) { return AND }
+		if (this.match("||") == true) { return OR }
+
+		if (this.match_number() == true) { return NUMBER }
+		if (this.match_string() == true) { return STRING }
+		if (this.match_character() == true) { return CHARACTER }
+		if (this.match_identifier() == true) { return IDENTIFIER }
+		if (this.match_comment() == true) { return this.load() }
+
+		# Use macros
+		ix = 0
+		loop {
+			if (this.macros.keys.length == ix) break
+			macro = this.macros.keys.get(ix)
+			if (this.match(macro) == true) {
+				macro = this.macros.values.get(ix)
+				this.rs_old = this.rs
+				this.rs = ReversibleStream_new(macro)
+				return this.load()
+			}
+
+			ix++
+		}
+
+		"Error: invalid character: '".print(STDERR)
+		this.rs.get().get_character().toString().print(STDERR)
+		"'\n".print(STDERR)
+
+		return NONE
+	}
+}

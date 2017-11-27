@@ -1,0 +1,66 @@
+func Boolean Number_equal(Any int1, Any int2)() {
+	if (int1 == int2) {
+		return true
+	} else {
+		return false
+	}
+}
+
+class Number (void data) {
+	func String toString()() this.toString(false)
+	func String toString(Boolean plus)(String str, Number digit_count, Character chr) {
+		rax = this
+		rcx = 10
+		digit_count = 0
+
+		# Get absolute value
+		if (this < 0) {
+			rax = 0
+			rax -= this
+		} else {
+			rax = this
+		}
+
+		loop {
+			rdx = 0
+			nasm("
+			div rcx
+			push rdx
+			")
+			digit_count++
+
+			if (rax == 0) {
+				break
+			}
+		}
+
+		digit_count++
+		str = String_new(digit_count)
+		digit_count--
+
+		if (this < 0) {
+			str.append('-')
+		} else {
+			if (plus == 1) {
+				str.append('+')
+			}
+		}
+
+		loop {
+			nasm("pop rax")
+			rax += '0'
+
+			chr = rax
+			str.append(chr)
+
+			digit_count--
+
+			# Exit loop if count has reached 0
+			if (digit_count == 0) {
+				break
+			}
+		}
+
+		return str
+	}
+}
