@@ -154,7 +154,7 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 		}
 	}
 
-	func Boolean match_string()(Character c) {
+	func Boolean match_string()(Character c, String macro) {
 		if (this.rs.get().get_character() != '"') {
 			this.rs.rewind()
 			return false
@@ -163,8 +163,25 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 		loop {
 			c = this.rs.get().get_character()
 
-			if (c == 0) { break }
+			if (c == 0) {
+				if (this.rs_old == 0) {
+					break
+				} else {
+					this.rs = this.rs_old
+					this.rs_old = 0
+					next
+				}
+			}
 			if (c == '"') { break }
+
+			# Use macros
+			if (c == 63) {
+				macro = c.toString().clone(1).append(this.rs.get().get_character())
+				macro = this.macros.get(macro)
+				this.rs_old = this.rs
+				this.rs = ReversibleStream_new(macro)
+				next
+			}
 
 			# 92 = backslash
 			if (rax == 92) {
