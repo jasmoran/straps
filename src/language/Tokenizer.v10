@@ -240,7 +240,7 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 					this.rs_old = 0
 				}
 			}
-			if (c == 10) return NEW_LINE
+			#if (c == 10) return NEW_LINE
 			if (c > ' ') break
 		}
 		this.rs.rewind(1)

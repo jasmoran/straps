@@ -57,11 +57,12 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 			"call ".print(this.stream)
 			if (n.lhs.type == nFUNCTION) {
 				fun = n.lhs
-				fun.name.println(this.stream)
+				fun.name.print(this.stream)
 			} else {
 				nn = n.lhs
 				nn.m_visit(this)
 			}
+			"\n".print(this.stream)
 		} else if (n.op == DOT) {
 			"QWORD[".print(this.stream)
 			nn = n.lhs

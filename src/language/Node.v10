@@ -26,6 +26,8 @@ class Node(NodeType type, void m_visit) {
 	}
 
 	func void visit_children(Visitor v)() {}
+
+	func Node toNode()() { return this }
 }
 
 
