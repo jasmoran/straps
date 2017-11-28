@@ -8,6 +8,7 @@ include "src/stdlib/Array.v10"
 include "src/stdlib/LinkedList.v10"
 include "src/stdlib/Map.v10"
 include "src/stdlib/CircularBuffer.v10"
+include "src/stdlib/Run.v10"
 
 class void () {}
 class Any (Any deref) {}

@@ -20,10 +20,18 @@ func Stream File_create(CharArr path)(Stream file) {
 	return file
 }
 
+func void File_delete(CharArr path)() {
+	sys(87, path)
+}
+
 func Stream File_open(String path)() {
 	return File_open(path.toTerminated())
 }
 
 func Stream File_create(String path)() {
 	return File_create(path.toTerminated())
+}
+
+func void File_delete(String path)() {
+	File_delete(path.toTerminated())
 }

@@ -1,8 +1,0 @@
-func allocate(num_bytes)(addr) {
-	sys(12, 0)
-	var addr = rax
-	var num_bytes += rax
-	sys(12, var num_bytes)
-
-	return var addr
-}
