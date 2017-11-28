@@ -23,7 +23,7 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, St
 	if (input < 0) { return 1 }
 
 	# Open output file
-	output = File_create(out_path)
+	output = File_create("out.asm")
 	if (output < 0) { return 1 }
 
 	parser = Parser_new(String_fromTerminated(in_path), input)
@@ -62,4 +62,15 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, St
 	root.m_visit(v)
 	v = Dump_new(output)
 	root.m_visit(v)
+
+	# nasm -f elf64 out.asm
+	Run_new(4).add("/usr/bin/nasm").add("-f").add("elf64").add("out.asm").exec()
+
+	# ld -m elf_x86_64 -o out_path out.o
+	Run_new(6).add("/usr/bin/ld").add("-m").add("elf_x86_64")
+						.add("-o").add(String_fromTerminated(out_path)).add("out.o").exec()
+
+	# Clean up
+	File_delete("out.asm")
+	File_delete("out.o")
 }
