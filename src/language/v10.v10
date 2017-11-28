@@ -14,6 +14,7 @@ include "src/language/visitors/IndexCall.v10"
 include "src/language/visitors/Functions.v10"
 include "src/language/visitors/Strings.v10"
 include "src/language/visitors/Dump.v10"
+include "src/language/visitors/Variables.v10"
 
 global(Scope scope)
 
@@ -44,6 +45,8 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, St
 
 	load_loop()
 
+	v = Variables_new()
+	root.m_visit(v)
 	v = Constructor_new()
 	root.m_visit(v)
 	v = Typing_new()
