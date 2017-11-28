@@ -24,7 +24,7 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 		# Dont resolve identifiers in vars and args
 		this.resolve_idents = false
 		n.args.visit(this.v)
-		n.vars.visit(this.v)
+		n.vrbls.visit(this.v)
 		this.resolve_idents = true
 		n.block.visit(this.v)
 

@@ -19,7 +19,7 @@ class Variables(?T, FunctionNode containing_fun) {
 	func void visit(UnaryOperationNode n)(BinaryOperationNode binop) {
 		if (n.op != VAR) return 0
 		binop = n.expr
-		this.containing_fun.vars.append(binop.lhs)
+		this.containing_fun.vrbls.append(binop.lhs)
 		return binop
 	}
 

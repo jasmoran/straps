@@ -30,16 +30,16 @@ class Parser(String name, Tokenizer t) {
 		return EnumNode_new(name, values)
 	}
 
-	func Node nt_function()(String ret_type, String name, ListNode args, ListNode vars, ListNode block) {
+	func Node nt_function()(String ret_type, String name, ListNode args, ListNode vrbls, ListNode block) {
 		this.t.consume(FUNC)
 
 		ret_type = this.t.consume(IDENTIFIER)
 		name = this.t.consume(IDENTIFIER)
 		args = this.typed_list(nLIST)
-		vars = this.typed_list(nLIST)
+		vrbls = this.typed_list(nLIST)
 		block = this.block(nBLOCK)
 
-		return FunctionNode_new(Type_new(ret_type), name, args, vars, block)
+		return FunctionNode_new(Type_new(ret_type), name, args, vrbls, block)
 	}
 
 	func Node nt_if()(IfNode node, Node expr, ListNode block_if) {
@@ -115,7 +115,7 @@ class Parser(String name, Tokenizer t) {
 		return l
 	}
 
-	func ListNode typed_list(NodeType t)(ListNode l, Any n, String type, String var) {
+	func ListNode typed_list(NodeType t)(ListNode l, Any n, String type, String vrbl) {
 		this.t.consume(PAREN_OPEN)
 		l = ListNode_new(t)
 
@@ -123,8 +123,8 @@ class Parser(String name, Tokenizer t) {
 			if (this.t.peek() == PAREN_CLOSE) { break }
 
 			type = this.t.consume(IDENTIFIER)
-			var = this.t.consume(IDENTIFIER)
-			n = StringNode_new(nIDENTIFIER, Type_new(type), var)
+			vrbl = this.t.consume(IDENTIFIER)
+			n = StringNode_new(nIDENTIFIER, Type_new(type), vrbl)
 
 			l.children.append(n)
 

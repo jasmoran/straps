@@ -83,7 +83,7 @@ class Definition(?T) {
 
 		# Loop through variables
 		ix = 0
-		lln = n.vars.children.first
+		lln = n.vrbls.children.first
 		loop {
 			if (lln == 0) { break }
 			field = lln.payload

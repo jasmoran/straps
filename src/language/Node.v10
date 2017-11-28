@@ -129,15 +129,15 @@ class ClassNode(NodeType type, void m_visit, String name, ListNode fields, ListN
 
 
 
-func Node FunctionNode_new(Type ret_type, String name, ListNode args, ListNode vars, ListNode block)(void m_visit, Scope sc) {
+func Node FunctionNode_new(Type ret_type, String name, ListNode args, ListNode vrbls, ListNode block)(void m_visit, Scope sc) {
 	define N "FunctionNode"
 	include "src/language/nodes/init.v10"
 	sc = scope
 	sc = Scope_new(name, sc)
-	return FunctionNode_new(nFUNCTION, m_visit, ret_type, name, args, vars, block, sc)
+	return FunctionNode_new(nFUNCTION, m_visit, ret_type, name, args, vrbls, block, sc)
 }
 
-class FunctionNode(NodeType type, void m_visit, Type ret_type, String name, ListNode args, ListNode vars, ListNode block, Scope scope) {
+class FunctionNode(NodeType type, void m_visit, Type ret_type, String name, ListNode args, ListNode vrbls, ListNode block, Scope scope) {
 	func void visit(Visitor v)() {
 		v.m_visit_FunctionNode(this)
 	}
@@ -146,16 +146,16 @@ class FunctionNode(NodeType type, void m_visit, Type ret_type, String name, List
 		n = this.args
 		n = n.m_visit(v)
 		if (n != 0) this.args = n
-		n = this.vars
+		n = this.vrbls
 		n = n.m_visit(v)
-		if (n != 0) this.vars = n
+		if (n != 0) this.vrbls = n
 		n = this.block
 		n = n.m_visit(v)
 		if (n != 0) this.block = n
 	}
 
 	func FunctionNode shallow_clone()(FunctionNode fn) {
-		fn = FunctionNode_new(this.ret_type, this.name, this.args, this.vars, ListNode_new(nBLOCK))
+		fn = FunctionNode_new(this.ret_type, this.name, this.args, this.vrbls, ListNode_new(nBLOCK))
 		fn.scope = this.scope
 		return fn
 	}

@@ -123,7 +123,7 @@ class JSONPrinter(?T, Stream s) {
 		"\",\"args\":".print(this.s)
 		this.V(n.args.toNode())
 		",\"vars\":".print(this.s)
-		this.V(n.vars.toNode())
+		this.V(n.vrbls.toNode())
 		",\"block\":".print(this.s)
 		this.V(n.block.toNode())
 		",".print(this.s)

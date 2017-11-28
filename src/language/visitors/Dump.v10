@@ -213,7 +213,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 			n.name.print(this.stream)
 		}
 		":\npush rbp\nmov rbp, rsp\nsub rsp, ".print(this.stream)
-		size = n.vars.children.length
+		size = n.vrbls.children.length
 		size << 3
 		size.toString().println(this.stream)
 		"push r12\npush r13".println(this.stream)
