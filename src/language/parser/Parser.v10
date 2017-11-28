@@ -270,7 +270,7 @@ class Parser(String name, Tokenizer t) {
 		return node
 	}
 
-	func Node value()(Token tk, Node node, Type type, String vr) {
+	func Node value()(Token tk, Node node, String raw_type, Type type, String vrbl) {
 		this.skip_newlines()
 
 		tk = this.t.peek()
@@ -361,13 +361,22 @@ class Parser(String name, Tokenizer t) {
 
 		if (tk == VAR) {
 			this.t.consume(VAR)
-			type = Type_new(this.t.consume(IDENTIFIER))
-			vr = this.t.consume(IDENTIFIER)
+			raw_type = this.t.consume(IDENTIFIER)
+			if (this.t.peek() == IDENTIFIER) {
+				# Explicit
+				vrbl = this.t.consume(IDENTIFIER)
+				type = Type_new(raw_type)
+			} else {
+				# Inferring
+				vrbl = raw_type
+				type = Type_new()
+				type.raw = 1
+			}
 			this.t.consume(ASSIGN)
 
 			return UnaryOperationNode_new(type, VAR,
-				BinaryOperationNode_new(type, ASSIGN,
-					StringNode_new(nIDENTIFIER, type, vr).toNode(),
+				BinaryOperationNode_new(Type_new(), ASSIGN,
+					StringNode_new(nIDENTIFIER, type, vrbl).toNode(),
 						this.expression()).toNode(), true)
 		}
 

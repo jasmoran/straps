@@ -127,6 +127,23 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 			return n
 		}
 
+		# Infer types
+		if (n.op == ASSIGN)
+		if (n.lhs.type == nIDENTIFIER) {
+			field = n.lhs
+			if (field.ret_type.raw == 1) {
+				field.string.println()
+				n.lhs = this.scope.resolve(field.string)
+				field = n.lhs
+
+				nn = n.rhs
+				n.rhs = nn.m_visit(this)
+				sn = n.rhs
+
+				field.ret_type = sn.ret_type
+			}
+		}
+
 		n.visit_children(this.v)
 
 		return n

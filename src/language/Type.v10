@@ -13,6 +13,8 @@ class Type (String raw, ClassNode res) {
 	func String toString()(String s) {
 		if (this.raw == 0) {
 			return "Unknown"
+		} else if (this.raw == 1) {
+			return "ToBeInferred"
 		} else if (this.res == 0) {
 			return this.raw.clone(2).prepend('#').append('#')
 		} else {
@@ -22,7 +24,7 @@ class Type (String raw, ClassNode res) {
 
 	func void resolve(Scope sc)() {
 		if (this.res > 0) return 0
-		if (this.raw == 0) return 0
+		if (this.raw <= 1) return 0
 		if (sc == 0) error("Called with null scope")
 		loop {
 			if (sc == 0) break
@@ -43,6 +45,7 @@ class Type (String raw, ClassNode res) {
 
 	func Scope getScope()() {
 		if (this.raw == 0) error("Attempted to fetch scope of Unknown type")
+		if (this.raw == 1) error("Attempted to fetch scope of ToBeInferred type")
 		if (this.res == 0) error("Attempted to fetch scope of unresolved type ", this.toString())
 		return this.res.scope
 	}
