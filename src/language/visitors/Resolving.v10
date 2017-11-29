@@ -70,15 +70,11 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 			sn = n.lhs
 			args = n.rhs
 
-			# If LHS is a DOT, add its LHS to arguments (this)
+			# If a method, args fixing target is different
 			if (n.lhs.type == nBINARYOP) {
 				binop = n.lhs
 				if (binop.op == DOT) {
-					# If a method, args fixing target is different
 					sn = binop.rhs
-
-					if (sn.type == nIDENTIFIER)
-						args.prepend(binop.lhs)
 				}
 			}
 
@@ -107,6 +103,20 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 					sn.string.append('_').append(field.ret_type.raw)
 
 					lln = lln.fwrd
+				}
+			}
+
+			# If LHS is a DOT, add its LHS to arguments (this)
+			if (n.lhs.type == nBINARYOP) {
+				binop = n.lhs
+				if (binop.op == DOT) {
+					sn = binop.rhs
+
+					if (sn.type == nIDENTIFIER) {
+						nn = binop.lhs
+						nn = nn.m_visit(this)
+						args.prepend(nn)
+					}
 				}
 			}
 

@@ -127,7 +127,7 @@ class Definition(?T) {
 				if (field.type == nCLASS) {
 					var ClassNode cn = field
 					lln.payload = ClassNode_new(cn.name, ListNode_new(nLIST),
-																			ListNode_new(nLIST), cn.vtable)
+																			ListNode_new(nLIST), cn.vtable, cn.parent)
 				}
 			}
 

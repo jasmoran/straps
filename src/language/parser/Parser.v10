@@ -21,10 +21,17 @@ class Parser(String name, Tokenizer t) {
 		}
 
 		name = this.t.consume(IDENTIFIER)
+
+		var String parent = 0
+		if (this.t.peek() == LESS) {
+			this.t.consume(LESS)
+			parent = this.t.consume(IDENTIFIER)
+		}
+
 		fields = this.typed_list(nLIST)
 		block = this.block(nBLOCK)
 
-		return ClassNode_new(name, fields, block, vtable)
+		return ClassNode_new(name, fields, block, vtable, Type_new(parent))
 	}
 
 	func Node nt_enum()(String name, ListNode values) {

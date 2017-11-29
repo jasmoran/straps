@@ -11,6 +11,23 @@ func Method Method_new()(?T, ListNode ln, ClassNode cn) {
 class Method(?T, ListNode pb, ClassNode cls) {
 	func void visit(ClassNode n)() {
 		this.cls = n
+
+		if (n.parent.raw != 0) {
+			# Resolve parent type
+			n.parent.resolve(scope)
+
+			# Link scopes
+			n.scope.parent = n.parent.res.scope
+
+			# Inherit vtable
+			if (n.vtable != 0) {
+				var par_vtab = n.parent.res.vtable
+				if (par_vtab != 0) {
+					n.vtable = par_vtab.shallow_clone()
+				}
+			}
+		}
+
 		# Process each method
 		n.block.visit_children(this.v)
 
@@ -34,6 +51,7 @@ class Method(?T, ListNode pb, ClassNode cls) {
 		}
 
 		n.name = String_new(256).append(n.name)
+		var cls_scope_name = String_new(256).append(n.name)
 
 		# Loop through arguments
 		lln = n.args.children.first
@@ -44,6 +62,10 @@ class Method(?T, ListNode pb, ClassNode cls) {
 			# Append arguments type to function name
 			n.name.append('_').append(arg.ret_type.raw)
 
+			if (lln != n.args.children.first) {
+				cls_scope_name.append('_').append(arg.ret_type.raw)
+			}
+
 			lln = lln.fwrd
 		}
 
@@ -52,19 +74,19 @@ class Method(?T, ListNode pb, ClassNode cls) {
 
 			if (this.cls.vtable == 0) {
 				# Add method (direct) to scope of class
-				this.cls.scope.set(n.name, clone.toNode())
+				this.cls.scope.set(cls_scope_name, clone.toNode())
 			} else {
 				# Add method to vtable of class
 				var Any a = n
-				this.cls.vtable.set(n.name, a)
+				this.cls.vtable.set(cls_scope_name, a)
 
 				# Find method offset in vtable
-				var offset = this.cls.vtable.get_pos(n.name)
+				var offset = this.cls.vtable.get_pos(cls_scope_name)
 				offset << 3
 
 				# Add method (via vtable) to scope of class
 				var Node nullnode = 0
-				this.cls.scope.set(n.name, BinaryOperationNode_new(
+				this.cls.scope.set(cls_scope_name, BinaryOperationNode_new(
 					n.ret_type,
 					SQUARE_OPEN,
 					BinaryOperationNode_new(Type_new(), DOT,
