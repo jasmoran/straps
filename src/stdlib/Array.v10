@@ -55,4 +55,14 @@ class Array (Number length, Number size, void data) {
 	func void clear()() {
 		this.length = 0
 	}
+
+	func Array shallow_clone() {
+		var clone = Array_new(this.size)
+		var ix = 0
+		loop {
+			if (ix == this.length) { break }
+			clone.set(ix, this.get(ix))
+			ix++
+		}
+	}
 }

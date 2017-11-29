@@ -156,4 +156,15 @@ class LinkedList (LinkedListNode first, LinkedListNode last, Number length) {
 			}
 		}
 	}
+
+	func LinkedList shallow_clone() {
+		var clone = LinkedList_new()
+		var lln = this.first
+		loop {
+		  if (lln == 0) break
+		  clone.append(lln.payload)
+		  lln = lln.fwrd
+		}
+		return clone
+	}
 }
