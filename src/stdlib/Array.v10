@@ -61,7 +61,7 @@ class Array (Number length, Number size, void data) {
 		var ix = 0
 		loop {
 			if (ix == this.length) { break }
-			clone.set(ix, this.get(ix))
+			clone.append(this.get(ix))
 			ix++
 		}
 	}
