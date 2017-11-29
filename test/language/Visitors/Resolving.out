@@ -24,12 +24,12 @@ arg2: <<
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "24")
 >>
-var1: <<
+vrbl1: <<
   nBINARYOP(<Any>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
-var2: <<
+vrbl2: <<
   nBINARYOP(<Number>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-16")
@@ -38,8 +38,8 @@ var2: <<
       nIDENTIFIER(<Any>: "arg1")
       nIDENTIFIER(<Any>: "arg2")
     nLIST
-      nIDENTIFIER(<Any>: "var1")
-      nIDENTIFIER(<Number>: "var2")
+      nIDENTIFIER(<Any>: "vrbl1")
+      nIDENTIFIER(<Number>: "vrbl2")
     nBLOCK
       nBINARYOP(Unknown: ASSIGN)
         nBINARYOP(<Any>: SQUARE_OPEN)
@@ -462,12 +462,12 @@ arg2: <<
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "24")
 >>
-var1: <<
+vrbl1: <<
   nBINARYOP(<Any>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
-var2: <<
+vrbl2: <<
   nBINARYOP(<Number>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-16")

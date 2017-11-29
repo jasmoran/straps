@@ -13,8 +13,8 @@ nBLOCK
       nIDENTIFIER(<Any>: "arg1")
       nIDENTIFIER(<Any>: "arg2")
     nLIST
-      nIDENTIFIER(<Any>: "var1")
-      nIDENTIFIER(<Number>: "var2")
+      nIDENTIFIER(<Any>: "vrbl1")
+      nIDENTIFIER(<Number>: "vrbl2")
     nBLOCK
       nBINARYOP(Unknown: ASSIGN)
         nREGISTER(Unknown: "r13")

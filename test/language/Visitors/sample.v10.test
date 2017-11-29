@@ -12,13 +12,13 @@ class String (Character random_char) {
 
 func Any allocate(Number size)() {}
 
-func Boolean thisisafunction(Any arg1, Any arg2)(Any var1, Number var2) {
-	arg1 = var1
-	var2++
-	var1 += 1337
+func Boolean thisisafunction(Any arg1, Any arg2)(Any vrbl1, Number vrbl2) {
+	arg1 = vrbl1
+	vrbl2++
+	vrbl1 += 1337
 
 	# Let us test this thing out
-	true.as_string.random_char.toString().println(77, var2).deref
+	true.as_string.random_char.toString().println(77, vrbl2).deref
 
 	loop {
 		"oopsy daisy".println(1, 2)

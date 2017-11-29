@@ -24,12 +24,12 @@ arg2: <<
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "24")
 >>
-var1: <<
+vrbl1: <<
   nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
-var2: <<
+vrbl2: <<
   nBINARYOP(#Number#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-16")
@@ -38,16 +38,16 @@ var2: <<
       nIDENTIFIER(#Any#: "arg1")
       nIDENTIFIER(#Any#: "arg2")
     nLIST
-      nIDENTIFIER(#Any#: "var1")
-      nIDENTIFIER(#Number#: "var2")
+      nIDENTIFIER(#Any#: "vrbl1")
+      nIDENTIFIER(#Number#: "vrbl2")
     nBLOCK
       nBINARYOP(Unknown: ASSIGN)
         nIDENTIFIER(Unknown: "arg1")
-        nIDENTIFIER(Unknown: "var1")
+        nIDENTIFIER(Unknown: "vrbl1")
       nUNARYOP(Unknown: INCREMENT, right)
-        nIDENTIFIER(Unknown: "var2")
+        nIDENTIFIER(Unknown: "vrbl2")
       nBINARYOP(Unknown: ADD)
-        nIDENTIFIER(Unknown: "var1")
+        nIDENTIFIER(Unknown: "vrbl1")
         nNUMBER(#Number#: "1337")
       nBINARYOP(Unknown: DOT)
         nBINARYOP(Unknown: PAREN_OPEN)
@@ -64,7 +64,7 @@ var2: <<
             nIDENTIFIER(Unknown: "println")
           nCALL
             nNUMBER(#Number#: "77")
-            nIDENTIFIER(Unknown: "var2")
+            nIDENTIFIER(Unknown: "vrbl2")
         nIDENTIFIER(Unknown: "deref")
       nLOOP
         nBLOCK
@@ -327,12 +327,12 @@ arg2: <<
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "24")
 >>
-var1: <<
+vrbl1: <<
   nBINARYOP(#Any#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-8")
 >>
-var2: <<
+vrbl2: <<
   nBINARYOP(#Number#: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
     nNUMBER(#Number#: "-16")
