@@ -116,9 +116,26 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 
 			# Fix up dot if it resolved to a function
 			if (n.lhs.type == nBINARYOP)
-			if (binop.op == DOT)
-			if (binop.rhs.type == nFUNCTION)
-				n.lhs = binop.rhs
+			if (binop.op == DOT) {
+				if (binop.rhs.type == nFUNCTION) {
+					n.lhs = binop.rhs
+				}
+
+				# Virtual methods
+				if (binop.rhs.type == nBINARYOP) {
+					var BinaryOperationNode vtabaccess = binop.rhs
+					if (vtabaccess.lhs.type == nBINARYOP) {
+						vtabaccess = vtabaccess.lhs
+
+						# The LHS is NULL as it has to be replaced by the object
+						if (vtabaccess.lhs == 0) {
+							vtabaccess.lhs = binop.lhs
+							nn = binop.rhs
+							n.lhs = nn.m_visit(this)
+						}
+					}
+				}
+			}
 
 			# Inherit ret_type from function
 			sn = n.lhs

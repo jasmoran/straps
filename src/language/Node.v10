@@ -102,15 +102,20 @@ class StringNode(NodeType type, void m_visit, Type ret_type, String string) {
 
 
 
-func Node ClassNode_new(String name, ListNode fields, ListNode block)(void m_visit, Scope sc) {
+func Node ClassNode_new(String name, ListNode fields, ListNode block, Map vtable)(void m_visit, Scope sc) {
 	define N "ClassNode"
 	include "src/language/nodes/init.v10"
 	sc = scope
 	sc = Scope_new(name, sc)
-	return ClassNode_new(nCLASS, m_visit, name, fields, block, sc)
+	return ClassNode_new(nCLASS, m_visit, name, fields, block, sc, vtable)
 }
 
-class ClassNode(NodeType type, void m_visit, String name, ListNode fields, ListNode block, Scope scope) {
+func Node ClassNode_new(String name, ListNode fields, ListNode block) {
+	var Map vtable = 0
+	return ClassNode_new(name, fields, block, vtable)
+}
+
+class ClassNode(NodeType type, void m_visit, String name, ListNode fields, ListNode block, Scope scope, Map vtable) {
 	func void visit(Visitor v)() {
 		v.m_visit_ClassNode(this)
 	}

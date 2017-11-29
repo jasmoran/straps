@@ -203,6 +203,22 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 	}
 
 	func void visit(ClassNode n)() {
+		if (n.vtable == 0) return 0
+		"section .data\n_vtable_".print(this.stream)
+		n.name.print(this.stream)
+		":\ndq ".print(this.stream)
+
+		var array = n.vtable.values
+		var ix = 0
+		loop {
+			if (ix == array.length) { break }
+			var FunctionNode funnode = array.get(ix)
+			funnode.name.print(this.stream)
+			", ".print(this.stream)
+			ix++
+		}
+
+		"0\nsection .text".println(this.stream)
   	return 0
 	}
 

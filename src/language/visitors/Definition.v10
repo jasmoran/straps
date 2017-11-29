@@ -123,8 +123,12 @@ class Definition(?T) {
 			} else {
 				field.m_visit(this)
 
-				# Remove class nodes once they have been visited
-				if (field.type == nCLASS) n.children.remove(lln)
+				# Truncate class nodes once they have been visited
+				if (field.type == nCLASS) {
+					var ClassNode cn = field
+					lln.payload = ClassNode_new(cn.name, ListNode_new(nLIST),
+																			ListNode_new(nLIST), cn.vtable)
+				}
 			}
 
 			lln = lln.fwrd

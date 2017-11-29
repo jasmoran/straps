@@ -48,9 +48,32 @@ class Method(?T, ListNode pb, ClassNode cls) {
 		}
 
 		if (this.cls != 0) {
-			# Add method to scope of class
 			clone = n.shallow_clone()
-			this.cls.scope.set(n.name, clone.toNode())
+
+			if (this.cls.vtable == 0) {
+				# Add method (direct) to scope of class
+				this.cls.scope.set(n.name, clone.toNode())
+			} else {
+				# Add method to vtable of class
+				var Any a = n
+				this.cls.vtable.set(n.name, a)
+
+				# Find method offset in vtable
+				var offset = this.cls.vtable.get_pos(n.name)
+				offset << 3
+
+				# Add method (via vtable) to scope of class
+				var Node nullnode = 0
+				this.cls.scope.set(n.name, BinaryOperationNode_new(
+					n.ret_type,
+					SQUARE_OPEN,
+					BinaryOperationNode_new(Type_new(), DOT,
+						nullnode,
+						StringNode_new(nIDENTIFIER, Type_new(), "vt").toNode()
+					).toNode(),
+					StringNode_new(nNUMBER, Type_new("Number"), offset.toString()).toNode()
+				).toNode())
+			}
 
 			# Save new method name "_CLASS_METHOD"
 			length = n.name.length

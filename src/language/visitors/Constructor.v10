@@ -13,6 +13,7 @@ class Constructor(?T, ListNode pb, ListNode block, Node new_obj) {
 		this.new_obj = StringNode_new(nIDENTIFIER, Type_new(n.name), "obj")
 
 		size = n.fields.children.length
+		size++
 		size << 3
 
 		# Create allocate call + assign and append to block
@@ -33,6 +34,27 @@ class Constructor(?T, ListNode pb, ListNode block, Node new_obj) {
 		# Loop through fields
 		n.fields.visit_children(this.v)
 
+		var ListNode args = ListNode_new(nLIST, n.fields.children.shallow_clone())
+
+		# Add vtable
+		if (n.vtable != 0) {
+			# Add vtable to fields
+			var Node vt_ident = StringNode_new(nIDENTIFIER, Type_new(), "vt")
+			var Any a = vt_ident
+			n.fields.children.prepend(a)
+
+			var tabname = "_vtable_".clone(n.name.length).append(n.name)
+
+			# Assign vtable
+			this.block.append(
+				BinaryOperationNode_new(
+					ASSIGN,
+					BinaryOperationNode_new(DOT, this.new_obj, vt_ident).toNode(),
+					StringNode_new(nNASM, Type_new(), tabname).toNode()
+				).toNode()
+			)
+		}
+
 		# Create return node and append to block
 		this.block.append(
 			ReturnNode_new(this.new_obj).toNode()
@@ -43,7 +65,7 @@ class Constructor(?T, ListNode pb, ListNode block, Node new_obj) {
 			FunctionNode_new(
 				Type_new(n.name),
 				n.name.clone(4).append("_new"),
-				n.fields,
+				args,
 				ListNode_new(nLIST).append(this.new_obj),
 				this.block
 			).toNode()
