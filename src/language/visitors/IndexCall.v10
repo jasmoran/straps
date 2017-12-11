@@ -16,6 +16,38 @@ class IndexCall(?T, LinkedList parent_list, LinkedListNode parent_lln, Node scra
 	}
 
 	func void visit(BinaryOperationNode n)(Node nn, Boolean dumb_or, BinaryOperationNode child, ListNode args, LinkedListNode arg) {
+		if (n.op == PAREN_OPEN) {
+			# Loop through arguments from last to first
+			args = n.rhs
+			arg = args.children.last
+			loop {
+				if (arg == 0) break
+
+				# Visit argument
+				nn = arg.payload
+				nn = nn.m_visit(this)
+				if (nn != 0) arg.payload = nn
+
+				# Push each argment onto block
+				nn = arg.payload
+				this.prepend(
+					UnaryOperationNode_new(PUSH, nn, true).toNode()
+				)
+				arg = arg.back
+			}
+
+			# Visit left hand side
+			nn = n.lhs
+			nn = nn.m_visit(this)
+			if (nn != 0) n.lhs = nn
+
+			# Actually call function after pushing arguments
+			this.prepend(n.toNode())
+
+			# Replace with rax
+			return StringNode_new(nREGISTER, Type_new(), "rax")
+		}
+
 		# Visit left hand side
 		nn = n.lhs
 		nn = nn.m_visit(this)
@@ -24,6 +56,7 @@ class IndexCall(?T, LinkedList parent_list, LinkedListNode parent_lln, Node scra
 		dumb_or = false
 		if (n.op == DOT) dumb_or = true
 		if (n.op == SQUARE_OPEN) dumb_or = true
+
 		if (dumb_or == true) {
 			# Check if lhs is also DOT/SQUARE_OPEN
 			if (n.lhs.type == nBINARYOP) {
@@ -44,32 +77,6 @@ class IndexCall(?T, LinkedList parent_list, LinkedListNode parent_lln, Node scra
 					n.lhs = this.scratch_reg
 				}
 			}
-		} else if (n.op == PAREN_OPEN) {
-			# Loop through arguments from last to first
-			args = n.rhs
-			arg = args.children.last
-			loop {
-				if (arg == 0) break
-
-				# Visit argument
-				nn = arg.payload
-				nn = nn.m_visit(this)
-				if (nn != 0) arg.payload = nn
-
-				# Push each argment onto block
-				nn = arg.payload
-				this.prepend(
-					UnaryOperationNode_new(PUSH, nn, true).toNode()
-				)
-				arg = arg.back
-			}
-
-			# Actually call function after pushing arguments
-			this.prepend(n.toNode())
-
-			# Replace with rax
-			return StringNode_new(nREGISTER, Type_new(), "rax")
-
 		} else {
 			# Visit right hand side
 			this.scratch_reg = StringNode_new(nREGISTER, Type_new(), "r13")

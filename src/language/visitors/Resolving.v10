@@ -83,9 +83,13 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 
 			# Detect "pointer" methods, marked with m_
 			fixargs = true
-			if (sn.string.get(0) == 'm')
-			if (sn.string.get(1) == '_')
+			if (sn.string < 1000) {
 				fixargs = false
+			} else {
+				if (sn.string.get(0) == 'm')
+				if (sn.string.get(1) == '_')
+					fixargs = false
+			}
 
 			# Fix arguments into function name
 			if (sn.type == nIDENTIFIER)
@@ -100,6 +104,7 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 					field = lln.payload
 
 					# Append type to function name
+					if (field.ret_type.raw == 0) error("Unknown type in call to ", sn.string, "...")
 					sn.string.append('_').append(field.ret_type.raw)
 
 					lln = lln.fwrd
@@ -125,6 +130,7 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 			n.lhs = nn.m_visit(this)
 
 			# Fix up dot if it resolved to a function
+			binop = n.lhs
 			if (n.lhs.type == nBINARYOP)
 			if (binop.op == DOT) {
 				if (binop.rhs.type == nFUNCTION) {
@@ -132,18 +138,16 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 				}
 
 				# Virtual methods
-				if (binop.rhs.type == nBINARYOP) {
-					var BinaryOperationNode vtabaccess = binop.rhs
-					if (vtabaccess.lhs.type == nBINARYOP) {
-						vtabaccess = vtabaccess.lhs
-
-						# The LHS is NULL as it has to be replaced by the object
-						if (vtabaccess.lhs == 0) {
-							vtabaccess.lhs = binop.lhs
-							nn = binop.rhs
-							n.lhs = nn.m_visit(this)
-						}
-					}
+				if (binop.rhs.type == nVTAB_ACCESS) {
+					var StringNode vtab_off = binop.rhs
+					n.lhs = BinaryOperationNode_new(
+						vtab_off.ret_type, SQUARE_OPEN,
+						BinaryOperationNode_new(Type_new(), SQUARE_OPEN,
+							binop.lhs,
+							StringNode_new(nNUMBER, Type_new(), "0").toNode()
+						).toNode(),
+						StringNode_new(nNUMBER, Type_new(), vtab_off.string).toNode()
+					).toNode()
 				}
 			}
 

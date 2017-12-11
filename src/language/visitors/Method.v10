@@ -85,16 +85,9 @@ class Method(?T, ListNode pb, ClassNode cls) {
 				offset << 3
 
 				# Add method (via vtable) to scope of class
-				var Node nullnode = 0
-				this.cls.scope.set(cls_scope_name, BinaryOperationNode_new(
-					n.ret_type,
-					SQUARE_OPEN,
-					BinaryOperationNode_new(Type_new(), DOT,
-						nullnode,
-						StringNode_new(nIDENTIFIER, Type_new(), "vt").toNode()
-					).toNode(),
-					StringNode_new(nNUMBER, Type_new("Number"), offset.toString()).toNode()
-				).toNode())
+				this.cls.scope.set(cls_scope_name,
+					StringNode_new(nVTAB_ACCESS, n.ret_type, offset.toString()).toNode()
+				)
 			}
 
 			# Save new method name "_CLASS_METHOD"
