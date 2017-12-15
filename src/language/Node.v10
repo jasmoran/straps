@@ -14,18 +14,12 @@ class NodeType() {
 	}
 }
 
-func Node Node_new(NodeType type)(void m_visit) {
-	define N "Node"
-	include "src/language/nodes/init.v10"
-	return Node_new(type, m_visit)
-}
-
-class Node(NodeType type, void m_visit) {
-	func void visit(Visitor v)() {
-		v.m_visit_Node(this)
+class virtual Node(NodeType type) {
+	func void accept(Visitor v)() {
+		v.visit(this)
 	}
 
-	func void visit_children(Visitor v)() {}
+	func void accept_children(Visitor v)() {}
 
 	func Node toNode()() { return this }
 }
@@ -35,23 +29,21 @@ class Node(NodeType type, void m_visit) {
 func BinaryOperationNode BinaryOperationNode_new(Token op, Node lhs, Node rhs)() {
 	return BinaryOperationNode_new(Type_new(), op, lhs, rhs)
 }
-func BinaryOperationNode BinaryOperationNode_new(Type ret_type, Token op, Node lhs, Node rhs)(void m_visit) {
-	define N "BinaryOperationNode"
-	include "src/language/nodes/init.v10"
-	return BinaryOperationNode_new(nBINARYOP, m_visit, ret_type, op, lhs, rhs)
+func BinaryOperationNode BinaryOperationNode_new(Type ret_type, Token op, Node lhs, Node rhs)() {
+	return BinaryOperationNode_new(nBINARYOP, ret_type, op, lhs, rhs)
 }
 
-class BinaryOperationNode(NodeType type, void m_visit, Type ret_type, Token op, Node lhs, Node rhs) {
-	func void visit(Visitor v)() {
-		v.m_visit_BinaryOperationNode(this)
+class virtual BinaryOperationNode(NodeType type, Type ret_type, Token op, Node lhs, Node rhs) {
+	func void accept(Visitor v)() {
+		v.visit(this)
 	}
 
-	func void visit_children(Visitor v)(Node n) {
+	func void accept_children(Visitor v)(Node n) {
 		n = this.lhs
-		n = n.m_visit(v)
+		n = n.accept(v)
 		if (n != 0) this.lhs = n
 		n = this.rhs
-		n = n.m_visit(v)
+		n = n.accept(v)
 		if (n != 0) this.rhs = n
 	}
 
@@ -62,20 +54,18 @@ class BinaryOperationNode(NodeType type, void m_visit, Type ret_type, Token op, 
 func UnaryOperationNode UnaryOperationNode_new(Token op, Node expr, Boolean left)() {
 	return UnaryOperationNode_new(Type_new(), op, expr, left)
 }
-func UnaryOperationNode UnaryOperationNode_new(Type ret_type, Token op, Node expr, Boolean left)(void m_visit) {
-	define N "UnaryOperationNode"
-	include "src/language/nodes/init.v10"
-	return UnaryOperationNode_new(nUNARYOP, m_visit, ret_type, op, expr, left)
+func UnaryOperationNode UnaryOperationNode_new(Type ret_type, Token op, Node expr, Boolean left)() {
+	return UnaryOperationNode_new(nUNARYOP, ret_type, op, expr, left)
 }
 
-class UnaryOperationNode(NodeType type, void m_visit, Type ret_type, Token op, Node expr, Boolean left) {
-	func void visit(Visitor v)() {
-		v.m_visit_UnaryOperationNode(this)
+class virtual UnaryOperationNode(NodeType type, Type ret_type, Token op, Node expr, Boolean left) {
+	func void accept(Visitor v)() {
+		v.visit(this)
 	}
 
-	func void visit_children(Visitor v)(Node n) {
+	func void accept_children(Visitor v)(Node n) {
 		n = this.expr
-		n = n.m_visit(v)
+		n = n.accept(v)
 		if (n != 0) this.expr = n
 	}
 
@@ -84,30 +74,23 @@ class UnaryOperationNode(NodeType type, void m_visit, Type ret_type, Token op, N
 
 
 
-func StringNode StringNode_new(NodeType type, Type ret_type, String string)(void m_visit) {
-	define N "StringNode"
-	include "src/language/nodes/init.v10"
-	return StringNode_new(type, m_visit, ret_type, string)
-}
 
-class StringNode(NodeType type, void m_visit, Type ret_type, String string) {
-	func void visit(Visitor v)() {
-		v.m_visit_StringNode(this)
+class virtual StringNode(NodeType type, Type ret_type, String string) {
+	func void accept(Visitor v)() {
+		v.visit(this)
 	}
 
-	func void visit_children(Visitor v)() {}
+	func void accept_children(Visitor v)() {}
 
 	func Node toNode()() { return this }
 }
 
 
 
-func Node ClassNode_new(String name, ListNode fields, ListNode block, Map vtable, Type parent)(void m_visit, Scope sc) {
-	define N "ClassNode"
-	include "src/language/nodes/init.v10"
+func Node ClassNode_new(String name, ListNode fields, ListNode block, Map vtable, Type parent)(Scope sc) {
 	sc = scope
 	sc = Scope_new(name, sc)
-	return ClassNode_new(nCLASS, m_visit, name, fields, block, sc, vtable, parent)
+	return ClassNode_new(nCLASS, name, fields, block, sc, vtable, parent)
 }
 
 func Node ClassNode_new(String name, ListNode fields, ListNode block) {
@@ -116,18 +99,18 @@ func Node ClassNode_new(String name, ListNode fields, ListNode block) {
 	return ClassNode_new(name, fields, block, vtable, parent)
 }
 
-class ClassNode(NodeType type, void m_visit, String name, ListNode fields,
+class virtual ClassNode(NodeType type, String name, ListNode fields,
 								ListNode block, Scope scope, Map vtable, Type parent) {
-	func void visit(Visitor v)() {
-		v.m_visit_ClassNode(this)
+	func void accept(Visitor v)() {
+		v.visit(this)
 	}
 
-	func void visit_children(Visitor v)(Node n) {
+	func void accept_children(Visitor v)(Node n) {
 		n = this.fields
-		n = n.m_visit(v)
+		n = n.accept(v)
 		if (n != 0) this.fields = n
 		n = this.block
-		n = n.m_visit(v)
+		n = n.accept(v)
 		if (n != 0) this.block = n
 	}
 
@@ -136,28 +119,26 @@ class ClassNode(NodeType type, void m_visit, String name, ListNode fields,
 
 
 
-func Node FunctionNode_new(Type ret_type, String name, ListNode args, ListNode vrbls, ListNode block)(void m_visit, Scope sc) {
-	define N "FunctionNode"
-	include "src/language/nodes/init.v10"
+func FunctionNode FunctionNode_new(Type ret_type, String name, ListNode args, ListNode vrbls, ListNode block)(Scope sc) {
 	sc = scope
 	sc = Scope_new(name, sc)
-	return FunctionNode_new(nFUNCTION, m_visit, ret_type, name, args, vrbls, block, sc)
+	return FunctionNode_new(nFUNCTION, ret_type, name, args, vrbls, block, sc)
 }
 
-class FunctionNode(NodeType type, void m_visit, Type ret_type, String name, ListNode args, ListNode vrbls, ListNode block, Scope scope) {
-	func void visit(Visitor v)() {
-		v.m_visit_FunctionNode(this)
+class virtual FunctionNode(NodeType type, Type ret_type, String name, ListNode args, ListNode vrbls, ListNode block, Scope scope) {
+	func void accept(Visitor v)() {
+		v.visit(this)
 	}
 
-	func void visit_children(Visitor v)(Node n) {
+	func void accept_children(Visitor v)(Node n) {
 		n = this.args
-		n = n.m_visit(v)
+		n = n.accept(v)
 		if (n != 0) this.args = n
 		n = this.vrbls
-		n = n.m_visit(v)
+		n = n.accept(v)
 		if (n != 0) this.vrbls = n
 		n = this.block
-		n = n.m_visit(v)
+		n = n.accept(v)
 		if (n != 0) this.block = n
 	}
 
@@ -172,26 +153,21 @@ class FunctionNode(NodeType type, void m_visit, Type ret_type, String name, List
 
 
 
-func ListNode ListNode_new(NodeType type, LinkedList children)(void m_visit) {
-	define N "ListNode"
-	include "src/language/nodes/init.v10"
-	return ListNode_new(type, m_visit, children)
-}
 func ListNode ListNode_new(NodeType type)() {
 	return ListNode_new(type, LinkedList_new())
 }
 
-class ListNode(NodeType type, void m_visit, LinkedList children) {
-	func void visit(Visitor v)() {
-		v.m_visit_ListNode(this)
+class virtual ListNode(NodeType type, LinkedList children) {
+	func void accept(Visitor v)() {
+		v.visit(this)
 	}
 
-	func void visit_children(Visitor v)(Node n, LinkedListNode lln) {
+	func void accept_children(Visitor v)(Node n, LinkedListNode lln) {
 		lln = this.children.first
 		loop {
 			if (lln == 0) { break }
 			n = lln.payload
-			n = n.m_visit(v)
+			n = n.accept(v)
 			if (n != 0) lln.payload = n
 			lln = lln.fwrd
 		}
@@ -214,28 +190,26 @@ class ListNode(NodeType type, void m_visit, LinkedList children) {
 
 
 
-func Node IfNode_new(Node condition, ListNode block_if)(ListNode l, void m_visit) {
-	define N "IfNode"
-	include "src/language/nodes/init.v10"
+func Node IfNode_new(Node condition, ListNode block_if)(ListNode l) {
 	l = 0
-	return IfNode_new(nIF, m_visit, condition, block_if, l)
+	return IfNode_new(nIF, condition, block_if, l)
 }
 
-class IfNode(NodeType type, void m_visit, Node condition, ListNode block_if, ListNode block_else) {
-	func void visit(Visitor v)() {
-		v.m_visit_IfNode(this)
+class virtual IfNode(NodeType type, Node condition, ListNode block_if, ListNode block_else) {
+	func void accept(Visitor v)() {
+		v.visit(this)
 	}
 
-	func void visit_children(Visitor v)(Node n) {
+	func void accept_children(Visitor v)(Node n) {
 		n = this.condition
-		n = n.m_visit(v)
+		n = n.accept(v)
 		if (n != 0) this.condition = n
 		n = this.block_if
-		n = n.m_visit(v)
+		n = n.accept(v)
 		if (n != 0) this.block_if = n
 		n = this.block_else
 		if (n != 0) {
-			n = n.m_visit(v)
+			n = n.accept(v)
 			if (n != 0) this.block_else = n
 		}
 	}
@@ -245,20 +219,18 @@ class IfNode(NodeType type, void m_visit, Node condition, ListNode block_if, Lis
 
 
 
-func Node LoopNode_new(ListNode block)(void m_visit) {
-	define N "LoopNode"
-	include "src/language/nodes/init.v10"
-	return LoopNode_new(nLOOP, m_visit, block)
+func Node LoopNode_new(ListNode block)() {
+	return LoopNode_new(nLOOP, block)
 }
 
-class LoopNode(NodeType type, void m_visit, ListNode block) {
-	func void visit(Visitor v)() {
-		v.m_visit_LoopNode(this)
+class virtual LoopNode(NodeType type, ListNode block) {
+	func void accept(Visitor v)() {
+		v.visit(this)
 	}
 
-	func void visit_children(Visitor v)(Node n) {
+	func void accept_children(Visitor v)(Node n) {
 		n = this.block
-		n = n.m_visit(v)
+		n = n.accept(v)
 		if (n != 0) this.block = n
 	}
 
@@ -267,20 +239,18 @@ class LoopNode(NodeType type, void m_visit, ListNode block) {
 
 
 
-func Node ReturnNode_new(Node expr)(void m_visit) {
-	define N "ReturnNode"
-	include "src/language/nodes/init.v10"
-	return ReturnNode_new(nRETURN, m_visit, expr)
+func Node ReturnNode_new(Node expr)() {
+	return ReturnNode_new(nRETURN, expr)
 }
 
-class ReturnNode(NodeType type, void m_visit, Node expr) {
-	func void visit(Visitor v)() {
-		v.m_visit_ReturnNode(this)
+class virtual ReturnNode(NodeType type, Node expr) {
+	func void accept(Visitor v)() {
+		v.visit(this)
 	}
 
-	func void visit_children(Visitor v)(Node n) {
+	func void accept_children(Visitor v)(Node n) {
 		n = this.expr
-		n = n.m_visit(v)
+		n = n.accept(v)
 		if (n != 0) this.expr = n
 	}
 
@@ -289,20 +259,18 @@ class ReturnNode(NodeType type, void m_visit, Node expr) {
 
 
 
-func Node EnumNode_new(String name, ListNode values)(void m_visit) {
-	define N "EnumNode"
-	include "src/language/nodes/init.v10"
-	return EnumNode_new(nENUM, m_visit, name, values)
+func Node EnumNode_new(String name, ListNode values)() {
+	return EnumNode_new(nENUM, name, values)
 }
 
-class EnumNode(NodeType type, void m_visit, String name, ListNode values) {
-	func void visit(Visitor v)() {
-		v.m_visit_EnumNode(this)
+class virtual EnumNode(NodeType type, String name, ListNode values) {
+	func void accept(Visitor v)() {
+		v.visit(this)
 	}
 
-	func void visit_children(Visitor v)(Node n) {
+	func void accept_children(Visitor v)(Node n) {
 		n = this.values
-		n = n.m_visit(v)
+		n = n.accept(v)
 		if (n != 0) this.values = n
 	}
 

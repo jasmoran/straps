@@ -1,10 +1,9 @@
-func Printer Printer_new(Number indent, Stream s, Number depth, Boolean print_scope)(?T) {
-	define V "Printer"
-	include "src/language/visitors/init.v10"
+func Printer Printer_new(Number indent, Stream s, Number depth, Boolean print_scope)() {
 	depth += indent
-	v = Printer_new(?U, indent, s, depth, print_scope)
-	v.v = v
-	return v
+	var Visitor v = 0
+	var pr = Printer_new(v, indent, s, depth, print_scope)
+	pr.v = pr
+	return pr
 }
 
 func Printer Printer_new(Number indent, Stream s, Number depth)() {
@@ -19,7 +18,7 @@ func Printer Printer_new()() {
 	return Printer_new(0, STDOUT, 9999)
 }
 
-class Printer(?T, Number indent, Stream s, Number depth, Boolean print_scope) {
+class virtual Printer < Visitor (Visitor v, Number indent, Stream s, Number depth, Boolean print_scope) {
 	func void pi()(Number i) {
 		i = this.indent loop { if (i <= 0) { break } "  ".print(this.s) i-- }
 	}
@@ -43,7 +42,7 @@ class Printer(?T, Number indent, Stream s, Number depth, Boolean print_scope) {
 		")\n".print(this.s)
 
 		this.indent++
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 		this.indent--
 
   	return 0
@@ -66,7 +65,7 @@ class Printer(?T, Number indent, Stream s, Number depth, Boolean print_scope) {
 		")\n".print(this.s)
 
 		this.indent++
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 		this.indent--
 
   	return 0
@@ -95,7 +94,7 @@ class Printer(?T, Number indent, Stream s, Number depth, Boolean print_scope) {
 		if (this.print_scope == true) n.scope.print()
 
 		this.indent++
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 		this.indent--
 
   	return 0
@@ -113,7 +112,7 @@ class Printer(?T, Number indent, Stream s, Number depth, Boolean print_scope) {
 		if (this.print_scope == true) n.scope.print()
 
 		this.indent++
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 		this.indent--
 
   	return 0
@@ -125,7 +124,7 @@ class Printer(?T, Number indent, Stream s, Number depth, Boolean print_scope) {
 		n.type.toString().println(this.s)
 
 		this.indent++
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 		this.indent--
 
   	return 0
@@ -137,7 +136,7 @@ class Printer(?T, Number indent, Stream s, Number depth, Boolean print_scope) {
 		n.type.toString().println(this.s)
 
 		this.indent++
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 		this.indent--
 
   	return 0
@@ -149,7 +148,7 @@ class Printer(?T, Number indent, Stream s, Number depth, Boolean print_scope) {
 		n.type.toString().println(this.s)
 
 		this.indent++
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 		this.indent--
 
   	return 0
@@ -161,7 +160,7 @@ class Printer(?T, Number indent, Stream s, Number depth, Boolean print_scope) {
 		n.type.toString().println(this.s)
 
 		this.indent++
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 		this.indent--
 
   	return 0
@@ -176,7 +175,7 @@ class Printer(?T, Number indent, Stream s, Number depth, Boolean print_scope) {
 		")\n".print(this.s)
 
 		this.indent++
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 		this.indent--
 
 		return 0

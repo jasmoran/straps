@@ -1,7 +1,4 @@
-func Dump Dump_new(Stream stream)(?T, Any a, Array binops, Array scallreg, Boolean top) {
-	define V "Dump"
-	include "src/language/visitors/init.v10"
-
+func Dump Dump_new(Stream stream)(Any a, Array binops, Array scallreg, Boolean top) {
 	binops = Array_new(5)
 	a = "add "
 	binops.append(a)
@@ -32,12 +29,13 @@ func Dump Dump_new(Stream stream)(?T, Any a, Array binops, Array scallreg, Boole
 
 	top = true
 
-	v = Dump_new(?U, binops, scallreg, top, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true, stream, " ")
-	v.v = v
-	return v
+	var Visitor v = 0
+	var dump = Dump_new(v, binops, scallreg, top, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true, stream, " ")
+	dump.v = dump
+	return dump
 }
 
-class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
+class virtual Dump < Visitor (Visitor v, Array binops, Array scallreg, Boolean top, Number counter,
 					 String trueLabel, String falseLabel, String target, Boolean negate,
 					 Stream stream, String idloop) {
 	func void visit(Node n)() {
@@ -60,13 +58,13 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 				fun.name.print(this.stream)
 			} else {
 				nn = n.lhs
-				nn.m_visit(this)
+				nn.accept(this.v)
 			}
 			"\n".print(this.stream)
 		} else if (n.op == DOT) {
 			"QWORD[".print(this.stream)
 			nn = n.lhs
-			nn.m_visit(this)
+			nn.accept(this.v)
 			num = n.rhs
 			if (num.string.get(0) != '-')
 				"+".print(this.stream)
@@ -75,7 +73,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 		} else if (n.op == SQUARE_OPEN) {
 			"QWORD[".print(this.stream)
 			nn = n.lhs
-			nn.m_visit(this)
+			nn.accept(this.v)
 			num = n.rhs
 			if (num.string.get(0) != '-')
 				"+".print(this.stream)
@@ -88,7 +86,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 			this.target = this.trueLabel
 			this.negate = false
 			nn = n.lhs
-			nn.m_visit(this)
+			nn.accept(this.v)
 
 			this.falseLabel.print(this.stream)
 			":".println(this.stream)
@@ -97,7 +95,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 			this.target = this.trueLabel
 			this.negate = false
 			nn = n.rhs
-			nn.m_visit(this)
+			nn.accept(this.v)
 
 			"jmp ".print(this.stream)
 			this.falseLabel.println(this.stream)
@@ -108,7 +106,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 			this.target = this.falseLabel
 			this.negate = true
 			nn = n.lhs
-			nn.m_visit(this)
+			nn.accept(this.v)
 
 			this.trueLabel.print(this.stream)
 			":".println(this.stream)
@@ -117,7 +115,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 			this.target = this.falseLabel
 			this.negate = true
 			nn = n.rhs
-			nn.m_visit(this)
+			nn.accept(this.v)
 			"jmp ".print(this.stream)
 
 			this.trueLabel.println(this.stream)
@@ -132,10 +130,10 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 
 				op.print(this.stream)
 				nn = n.lhs
-				nn.m_visit(this)
+				nn.accept(this.v)
 				", ".print(this.stream)
 				nn = n.rhs
-				nn.m_visit(this)
+				nn.accept(this.v)
 				"\n".print(this.stream)
 				return 0
 			}
@@ -145,10 +143,10 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 			if (n.op <= LESS_EQ) {
 				"cmp ".print(this.stream)
 				nn = n.lhs
-				nn.m_visit(this)
+				nn.accept(this.v)
 				", ".print(this.stream)
 				nn = n.rhs
-				nn.m_visit(this)
+				nn.accept(this.v)
 				"\n".print(this.stream)
 
 				if (this.negate == true) {
@@ -184,7 +182,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 		else if (n.op == PUSH) "push ".print(this.stream)
 		else error("Can't use ", n.op.toString(), " as a unary operator")
 
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 		"\n".print(this.stream)
   	return 0
 	}
@@ -235,7 +233,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 		"push r12\npush r13".println(this.stream)
 
 		# Dump block
-		n.block.visit(this.v)
+		n.block.accept(this.v)
 
 		".ret:".println(this.stream)
 		if (n.name.equal("main") == 1) {
@@ -265,7 +263,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 				s = this.scallreg.get(ix)
 				s.print(this.stream)
 				", ".print(this.stream)
-				nn.m_visit(this)
+				nn.accept(this.v)
 				"\n".print(this.stream)
 				ix++
 
@@ -278,7 +276,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 			loop {
 				if (lln == 0) { break }
 				nn = lln.payload
-				nn.m_visit(this)
+				nn.accept(this.v)
 				": resq 1".println(this.stream)
 
 				lln = lln.fwrd
@@ -323,7 +321,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 				if (lln == 0) { break }
 				nn = lln.payload
 				", ".print(this.stream)
-				nn.m_visit(this)
+				nn.accept(this.v)
 				lln = lln.fwrd.fwrd
 			}
 
@@ -338,7 +336,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 				if (lln == 0) { break }
 				nn = lln.payload
 				", ".print(this.stream)
-				nn.m_visit(this)
+				nn.accept(this.v)
 				lln = lln.fwrd
 				if (lln == 0) { break }
 				lln = lln.fwrd
@@ -346,7 +344,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 
 			"\nsection .text".println(this.stream)
 		} else {
-			n.visit_children(this.v)
+			n.accept_children(this.v)
 		}
 
   	return 0
@@ -365,11 +363,11 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 		this.target = this.falseLabel
 		this.negate = true
 		nn = n.condition
-		nn.m_visit(this)
+		nn.accept(this.v)
 
 		this.trueLabel.print(this.stream)
 		":".println(this.stream)
-		n.block_if.visit(this.v)
+		n.block_if.accept(this.v)
 
 		endLabel = this.createLabel(".endIf")
 		if (n.block_else != 0) {
@@ -379,7 +377,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 		this.falseLabel.print(this.stream)
 		":".println(this.stream)
 		if (n.block_else != 0) {
-			n.block_else.visit(this.v)
+			n.block_else.accept(this.v)
 			endLabel.print(this.stream)
 			":".println(this.stream)
 		}
@@ -401,7 +399,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 		this.idloop.print(this.stream)
 		":\n".print(this.stream)
 
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 
 		"jmp .loop_".print(this.stream)
 		this.idloop.println(this.stream)
@@ -416,7 +414,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 
 	func void visit(ReturnNode n)() {
 		"mov rax, ".print(this.stream)
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 		"\njmp .ret".println(this.stream)
   	return 0
 	}
@@ -437,7 +435,7 @@ class Dump(?T, Array binops, Array scallreg, Boolean top, Number counter,
 			if (lln == 0) { break }
 			nn = lln.payload
 			", ".print(this.stream)
-			nn.m_visit(this)
+			nn.accept(this.v)
 			lln = lln.fwrd
 		}
 

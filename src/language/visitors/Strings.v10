@@ -1,12 +1,11 @@
-func Strings Strings_new()(?T) {
-	define V "Strings"
-	include "src/language/visitors/init.v10"
-	v = Strings_new(?U, 0, ListNode_new(nSTRINGS), true, false)
-	v.v = v
-	return v
+func Strings Strings_new()() {
+	var Visitor v = 0
+	var str = Strings_new(v, 0, ListNode_new(nSTRINGS), true, false)
+	str.v = str
+	return str
 }
 
-class Strings(?T, Number counter, ListNode strings, Boolean root, Boolean do_idents) {
+class virtual Strings < Visitor (Visitor v, Number counter, ListNode strings, Boolean root, Boolean do_idents) {
 	func void addString(StringNode n)() {
 		this.strings.append(StringNode_new(nSTRING, Type_new(), n.string).toNode())
 		n.string = "string_".clone(4).append(this.counter.toString())
@@ -33,56 +32,14 @@ class Strings(?T, Number counter, ListNode strings, Boolean root, Boolean do_ide
 			return 0
 		}
 
-		n.visit_children(this.v)
+		n.accept_children(this.v)
   	return 0
 	}
 
 	func void visit(EnumNode n)() {
 		this.do_idents = true
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 		this.do_idents = false
 		return 0
-	}
-
-
-
-
-	func void visit(Node n)() {
-  	return 0
-	}
-
-	func void visit(BinaryOperationNode n)() {
-		n.visit_children(this.v)
-  	return 0
-	}
-
-	func void visit(UnaryOperationNode n)() {
-		n.visit_children(this.v)
-  	return 0
-	}
-
-	func void visit(ClassNode n)() {
-		n.visit_children(this.v)
-  	return 0
-	}
-
-	func void visit(FunctionNode n)() {
-		n.visit_children(this.v)
-  	return 0
-	}
-
-	func void visit(IfNode n)() {
-		n.visit_children(this.v)
-  	return 0
-	}
-
-	func void visit(LoopNode n)() {
-		n.visit_children(this.v)
-  	return 0
-	}
-
-	func void visit(ReturnNode n)() {
-		n.visit_children(this.v)
-  	return 0
 	}
 }

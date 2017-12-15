@@ -1,13 +1,12 @@
-func Resolving Resolving_new()(?T, Scope sc) {
-	define V "Resolving"
-	include "src/language/visitors/init.v10"
+func Resolving Resolving_new()(Scope sc) {
 	sc = scope
-	v = Resolving_new(?U, sc, true)
-	v.v = v
-	return v
+	var Visitor v = 0
+	var res = Resolving_new(v, sc, true)
+	res.v = res
+	return res
 }
 
-class Resolving(?T, Scope scope, Boolean resolve_idents) {
+class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_idents) {
 	func void visit(StringNode n)(Node replacement) {
 		n.ret_type.resolve(this.scope)
 		if (n.type == nIDENTIFIER) {
@@ -23,10 +22,10 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 
 		# Dont resolve identifiers in vars and args
 		this.resolve_idents = false
-		n.args.visit(this.v)
-		n.vrbls.visit(this.v)
+		n.args.accept(this.v)
+		n.vrbls.accept(this.v)
 		this.resolve_idents = true
-		n.block.visit(this.v)
+		n.block.accept(this.v)
 
 		this.scope = prev_scope
 		return n
@@ -40,7 +39,7 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 		if (n.op == DOT) {
 			# Resolve first item
 			sn = n.lhs
-			n.lhs = sn.m_visit(this)
+			n.lhs = sn.accept(this.v)
 
 			# Save current scope
 			prev_scope = this.scope
@@ -53,7 +52,7 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 
 			# Resolve second item
 			sn = n.rhs
-			n.rhs = sn.m_visit(this)
+			n.rhs = sn.accept(this.v)
 
 			# Inherit ret_type from rhs
 			sn = n.rhs
@@ -79,7 +78,7 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 			}
 
 			# Resolve arguments
-			n.rhs = args.m_visit(this)
+			n.rhs = args.accept(this.v)
 
 			# Detect "pointer" methods, marked with m_
 			fixargs = true
@@ -119,7 +118,7 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 
 					if (sn.type == nIDENTIFIER) {
 						nn = binop.lhs
-						nn = nn.m_visit(this)
+						nn = nn.accept(this.v)
 						args.prepend(nn)
 					}
 				}
@@ -127,7 +126,7 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 
 			# Resolve function
 			nn = n.lhs
-			n.lhs = nn.m_visit(this)
+			n.lhs = nn.accept(this.v)
 
 			# Fix up dot if it resolved to a function
 			binop = n.lhs
@@ -167,58 +166,23 @@ class Resolving(?T, Scope scope, Boolean resolve_idents) {
 				field = n.lhs
 
 				nn = n.rhs
-				n.rhs = nn.m_visit(this)
+				n.rhs = nn.accept(this.v)
 				sn = n.rhs
 
 				field.ret_type = sn.ret_type
 			}
 		}
 
-		n.visit_children(this.v)
+		n.accept_children(this.v)
 
 		return n
 	}
 
 	func void visit(ListNode n)() {
 		if (n.type != nGLOBAL) {
-			n.visit_children(this.v)
+			n.accept_children(this.v)
 		}
 
 		return n
 	}
-
-	func void visit(EnumNode n)() {
-		return n
-	}
-
-
-	func void visit(ClassNode n)() {
-		n.visit_children(this.v)
-		return n
-	}
-
-	func void visit(Node n)() {
-		return n
-	}
-
-	func void visit(UnaryOperationNode n)() {
-		n.visit_children(this.v)
-		return n
-	}
-
-	func void visit(IfNode n)() {
-		n.visit_children(this.v)
-		return n
-	}
-
-	func void visit(LoopNode n)() {
-		n.visit_children(this.v)
-		return n
-	}
-
-	func void visit(ReturnNode n)() {
-		n.visit_children(this.v)
-		return n
-	}
-
 }

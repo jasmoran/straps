@@ -1,14 +1,13 @@
-func IndexCall IndexCall_new()(?T, LinkedList pl, LinkedListNode plln) {
-	define V "IndexCall"
-	include "src/language/visitors/init.v10"
+func IndexCall IndexCall_new()(LinkedList pl, LinkedListNode plln) {
 	pl = 0
 	plln = 0
-	v = IndexCall_new(?U, pl, plln, StringNode_new(nREGISTER, Type_new(), "r12").toNode())
-	v.v = v
-	return v
+	var Visitor v = 0
+	var ixc = IndexCall_new(v, pl, plln, StringNode_new(nREGISTER, Type_new(), "r12").toNode())
+	ixc.v = ixc
+	return ixc
 }
 
-class IndexCall(?T, LinkedList parent_list, LinkedListNode parent_lln, Node scratch_reg) {
+class virtual IndexCall < Visitor (Visitor v, LinkedList parent_list, LinkedListNode parent_lln, Node scratch_reg) {
 	func void prepend(Node child)(Any a) {
 		if (this.parent_list == 0) error("Attempted to prepend when not enclosed by a block")
 		a = child
@@ -25,7 +24,7 @@ class IndexCall(?T, LinkedList parent_list, LinkedListNode parent_lln, Node scra
 
 				# Visit argument
 				nn = arg.payload
-				nn = nn.m_visit(this)
+				nn = nn.accept(this.v)
 				if (nn != 0) arg.payload = nn
 
 				# Push each argment onto block
@@ -38,7 +37,7 @@ class IndexCall(?T, LinkedList parent_list, LinkedListNode parent_lln, Node scra
 
 			# Visit left hand side
 			nn = n.lhs
-			nn = nn.m_visit(this)
+			nn = nn.accept(this.v)
 			if (nn != 0) n.lhs = nn
 
 			# Actually call function after pushing arguments
@@ -50,7 +49,7 @@ class IndexCall(?T, LinkedList parent_list, LinkedListNode parent_lln, Node scra
 
 		# Visit left hand side
 		nn = n.lhs
-		nn = nn.m_visit(this)
+		nn = nn.accept(this.v)
 		if (nn != 0) n.lhs = nn
 
 		dumb_or = false
@@ -81,7 +80,7 @@ class IndexCall(?T, LinkedList parent_list, LinkedListNode parent_lln, Node scra
 			# Visit right hand side
 			this.scratch_reg = StringNode_new(nREGISTER, Type_new(), "r13")
 			nn = n.rhs
-			nn = nn.m_visit(this)
+			nn = nn.accept(this.v)
 			if (nn != 0) n.rhs = nn
 
 			child = n.rhs
@@ -119,7 +118,7 @@ class IndexCall(?T, LinkedList parent_list, LinkedListNode parent_lln, Node scra
 				prev_lln = this.parent_lln
 				this.parent_lln = lln
 
-				n = n.m_visit(this)
+				n = n.accept(this.v)
 
 				this.parent_lln = prev_lln
 
@@ -134,56 +133,9 @@ class IndexCall(?T, LinkedList parent_list, LinkedListNode parent_lln, Node scra
 
 			this.parent_list = prev_list
 		} else {
-			n.visit_children(this.v)
+			n.accept_children(this.v)
 		}
 
-		return 0
-	}
-
-
-
-
-
-	func void visit(Node n)() {
-  	return 0
-	}
-
-	func void visit(UnaryOperationNode n)() {
-		n.visit_children(this.v)
-  	return 0
-	}
-
-	func void visit(StringNode n)() {
-  	return 0
-	}
-
-	func void visit(ClassNode n)() {
-		n.visit_children(this.v)
-  	return 0
-	}
-
-	func void visit(FunctionNode n)() {
-		n.visit_children(this.v)
-  	return 0
-	}
-
-	func void visit(IfNode n)() {
-		n.visit_children(this.v)
-  	return 0
-	}
-
-	func void visit(LoopNode n)() {
-		n.visit_children(this.v)
-  	return 0
-	}
-
-	func void visit(ReturnNode n)() {
-		n.visit_children(this.v)
-  	return 0
-	}
-
-	func void visit(EnumNode n)() {
-		n.visit_children(this.v)
 		return 0
 	}
 }

@@ -44,7 +44,7 @@ class Scope (String name, Scope parent, Map scope) {
 			value = this.scope.values.get(index)
 			key.print()
 			": <<".println()
-			value.m_visit(printer)
+			value.accept(printer)
 			">>".println()
 			index++
 		}
