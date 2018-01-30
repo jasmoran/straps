@@ -9,21 +9,9 @@ def run(program, leave_asm, leave_bin, input = [])
 	o = bin + '.o'
 
 	# Execution
-	res = `./bin/v10 #{program} #{asm} 2>&1`
+	res = `bin/straps #{program} #{bin} 2>&1`
 	if $?.to_i == 256
 		puts "Failed to compile #{program}:\n#{res}".red_on_black
-		return
-	end
-
-	res = `nasm -f elf64 -o #{o} #{asm} 2>&1`
-	if $?.to_i == 256
-		puts "Failed to assemble #{asm}:\n#{res}".red_on_black
-		return
-	end
-
-	res = `ld -o #{bin} #{o} 2>&1`
-	if $?.to_i == 256
-		puts "Failed to link #{o}:\n#{res}".red_on_black
 		return
 	end
 
@@ -38,8 +26,6 @@ def run(program, leave_asm, leave_bin, input = [])
 
 		# Cleanup
 		File.delete(bin) unless leave_bin
-		File.delete(asm) unless leave_asm
-		File.delete(o)
 
 		return output
 	end
@@ -95,6 +81,7 @@ leave_asm = ARGV[0].include? 'a'
 leave_bin = ARGV[0].include? 'b'
 force_finish = ARGV[0].include? 'f'
 diff = ARGV[0].include? 'd'
+save = ARGV[0].include? 's'
 
 passed = 0
 
@@ -109,6 +96,10 @@ files.each do |f|
 		puts res[:message].blue unless quiet
 	else
 		puts res[:message].red_on_black
+
+		if save
+			File.open('fail.txt', 'w') { |f| f.write(res[:actual]) }
+		end
 
 		if verbose
 			if diff

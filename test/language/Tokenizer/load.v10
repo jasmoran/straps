@@ -35,8 +35,5 @@ func void main()(Tokenizer tk, Token t) {
 		tk.load().toString().print()
 		" ".print()
 		tk.load().toString().println()
-
-		# New Line
-		tk.load()
 	}
 }

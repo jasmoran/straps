@@ -1,5 +1,6 @@
+section .text
 global _start
-allocate:
+allocate_Number:
 push rbp
 mov rbp, rsp
 sub rsp, 0
@@ -11,16 +12,16 @@ pop r12
 mov rsp, rbp
 pop rbp
 ret 8
-fib:
+fib_Number:
 push rbp
 mov rbp, rsp
 sub rsp, 8
 push r12
 push r13
-cmp QWORD[rbp+16], +0
+cmp QWORD[rbp+16], 0
 je  .trueLabel0
 .falseCond3:
-cmp QWORD[rbp+16], +1
+cmp QWORD[rbp+16], 1
 je  .trueLabel0
 jmp .falseLabel1
 .trueLabel0:
@@ -29,11 +30,11 @@ jmp .ret
 .falseLabel1:
 dec QWORD[rbp+16]
 push QWORD[rbp+16]
-call fib
+call fib_Number
 mov QWORD[rbp-8], rax
 dec QWORD[rbp+16]
 push QWORD[rbp+16]
-call fib
+call fib_Number
 add QWORD[rbp-8], rax
 mov rax, QWORD[rbp-8]
 jmp .ret
@@ -49,22 +50,22 @@ mov rbp, rsp
 sub rsp, 8
 push r12
 push r13
-push +10
-call fib
+push 10
+call fib_Number
 mov rax, rax
 jmp .ret
 .ret:
 mov rdi, rax
 mov rax, 60
 syscall
-Any_new:
+Any_new_Any:
 push rbp
 mov rbp, rsp
 sub rsp, 8
 push r12
 push r13
-push +8
-call allocate
+push 8
+call allocate_Number
 mov QWORD[rbp-8], rax
 mov r12, QWORD[rbp-8]
 mov r13, QWORD[rbp+16]
@@ -83,8 +84,8 @@ mov rbp, rsp
 sub rsp, 8
 push r12
 push r13
-push +0
-call allocate
+push 0
+call allocate_Number
 mov QWORD[rbp-8], rax
 mov rax, QWORD[rbp-8]
 jmp .ret
@@ -100,8 +101,8 @@ mov rbp, rsp
 sub rsp, 8
 push r12
 push r13
-push +0
-call allocate
+push 0
+call allocate_Number
 mov QWORD[rbp-8], rax
 mov rax, QWORD[rbp-8]
 jmp .ret
@@ -117,8 +118,8 @@ mov rbp, rsp
 sub rsp, 8
 push r12
 push r13
-push +0
-call allocate
+push 0
+call allocate_Number
 mov QWORD[rbp-8], rax
 mov rax, QWORD[rbp-8]
 jmp .ret
@@ -134,8 +135,8 @@ mov rbp, rsp
 sub rsp, 8
 push r12
 push r13
-push +0
-call allocate
+push 0
+call allocate_Number
 mov QWORD[rbp-8], rax
 mov rax, QWORD[rbp-8]
 jmp .ret
