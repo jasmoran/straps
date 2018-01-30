@@ -1,0 +1,34 @@
+#-Correct: Yay!
+#-Correct: Awesome!
+#-Last one only!
+#-
+
+include "src/stdlib/stdlib.v10"
+
+class virtual Parent () {
+	func void callme() {
+		"Incorrect".println()
+	}
+
+	func void callme(String str) {
+		"Correct: ".print()
+		str.println()
+	}
+}
+
+class virtual Child < Parent () {
+	func void callme() {
+		"Last one only!".println()
+	}
+
+	func void not_me() {
+		"NOPE NOPE NOPE".println()
+	}
+}
+
+func void main() {
+	var test = Child_new()
+	test.callme("Yay!")
+	test.callme("Awesome!")
+	test.callme()
+}
