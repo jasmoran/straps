@@ -115,6 +115,17 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 		loop {
 			c = this.rs.get().get_character()
 
+			# Break out of macro
+			if (c == 0) {
+				if (this.rs_old == 0) {
+					break
+				} else {
+					this.rs = this.rs_old
+					this.rs_old = 0
+					next
+				}
+			}
+
 			if (c >= 'a') {
 				if (c <= 'z') {
 					this.image.append(c)
@@ -138,6 +149,25 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 
 			if (c == '_') {
 				this.image.append(c)
+				next
+			}
+
+			if (c == '<') {
+				this.image.append('#')
+				next
+			}
+
+			if (c == '>') {
+				this.image.append('#')
+				next
+			}
+
+			# Use macros
+			if (c == 63) {
+				var macro = c.toString().clone(1).append(this.rs.get().get_character())
+				macro = this.macros.get(macro)
+				this.rs_old = this.rs
+				this.rs = ReversibleStream_new(macro)
 				next
 			}
 
