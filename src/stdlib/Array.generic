@@ -1,25 +1,25 @@
-func Array Array_new(Number size)(Number byte_size) {
+func Array<?t> Array<?t>_new(Number size)(Number byte_size) {
 	byte_size = size
 	byte_size << 3
-	return Array_new(0, size, allocate(byte_size))
+	return Array<?t>_new(0, size, allocate(byte_size))
 }
 
-class Array (Number length, Number size, void data) {
-	func Any get(Number ix)(Any addr) {
+class Array<?t> (Number length, Number size, void data) {
+	func ?t get(Number ix)(Any addr) {
 		addr = ix
 		addr << 3
 		addr += this.data
 		return addr.deref
 	}
 
-	func void set(Number ix, Any item)(Any addr) {
+	func void set(Number ix, ?t item)(Any addr) {
 		addr = ix
 		addr << 3
 		addr += this.data
 		addr.deref = item
 	}
 
-	func Array append(Any item)() {
+	func Array<?t> append(?t item)() {
 		# TODO: check size is large enough
 
 		this.set(this.length, item)
@@ -28,7 +28,7 @@ class Array (Number length, Number size, void data) {
 		return this
 	}
 
-	func Number find(Any val, Function compare)(Number index) {
+	func Number find(?t val, Function compare)(Number index) {
 		index = 0
 		loop {
 			# Detect end of array
@@ -56,8 +56,8 @@ class Array (Number length, Number size, void data) {
 		this.length = 0
 	}
 
-	func Array shallow_clone() {
-		var clone = Array_new(this.size)
+	func Array<?t> shallow_clone() {
+		var clone = Array<?t>_new(this.size)
 		var ix = 0
 		loop {
 			if (ix == this.length) { break }
