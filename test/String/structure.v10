@@ -1,0 +1,31 @@
+#-8
+#-32
+#-Same
+#-
+
+include "src/stdlib/stdlib.v10"
+
+# Number length, Number size, CharArr data
+
+func void main()(Number num) {
+	var str = String_new(32).append("Hi there")
+  var Any ref = str
+
+  # Length
+  num = ref.deref
+  num.toString().println()
+
+  # Size
+  ref += 8
+  num = ref.deref
+  num.toString().println()
+
+  # Data
+  ref += 8
+  num = ref.deref
+  if (num == str.data) {
+    "Same".println()
+  } else {
+    "Different".println()
+  }
+}
