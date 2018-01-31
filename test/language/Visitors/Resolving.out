@@ -1,9 +1,24 @@
 nBLOCK
+  nCLASS(Any)
+    nLIST
+    nLIST
+  nCLASS(Character)
+    nLIST
+    nLIST
+  nCLASS(Number)
+    nLIST
+    nLIST
+  nCLASS(Boolean)
+    nLIST
+    nLIST
   nENUM(Boolean)
     nBLOCK
-      nNUMBER(<Boolean>: "0")
-      nNUMBER(<Boolean>: "1")
-  nFUNCTION(<Any>: allocate)
+      nIDENTIFIER(Unknown: "false")
+      nIDENTIFIER(Unknown: "true")
+  nCLASS(String)
+    nLIST
+    nLIST
+  nFUNCTION(<Any>: allocate_Number)
 size: <<
   nBINARYOP(<Number>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -13,7 +28,7 @@ size: <<
       nIDENTIFIER(<Number>: "size")
     nLIST
     nBLOCK
-  nFUNCTION(<Boolean>: thisisafunction)
+  nFUNCTION(<Boolean>: thisisafunction_Any_Any)
 arg1: <<
   nBINARYOP(<Any>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -59,7 +74,7 @@ vrbl2: <<
         nNUMBER(<Number>: "1337")
       nBINARYOP(<Any>: DOT)
         nBINARYOP(<Any>: PAREN_OPEN)
-          nFUNCTION(<Any>: _String_println)
+          nFUNCTION(<Any>: _String_println_String_Number_Number)
 this: <<
   nBINARYOP(<String>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -83,7 +98,7 @@ ilikenumbers: <<
             nBLOCK
           nCALL
             nBINARYOP(<String>: PAREN_OPEN)
-              nFUNCTION(<String>: _Character_toString)
+              nFUNCTION(<String>: _Character_toString_Character)
 this: <<
   nBINARYOP(<Character>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -107,7 +122,7 @@ this: <<
       nLOOP
         nBLOCK
           nBINARYOP(<Any>: PAREN_OPEN)
-            nFUNCTION(<Any>: _String_println)
+            nFUNCTION(<Any>: _String_println_String_Number_Number)
 this: <<
   nBINARYOP(<String>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -135,7 +150,7 @@ ilikenumbers: <<
               nNUMBER(<Number>: "2")
       nRETURN
         nNUMBER(<Boolean>: "1")
-  nFUNCTION(<Any>: Any_new)
+  nFUNCTION(<Any>: Any_new_Any)
 deref: <<
   nBINARYOP(<Any>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -156,7 +171,7 @@ obj: <<
           nREGISTER(Unknown: "rbp")
           nNUMBER(#Number#: "-8")
         nBINARYOP(<Any>: PAREN_OPEN)
-          nFUNCTION(<Any>: allocate)
+          nFUNCTION(<Any>: allocate_Number)
 size: <<
   nBINARYOP(<Number>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -196,7 +211,7 @@ obj: <<
           nREGISTER(Unknown: "rbp")
           nNUMBER(#Number#: "-8")
         nBINARYOP(<Any>: PAREN_OPEN)
-          nFUNCTION(<Any>: allocate)
+          nFUNCTION(<Any>: allocate_Number)
 size: <<
   nBINARYOP(<Number>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -227,7 +242,7 @@ obj: <<
           nREGISTER(Unknown: "rbp")
           nNUMBER(#Number#: "-8")
         nBINARYOP(<Any>: PAREN_OPEN)
-          nFUNCTION(<Any>: allocate)
+          nFUNCTION(<Any>: allocate_Number)
 size: <<
   nBINARYOP(<Number>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -243,7 +258,7 @@ size: <<
         nBINARYOP(<Number>: SQUARE_OPEN)
           nREGISTER(Unknown: "rbp")
           nNUMBER(#Number#: "-8")
-  nFUNCTION(<Boolean>: Boolean_new)
+  nFUNCTION(<Boolean>: Boolean_new_String)
 as_string: <<
   nBINARYOP(<String>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -264,7 +279,7 @@ obj: <<
           nREGISTER(Unknown: "rbp")
           nNUMBER(#Number#: "-8")
         nBINARYOP(<Any>: PAREN_OPEN)
-          nFUNCTION(<Any>: allocate)
+          nFUNCTION(<Any>: allocate_Number)
 size: <<
   nBINARYOP(<Number>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -289,7 +304,7 @@ size: <<
         nBINARYOP(<Boolean>: SQUARE_OPEN)
           nREGISTER(Unknown: "rbp")
           nNUMBER(#Number#: "-8")
-  nFUNCTION(<String>: String_new)
+  nFUNCTION(<String>: String_new_Character)
 random_char: <<
   nBINARYOP(<Character>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -310,7 +325,7 @@ obj: <<
           nREGISTER(Unknown: "rbp")
           nNUMBER(#Number#: "-8")
         nBINARYOP(<Any>: PAREN_OPEN)
-          nFUNCTION(<Any>: allocate)
+          nFUNCTION(<Any>: allocate_Number)
 size: <<
   nBINARYOP(<Number>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -335,7 +350,7 @@ size: <<
         nBINARYOP(<String>: SQUARE_OPEN)
           nREGISTER(Unknown: "rbp")
           nNUMBER(#Number#: "-8")
-  nFUNCTION(<String>: _Character_toString)
+  nFUNCTION(<String>: _Character_toString_Character)
 this: <<
   nBINARYOP(<Character>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -345,7 +360,7 @@ this: <<
       nIDENTIFIER(<Character>: "this")
     nLIST
     nBLOCK
-  nFUNCTION(<Any>: _String_println)
+  nFUNCTION(<Any>: _String_println_String_Number_Number)
 this: <<
   nBINARYOP(<String>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -378,7 +393,7 @@ deref: <<
 Character: <<
   nCLASS(Character)
 toString: <<
-  nFUNCTION(<String>: _Character_toString)
+  nFUNCTION(<String>: _Character_toString_Character)
 this: <<
   nBINARYOP(<Character>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -406,8 +421,8 @@ as_string: <<
 >>
 String: <<
   nCLASS(String)
-println: <<
-  nFUNCTION(<Any>: _String_println)
+println_Number_Number: <<
+  nFUNCTION(<Any>: _String_println_String_Number_Number)
 this: <<
   nBINARYOP(<String>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -439,8 +454,8 @@ false: <<
 true: <<
   nNUMBER(<Boolean>: "1")
 >>
-allocate: <<
-  nFUNCTION(<Any>: allocate)
+allocate_Number: <<
+  nFUNCTION(<Any>: allocate_Number)
 size: <<
   nBINARYOP(<Number>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -450,8 +465,8 @@ size: <<
     nLIST
     nBLOCK
 >>
-thisisafunction: <<
-  nFUNCTION(<Boolean>: thisisafunction)
+thisisafunction_Any_Any: <<
+  nFUNCTION(<Boolean>: thisisafunction_Any_Any)
 arg1: <<
   nBINARYOP(<Any>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -476,8 +491,8 @@ vrbl2: <<
     nLIST
     nBLOCK
 >>
-Any_new: <<
-  nFUNCTION(<Any>: Any_new)
+Any_new_Any: <<
+  nFUNCTION(<Any>: Any_new_Any)
 deref: <<
   nBINARYOP(<Any>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -514,8 +529,8 @@ obj: <<
     nLIST
     nBLOCK
 >>
-Boolean_new: <<
-  nFUNCTION(<Boolean>: Boolean_new)
+Boolean_new_String: <<
+  nFUNCTION(<Boolean>: Boolean_new_String)
 as_string: <<
   nBINARYOP(<String>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -530,8 +545,8 @@ obj: <<
     nLIST
     nBLOCK
 >>
-String_new: <<
-  nFUNCTION(<String>: String_new)
+String_new_Character: <<
+  nFUNCTION(<String>: String_new_Character)
 random_char: <<
   nBINARYOP(<Character>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -546,8 +561,8 @@ obj: <<
     nLIST
     nBLOCK
 >>
-_Character_toString: <<
-  nFUNCTION(<String>: _Character_toString)
+_Character_toString_Character: <<
+  nFUNCTION(<String>: _Character_toString_Character)
 this: <<
   nBINARYOP(<Character>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")
@@ -557,8 +572,8 @@ this: <<
     nLIST
     nBLOCK
 >>
-_String_println: <<
-  nFUNCTION(<Any>: _String_println)
+_String_println_String_Number_Number: <<
+  nFUNCTION(<Any>: _String_println_String_Number_Number)
 this: <<
   nBINARYOP(<String>: SQUARE_OPEN)
     nREGISTER(Unknown: "rbp")

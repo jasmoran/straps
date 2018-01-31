@@ -1,14 +1,29 @@
 nBLOCK
+  nCLASS(Any)
+    nLIST
+    nLIST
+  nCLASS(Character)
+    nLIST
+    nLIST
+  nCLASS(Number)
+    nLIST
+    nLIST
+  nCLASS(Boolean)
+    nLIST
+    nLIST
   nENUM(Boolean)
     nBLOCK
-      nNUMBER(<Boolean>: "0")
-      nNUMBER(<Boolean>: "1")
-  nFUNCTION(<Any>: allocate)
+      nIDENTIFIER(Unknown: "false")
+      nIDENTIFIER(Unknown: "true")
+  nCLASS(String)
+    nLIST
+    nLIST
+  nFUNCTION(<Any>: allocate_Number)
     nLIST
       nIDENTIFIER(<Number>: "size")
     nLIST
     nBLOCK
-  nFUNCTION(<Boolean>: thisisafunction)
+  nFUNCTION(<Boolean>: thisisafunction_Any_Any)
     nLIST
       nIDENTIFIER(<Any>: "arg1")
       nIDENTIFIER(<Any>: "arg2")
@@ -51,7 +66,7 @@ nBLOCK
           nREGISTER(Unknown: "r12")
           nINDEX(<Character>: "0")
       nBINARYOP(<String>: PAREN_OPEN)
-        nFUNCTION(<String>: _Character_toString)
+        nFUNCTION(<String>: _Character_toString_Character)
           nLIST
             nIDENTIFIER(<Character>: "this")
           nLIST
@@ -63,7 +78,7 @@ nBLOCK
       nUNARYOP(Unknown: PUSH, left)
         nREGISTER(Unknown: "rax")
       nBINARYOP(<Any>: PAREN_OPEN)
-        nFUNCTION(<Any>: _String_println)
+        nFUNCTION(<Any>: _String_println_String_Number_Number)
           nLIST
             nIDENTIFIER(<String>: "this")
             nIDENTIFIER(<Number>: "stream")
@@ -88,7 +103,7 @@ nBLOCK
           nUNARYOP(Unknown: PUSH, left)
             nSTRING(<String>: "oopsy daisy")
           nBINARYOP(<Any>: PAREN_OPEN)
-            nFUNCTION(<Any>: _String_println)
+            nFUNCTION(<Any>: _String_println_String_Number_Number)
               nLIST
                 nIDENTIFIER(<String>: "this")
                 nIDENTIFIER(<Number>: "stream")
@@ -99,10 +114,10 @@ nBLOCK
               nSTRING(<String>: "oopsy daisy")
               nNUMBER(<Number>: "1")
               nNUMBER(<Number>: "2")
-          nREGISTER(Unknown: "rax")
+          nBLOCK
       nRETURN
         nNUMBER(<Boolean>: "1")
-  nFUNCTION(<Any>: Any_new)
+  nFUNCTION(<Any>: Any_new_Any)
     nLIST
       nIDENTIFIER(<Any>: "deref")
     nLIST
@@ -111,7 +126,7 @@ nBLOCK
       nUNARYOP(Unknown: PUSH, left)
         nNUMBER(<Number>: "8")
       nBINARYOP(<Any>: PAREN_OPEN)
-        nFUNCTION(<Any>: allocate)
+        nFUNCTION(<Any>: allocate_Number)
           nLIST
             nIDENTIFIER(<Number>: "size")
           nLIST
@@ -150,7 +165,7 @@ nBLOCK
       nUNARYOP(Unknown: PUSH, left)
         nNUMBER(<Number>: "0")
       nBINARYOP(<Any>: PAREN_OPEN)
-        nFUNCTION(<Any>: allocate)
+        nFUNCTION(<Any>: allocate_Number)
           nLIST
             nIDENTIFIER(<Number>: "size")
           nLIST
@@ -174,7 +189,7 @@ nBLOCK
       nUNARYOP(Unknown: PUSH, left)
         nNUMBER(<Number>: "0")
       nBINARYOP(<Any>: PAREN_OPEN)
-        nFUNCTION(<Any>: allocate)
+        nFUNCTION(<Any>: allocate_Number)
           nLIST
             nIDENTIFIER(<Number>: "size")
           nLIST
@@ -190,7 +205,7 @@ nBLOCK
         nBINARYOP(<Number>: SQUARE_OPEN)
           nREGISTER(Unknown: "rbp")
           nNUMBER(#Number#: "-8")
-  nFUNCTION(<Boolean>: Boolean_new)
+  nFUNCTION(<Boolean>: Boolean_new_String)
     nLIST
       nIDENTIFIER(<String>: "as_string")
     nLIST
@@ -199,7 +214,7 @@ nBLOCK
       nUNARYOP(Unknown: PUSH, left)
         nNUMBER(<Number>: "8")
       nBINARYOP(<Any>: PAREN_OPEN)
-        nFUNCTION(<Any>: allocate)
+        nFUNCTION(<Any>: allocate_Number)
           nLIST
             nIDENTIFIER(<Number>: "size")
           nLIST
@@ -230,7 +245,7 @@ nBLOCK
         nBINARYOP(<Boolean>: SQUARE_OPEN)
           nREGISTER(Unknown: "rbp")
           nNUMBER(#Number#: "-8")
-  nFUNCTION(<String>: String_new)
+  nFUNCTION(<String>: String_new_Character)
     nLIST
       nIDENTIFIER(<Character>: "random_char")
     nLIST
@@ -239,7 +254,7 @@ nBLOCK
       nUNARYOP(Unknown: PUSH, left)
         nNUMBER(<Number>: "8")
       nBINARYOP(<Any>: PAREN_OPEN)
-        nFUNCTION(<Any>: allocate)
+        nFUNCTION(<Any>: allocate_Number)
           nLIST
             nIDENTIFIER(<Number>: "size")
           nLIST
@@ -270,12 +285,12 @@ nBLOCK
         nBINARYOP(<String>: SQUARE_OPEN)
           nREGISTER(Unknown: "rbp")
           nNUMBER(#Number#: "-8")
-  nFUNCTION(<String>: _Character_toString)
+  nFUNCTION(<String>: _Character_toString_Character)
     nLIST
       nIDENTIFIER(<Character>: "this")
     nLIST
     nBLOCK
-  nFUNCTION(<Any>: _String_println)
+  nFUNCTION(<Any>: _String_println_String_Number_Number)
     nLIST
       nIDENTIFIER(<String>: "this")
       nIDENTIFIER(<Number>: "stream")

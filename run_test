@@ -3,27 +3,16 @@ require 'colored'
 require 'open3'
 require 'diffy'
 
-def run(program, leave_asm, leave_bin, input = [])
+def run(program, leave_asm, leave_bin, compiler, input = [])
 	bin = 'bin/' + program.gsub(/.*\//, '').gsub(/\.v10$/, '')
 	asm = bin + '.asm'
 	o = bin + '.o'
 
 	# Execution
-	res = `./bin/v10 #{program} #{asm} 2>&1`
+	puts compiler
+	res = `#{compiler} #{program} #{bin} 2>&1`
 	if $?.to_i == 256
 		puts "Failed to compile #{program}:\n#{res}".red_on_black
-		return
-	end
-
-	res = `nasm -f elf64 -o #{o} #{asm} 2>&1`
-	if $?.to_i == 256
-		puts "Failed to assemble #{asm}:\n#{res}".red_on_black
-		return
-	end
-
-	res = `ld -o #{bin} #{o} 2>&1`
-	if $?.to_i == 256
-		puts "Failed to link #{o}:\n#{res}".red_on_black
 		return
 	end
 
@@ -38,14 +27,12 @@ def run(program, leave_asm, leave_bin, input = [])
 
 		# Cleanup
 		File.delete(bin) unless leave_bin
-		File.delete(asm) unless leave_asm
-		File.delete(o)
 
 		return output
 	end
 end
 
-def test(program, leave_asm, leave_bin)
+def test(program, leave_asm, leave_bin, compiler)
 	data = File.open(program).read
 	lines = data.split("\n")
 	pretty_out = ''
@@ -71,7 +58,7 @@ def test(program, leave_asm, leave_bin)
 		end
 	end
 	expected = Regexp.new(outputs[0..-2] + '\Z', Regexp::MULTILINE)
-	actual = run(program, leave_asm, leave_bin, inputs)
+	actual = run(program, leave_asm, leave_bin, compiler, inputs)
 
 	if expected === actual
 		{
@@ -95,6 +82,14 @@ leave_asm = ARGV[0].include? 'a'
 leave_bin = ARGV[0].include? 'b'
 force_finish = ARGV[0].include? 'f'
 diff = ARGV[0].include? 'd'
+save = ARGV[0].include? 's'
+testc = ARGV[0].include? 't'
+
+compiler = if testc
+	'bin/straps_dev'
+else
+	'bin/straps'
+end
 
 passed = 0
 
@@ -102,13 +97,17 @@ passed = 0
 files = Dir['test/**/*.v10'] if files.empty?
 
 files.each do |f|
-	res = test(f, leave_asm, leave_bin)
+	res = test(f, leave_asm, leave_bin, compiler)
 
 	if res[:passed]
 		passed += 1
 		puts res[:message].blue unless quiet
 	else
 		puts res[:message].red_on_black
+
+		if save
+			File.open('fail.txt', 'w') { |f| f.write(res[:actual]) }
+		end
 
 		if verbose
 			if diff
