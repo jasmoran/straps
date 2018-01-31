@@ -13,7 +13,7 @@ class Constructor(?T, ListNode pb, ListNode block, Node new_obj) {
 		this.new_obj = StringNode_new(nIDENTIFIER, Type_new(n.name), "obj")
 
 		size = n.fields.children.length
-		size++
+		if (n.vtable != 0) size++
 		size << 3
 
 		# Create allocate call + assign and append to block
