@@ -185,4 +185,8 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 
 		return n
 	}
+
+	# Must NOT resolve the children of the EnumNode
+	# They are used raw in the Dump visitor to form the name lookup array
+	func void visit(EnumNode n) {}
 }
