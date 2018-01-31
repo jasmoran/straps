@@ -3,13 +3,14 @@ require 'colored'
 require 'open3'
 require 'diffy'
 
-def run(program, leave_asm, leave_bin, input = [])
+def run(program, leave_asm, leave_bin, compiler, input = [])
 	bin = 'bin/' + program.gsub(/.*\//, '').gsub(/\.v10$/, '')
 	asm = bin + '.asm'
 	o = bin + '.o'
 
 	# Execution
-	res = `bin/straps #{program} #{bin} 2>&1`
+	puts compiler
+	res = `#{compiler} #{program} #{bin} 2>&1`
 	if $?.to_i == 256
 		puts "Failed to compile #{program}:\n#{res}".red_on_black
 		return
@@ -31,7 +32,7 @@ def run(program, leave_asm, leave_bin, input = [])
 	end
 end
 
-def test(program, leave_asm, leave_bin)
+def test(program, leave_asm, leave_bin, compiler)
 	data = File.open(program).read
 	lines = data.split("\n")
 	pretty_out = ''
@@ -57,7 +58,7 @@ def test(program, leave_asm, leave_bin)
 		end
 	end
 	expected = Regexp.new(outputs[0..-2] + '\Z', Regexp::MULTILINE)
-	actual = run(program, leave_asm, leave_bin, inputs)
+	actual = run(program, leave_asm, leave_bin, compiler, inputs)
 
 	if expected === actual
 		{
@@ -82,6 +83,13 @@ leave_bin = ARGV[0].include? 'b'
 force_finish = ARGV[0].include? 'f'
 diff = ARGV[0].include? 'd'
 save = ARGV[0].include? 's'
+testc = ARGV[0].include? 't'
+
+compiler = if testc
+	'bin/straps_dev'
+else
+	'bin/straps'
+end
 
 passed = 0
 
@@ -89,7 +97,7 @@ passed = 0
 files = Dir['test/**/*.v10'] if files.empty?
 
 files.each do |f|
-	res = test(f, leave_asm, leave_bin)
+	res = test(f, leave_asm, leave_bin, compiler)
 
 	if res[:passed]
 		passed += 1
