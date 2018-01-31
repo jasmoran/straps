@@ -13,8 +13,8 @@ nBLOCK
     nLIST
   nENUM(Boolean)
     nBLOCK
-      nNUMBER(<Boolean>: "0")
-      nNUMBER(<Boolean>: "1")
+      nIDENTIFIER(Unknown: "false")
+      nIDENTIFIER(Unknown: "true")
   nCLASS(String)
     nLIST
     nLIST
