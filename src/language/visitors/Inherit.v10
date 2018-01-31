@@ -1,0 +1,53 @@
+func Inherit Inherit_new() {
+	var Visitor v = 0
+	var inh = Inherit_new(v)
+	inh.v = inh
+	return inh
+}
+
+
+class virtual Inherit < Visitor (Visitor v) {
+	func void remove_duplicates(LinkedList list, StringNode field) {
+		var lln = list.first
+		loop {
+			if (lln == 0) { break }
+			var StringNode sn = lln.payload
+
+			# Check for matches
+			if (sn.string.equal(field.string) == true) {
+				list.remove(lln)
+			}
+
+			lln = lln.fwrd
+		}
+		return 0
+	}
+
+	func void visit(ClassNode n)() {
+		if (n.parent.raw != 0) {
+			# Resolve parent type
+			n.parent.resolve(scope)
+
+			if (n.parent.res > 0) {
+				var par_flds = n.parent.res.fields
+				var lln = par_flds.children.last
+
+				if (n.parent.res.vtable != 0) {
+					if (n.vtable == 0)
+						error("Virtual parent ", n.parent.res.name, " has non virtual child ", n.name)
+				}
+
+				loop {
+					if (lln == 0) { break }
+					var StringNode sn = lln.payload
+					this.remove_duplicates(n.fields.children, sn)
+					n.fields.children.prepend(lln.payload)
+
+					lln = lln.back
+				}
+			}
+		}
+
+  	return 0
+	}
+}
