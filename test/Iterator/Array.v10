@@ -1,11 +1,19 @@
+#-
 #-UVWXYZ
 #-ZYXWVU
+#-QQQQQQ
+#-TTTTTT
 #-
 
 include "src/stdlib/stdlib.v10"
 
 func void main() {
 	var arr = Array<String>_new(8)
+
+	# Test on empty array
+	for (str in arr) str.print()
+	"\n".print()
+
 	arr.append("U")
 	arr.append("V")
 	arr.append("W")
@@ -22,5 +30,19 @@ func void main() {
 
 	# Test compact for loop in reverse
   for (str in arr.iter().reverse()) str.print()
+	"\n".print()
+
+	# Test modifying array
+	for (str in arr) str_iter.set("Q")
+
+	# Check modifications
+	for (str in arr) str.print()
+	"\n".print()
+
+	# Test modifying array in reverse
+	for (str in arr.iter().reverse()) str_iter.set("T")
+
+	# Check modifications
+	for (str in arr) str.print()
 	"\n".print()
 }

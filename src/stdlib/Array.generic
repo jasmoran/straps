@@ -33,6 +33,16 @@ class ArrIterator<?t> (Array<?t> arr, Number curr, Boolean back) {
 		return this
 	}
 
+	func void set(?t value) {
+		var ix = this.curr
+		if (this.back == true) {
+			ix++
+		} else {
+			ix--
+		}
+		this.arr.set(ix, value)
+	}
+
 	func ArrIterator<?t> iter() return this
 }
 

@@ -1,12 +1,12 @@
 func ForLoop ForLoop_new() {
 	var Visitor v = 0
-	var fl = ForLoop_new(v, 0)
+	var fl = ForLoop_new(v)
 	fl.v = fl
 	return fl
 }
 
 
-class virtual ForLoop < Visitor (Visitor v, Number counter) {
+class virtual ForLoop < Visitor (Visitor v) {
 
 	func Node call_method(Node obj, String method) {
 		# Create method call
@@ -34,10 +34,12 @@ class virtual ForLoop < Visitor (Visitor v, Number counter) {
 	}
 
 	func void visit(ForNode n)() {
+		n.block.accept(this.v)
+
 		var outer_block = ListNode_new(nBLOCK)
 
 		# Create iterator variable name
-		var iterstr = "_iterator_".clone(8).append(this.counter.toString())
+		var iterstr = n.item.string.clone(5).append("_iter")
 		var iterator = StringNode_new(nIDENTIFIER, Type_new(), iterstr)
 
 		# var $iterator$ = $n.iterable$.iter()

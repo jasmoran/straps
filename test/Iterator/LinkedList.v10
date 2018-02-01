@@ -1,5 +1,8 @@
+#-
 #-ABCDEF
 #-FEDCBA
+#-GGGGGG
+#-HHHHHH
 #-
 
 include "src/stdlib/stdlib.v10"
@@ -9,6 +12,11 @@ include "src/stdlib/LinkedList.generic"
 
 func void main() {
 	var list = LinkedList<String>_new()
+
+	# Test on empty list
+	for (str in list) str.print()
+	"\n".print()
+
 	list.append("A")
 	list.append("B")
 	list.append("C")
@@ -26,4 +34,18 @@ func void main() {
   # Test compact for loop in reverse
   for (str in list.iter().reverse()) str.print()
   "\n".print()
+
+	# Test modifying array
+	for (str in list) str_iter.set("G")
+
+	# Check modifications
+	for (str in list) str.print()
+	"\n".print()
+
+	# Test modifying array in reverse
+	for (str in list.iter().reverse()) str_iter.set("H")
+
+	# Check modifications
+	for (str in list) str.print()
+	"\n".print()
 }

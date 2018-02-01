@@ -1,33 +1,50 @@
 func LLIterator<?t> LLIterator<?t>_new(LinkedList<?t> list) {
-	return LLIterator<?t>_new(list, list.first, false)
+ 	var LinkedListNode<?t> curr = 1
+	return LLIterator<?t>_new(list, curr, false)
 }
 
 class LLIterator<?t> (LinkedList<?t> list, LinkedListNode<?t> curr, Boolean back) {
 	func ?t fetch() {
-		if (this.curr == 0) return 0
-		var payload = this.curr.payload
 		if (this.back == true) {
-			this.curr = this.curr.back
+			if (this.curr == 1) {
+				this.curr = this.list.last
+			} else {
+				this.curr = this.curr.back
+			}
 		} else {
-			this.curr = this.curr.fwrd
+			if (this.curr == 1) {
+				this.curr = this.list.first
+			} else {
+				this.curr = this.curr.fwrd
+			}
 		}
-		return payload
+    if (this.curr == 0) return 0
+		return this.curr.payload
 	}
 
 	func Boolean finished() {
-		if (this.curr == 0) return true
+    if (this.curr == 0 || this.list.length < 1) return true
+		if (this.curr == 1) return false
+		if (this.back == true) {
+			if (this.curr.back == 0) return true
+		} else {
+			if (this.curr.fwrd == 0) return true
+		}
 		return false
 	}
 
 	func LLIterator<?t> reverse() {
 		if (this.back == true) {
 			this.back = false
-			this.curr = this.list.first
 		} else {
 			this.back = true
-			this.curr = this.list.last
 		}
 		return this
+	}
+
+	func void set(?t value) {
+		if (this.curr == 0) return 0
+		this.curr.payload = value
 	}
 
 	func LLIterator<?t> iter() return this
