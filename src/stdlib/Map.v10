@@ -1,0 +1,6 @@
+define k "String"
+define v "Any"
+include "src/stdlib/Map.generic"
+define k "String"
+define v "String"
+include "src/stdlib/Map.generic"

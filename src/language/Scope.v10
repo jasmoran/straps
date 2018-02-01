@@ -3,19 +3,18 @@ func Scope Scope_new()(Scope sc) {
 	return Scope_new("GLOBAL", sc)
 }
 
-func Scope Scope_new(String name, Scope parent)(Map sc) {
-	sc = Map_new(2048)
+func Scope Scope_new(String name, Scope parent)(Map<String_Node> sc) {
+	sc = Map<String_Node>_new(2048)
 	return Scope_new(name, parent, sc)
 }
 
-class Scope (String name, Scope parent, Map scope) {
+class Scope (String name, Scope parent, Map<String_Node> scope) {
 	func Node get(String name)() {
 		return this.scope.get(name)
 	}
 
-	func void set(String name, Node node)(Any a) {
-		a = node
-		this.scope.set(name, a)
+	func void set(String name, Node node) {
+		this.scope.set(name, node)
 	}
 
 	func Node resolve(String name)(Scope s, Node res) {
@@ -35,16 +34,14 @@ class Scope (String name, Scope parent, Map scope) {
 		error("Could not resolve value ", name)
 	}
 
-	func void print()(Number index, String key, Node value, Visitor printer) {
+	func void print()(Number index, Visitor printer) {
 		index = 0
 		printer = Printer_new(1, STDOUT, 1)
 		loop {
 			if (this.scope.keys.length == index) break
-			key = this.scope.keys.get(index)
-			value = this.scope.values.get(index)
-			key.print()
+			this.scope.keys.get(index).print()
 			": <<".println()
-			value.accept(printer)
+			this.scope.values.get(index).accept(printer)
 			">>".println()
 			index++
 		}

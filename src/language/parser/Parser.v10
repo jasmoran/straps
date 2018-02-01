@@ -14,10 +14,10 @@ class Parser(String name, Tokenizer t) {
 	func Node nt_class()(String name, ListNode fields, ListNode block) {
 		this.t.consume(CLASS)
 
-		var Map vtable = 0
+		var Map<String_FunctionNode> vtable = 0
 		if (this.t.peek() == VIRTUAL) {
 			this.t.consume(VIRTUAL)
-			vtable = Map_new(32)
+			vtable = Map<String_FunctionNode>_new(32)
 		}
 
 		name = this.t.consume(IDENTIFIER)

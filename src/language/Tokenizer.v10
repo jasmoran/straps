@@ -20,10 +20,10 @@ class Token(void type){
 
 func Tokenizer Tokenizer_new(String stream_name, Stream s)(ReversibleStream rs_old) {
 	rs_old = 0
-	return Tokenizer_new(stream_name, ReversibleStream_new(s, 1024), NONE, String_new(1024), MetaCharacter_new(' ', 0, 0), rs_old, Map_new(256))
+	return Tokenizer_new(stream_name, ReversibleStream_new(s, 1024), NONE, String_new(1024), MetaCharacter_new(' ', 0, 0), rs_old, Map<String_String>_new(256))
 }
 
-class Tokenizer(String stream_name, ReversibleStream rs, Token type, String image, MetaCharacter first_char, ReversibleStream rs_old, Map macros) {
+class Tokenizer(String stream_name, ReversibleStream rs, Token type, String image, MetaCharacter first_char, ReversibleStream rs_old, Map<String_String> macros) {
 	func Token peek()() {
 		if (this.type == NONE) {
 			this.type = this.load()
@@ -274,7 +274,7 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 		return true
 	}
 
-	func Token load()(Character c, String macro, Any any, Character qmark, Number ix) {
+	func Token load()(Character c, String macro, Character qmark, Number ix) {
 		# Skip whitespace
 		loop {
 			this.first_char = this.rs.get()
@@ -302,9 +302,8 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 			this.image.clear()
 			if (this.load() != STRING)
 				error("Malformed definition at ", this.rs.get().toString(), " in stream ", this.stream_name)
-			any = this.image.clone()
+			this.macros.set(macro, this.image.clone())
 			this.image.clear()
-			this.macros.set(macro, any)
 			return this.load()
 		}
 

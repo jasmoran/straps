@@ -76,8 +76,7 @@ class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
 				this.cls.scope.set(cls_scope_name, clone.toNode())
 			} else {
 				# Add method to vtable of class
-				var Any a = n
-				this.cls.vtable.set(cls_scope_name, a)
+				this.cls.vtable.set(cls_scope_name, n)
 
 				# Find method offset in vtable
 				var offset = this.cls.vtable.get_pos(cls_scope_name)

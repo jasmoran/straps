@@ -1,3 +1,15 @@
+define k "String"
+define v "FunctionNode"
+include "src/stdlib/Map.generic"
+define k "String"
+define v "Node"
+include "src/stdlib/Map.generic"
+
+define t "Node"
+include "src/stdlib/Array.generic"
+define t "FunctionNode"
+include "src/stdlib/Array.generic"
+
 enum NodeType {
 	nNONE nNASM nSYS nBLOCK nPAREN_LIST nFUNCTION nRETURN nCOMPARISON nIF
 	nNEXT nLOOP nBREAK nIDENTIFIER nENUM nCOMMENT nCHARACTER nSTRING nNUMBER
@@ -84,20 +96,20 @@ class virtual StringNode < RetNode (String string) {
 
 
 
-func Node ClassNode_new(String name, ListNode fields, ListNode block, Map vtable, Type parent)(Scope sc) {
+func Node ClassNode_new(String name, ListNode fields, ListNode block, Map<String_FunctionNode> vtable, Type parent)(Scope sc) {
 	sc = scope
 	sc = Scope_new(name, sc)
 	return ClassNode_new(nCLASS, name, fields, block, sc, vtable, parent)
 }
 
 func Node ClassNode_new(String name, ListNode fields, ListNode block) {
-	var Map vtable = 0
+	var Map<String_FunctionNode> vtable = 0
 	var parent = Type_new()
 	return ClassNode_new(name, fields, block, vtable, parent)
 }
 
 class virtual ClassNode < Node (String name, ListNode fields,
-								ListNode block, Scope scope, Map vtable, Type parent) {
+								ListNode block, Scope scope, Map<String_FunctionNode> vtable, Type parent) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
