@@ -1,0 +1,46 @@
+func Range Range_new(Number end) {
+	return Range_new(0, 0, end, false)
+}
+
+func Range Range_new(Number start, Number end) {
+  if (start <= end) {
+    return Range_new(start, start, end, false)
+  } else {
+    end++
+    var new_end = start
+    new_end++
+    return Range_new(end, start, new_end, true)
+  }
+}
+
+class Range (Number start, Number curr, Number end, Boolean back) {
+	func Number fetch() {
+		var payload = this.curr
+		if (this.back == true) {
+			this.curr--
+		} else {
+			this.curr++
+		}
+		return payload
+	}
+
+	func Boolean finished() {
+		if (this.curr < this.start) return true
+		if (this.curr >= this.end) return true
+		return false
+	}
+
+	func Range reverse() {
+		if (this.back == true) {
+			this.back = false
+			this.curr = this.start
+		} else {
+			this.back = true
+			this.curr = this.end
+			this.curr--
+		}
+		return this
+	}
+
+	func Range iter() return this
+}

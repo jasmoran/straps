@@ -1,0 +1,35 @@
+#-012345
+#-543210
+#-891011
+#-111098
+#-222120
+#-202122
+#-
+
+include "src/stdlib/stdlib.v10"
+
+func void main() {
+	# Standard range
+  for (num in Range_new(6)) num.toString().print()
+	"\n".print()
+
+	# Standard range reverse
+  for (num in Range_new(6).reverse()) num.toString().print()
+	"\n".print()
+
+	# Offset range
+	for (num in Range_new(8, 12)) num.toString().print()
+	"\n".print()
+
+	# Offset range reverse
+  for (num in Range_new(8, 12).reverse()) num.toString().print()
+	"\n".print()
+
+	# Backwards range
+	for (num in Range_new(22, 19)) num.toString().print()
+	"\n".print()
+
+	# Backwards range reverse
+  for (num in Range_new(22, 19).reverse()) num.toString().print()
+	"\n".print()
+}
