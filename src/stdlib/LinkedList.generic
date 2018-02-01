@@ -1,26 +1,26 @@
-func LinkedList LinkedList_new()(LinkedListNode n) {
+func LinkedList<?t> LinkedList<?t>_new()(LinkedListNode<?t> n) {
 	n = 0
-	return LinkedList_new(n, n, 0)
+	return LinkedList<?t>_new(n, n, 0)
 }
 
-func LinkedListNode LinkedListNode_new(Any payload)(LinkedListNode n) {
+func LinkedListNode<?t> LinkedListNode<?t>_new(?t payload)(LinkedListNode<?t> n) {
 	n = 0
-	return LinkedListNode_new(n, n, payload)
+	return LinkedListNode<?t>_new(n, n, payload)
 }
 
-class LinkedListNode (LinkedListNode fwrd, LinkedListNode back, Any payload) {}
+class LinkedListNode<?t> (LinkedListNode<?t> fwrd, LinkedListNode<?t> back, ?t payload) {}
 
-class LinkedList (LinkedListNode first, LinkedListNode last, Number length) {
-	func Any get(Number ix)() {
+class LinkedList<?t> (LinkedListNode<?t> first, LinkedListNode<?t> last, Number length) {
+	func ?t get(Number ix)() {
 		return this.fetch(ix).payload
 	}
 
-	func void set(Number ix, Any payload)() {
+	func void set(Number ix, ?t payload)() {
 		this.fetch(ix).payload = payload
 	}
 
-	func LinkedListNode append(Any payload)(LinkedListNode node) {
-		node = LinkedListNode_new(payload)
+	func LinkedListNode<?t> append(?t payload)(LinkedListNode<?t> node) {
+		node = LinkedListNode<?t>_new(payload)
 
 		node.back = this.last
 		if (this.last != 0) {
@@ -38,12 +38,12 @@ class LinkedList (LinkedListNode first, LinkedListNode last, Number length) {
 		return node
 	}
 
-	func LinkedListNode prepend(Any payload)() {
+	func LinkedListNode<?t> prepend(?t payload)() {
 		return this.insert_before(this.first, payload)
 	}
 
-	func LinkedListNode insert_before(LinkedListNode anchor, Any payload)(LinkedListNode node) {
-		node = LinkedListNode_new(payload)
+	func LinkedListNode<?t> insert_before(LinkedListNode<?t> anchor, ?t payload)(LinkedListNode<?t> node) {
+		node = LinkedListNode<?t>_new(payload)
 
 		if (anchor != 0) {
 			# Set up node
@@ -71,7 +71,7 @@ class LinkedList (LinkedListNode first, LinkedListNode last, Number length) {
 		return node
 	}
 
-	func void remove(LinkedListNode node)() {
+	func void remove(LinkedListNode<?t> node)() {
 		if (node.fwrd == 0) {
 			this.last = node.back
 		} else {
@@ -87,7 +87,7 @@ class LinkedList (LinkedListNode first, LinkedListNode last, Number length) {
 		this.length--
 	}
 
-	func void remove(Number ix)(LinkedListNode node) {
+	func void remove(Number ix)(LinkedListNode<?t> node) {
 		node = this.fetch(ix)
 		this.remove(node)
 	}
@@ -96,7 +96,7 @@ class LinkedList (LinkedListNode first, LinkedListNode last, Number length) {
 		this.remove(this.last)
 	}
 
-	func LinkedListNode fetch(Number ix)(LinkedListNode node) {
+	func LinkedListNode<?t> fetch(Number ix)(LinkedListNode<?t> node) {
 		node = this.first
 		loop {
 			if (node == 0) {
@@ -112,7 +112,7 @@ class LinkedList (LinkedListNode first, LinkedListNode last, Number length) {
 		}
 	}
 
-	func LinkedListNode fetch_by_data(Any data)(LinkedListNode node) {
+	func LinkedListNode<?t> fetch_by_data(?t data)(LinkedListNode<?t> node) {
 		node = this.first
 		loop {
 			# Return -1 if node not found
@@ -136,7 +136,7 @@ class LinkedList (LinkedListNode first, LinkedListNode last, Number length) {
 		this.length = 0
 	}
 
-	func void print(Stream stream, String sep)(LinkedListNode node, String str_cast) {
+	func void print(Stream stream, String sep)(LinkedListNode<?t> node, String str_cast) {
 		# Prints all list elements
 		# WARNING: Assumes that all elements are strings
 
@@ -157,8 +157,8 @@ class LinkedList (LinkedListNode first, LinkedListNode last, Number length) {
 		}
 	}
 
-	func LinkedList shallow_clone() {
-		var clone = LinkedList_new()
+	func LinkedList<?t> shallow_clone() {
+		var clone = LinkedList<?t>_new()
 		var lln = this.first
 		loop {
 		  if (lln == 0) break

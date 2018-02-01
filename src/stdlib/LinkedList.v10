@@ -1,0 +1,2 @@
+define t "Any"
+include "src/stdlib/LinkedList.generic"
