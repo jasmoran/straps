@@ -1,2 +1,6 @@
 define t "Any"
 include "src/stdlib/Array.generic"
+define t "String"
+include "src/stdlib/Array.generic"
+define t "CharArr"
+include "src/stdlib/Array.generic"

@@ -35,7 +35,7 @@ func void error(String s1, String s2)() error(NullString, NullString, NullString
 func void error(String s1)() error(NullString, NullString, NullString, NullString, s1)
 func void error()() error(NullString, NullString, NullString, NullString, NullString)
 
-func void backtrace()(Array flist, Array fnamelist, Any addr, Number index, String fname, Any curr_rbp) {
+func void backtrace()(Array<Any> flist, Array<String> fnamelist, Any addr, Number index, String fname, Any curr_rbp) {
 	# Get list of function pointers
 	nasm("mov rax, _FUNCTIONLIST")
 	flist = rax

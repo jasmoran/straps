@@ -6,7 +6,7 @@ enum NodeType {
 }
 
 class NodeType() {
-	func String toString()(Array a, Number ix) {
+	func String toString()(Array<String> a, Number ix) {
 		nasm("mov rax, NodeType")
 		a = rax
 		ix = this

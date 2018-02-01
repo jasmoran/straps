@@ -1,13 +1,12 @@
 func Map Map_new(Number size)() {
-	return Map_new(Array_new(size), Array_new(size))
+	return Map_new(Array<String>_new(size), Array<Any>_new(size))
 }
 
-class Map (Array keys, Array values) {
+class Map (Array<String> keys, Array<Any> values) {
 	func Number get_pos(String key) {
-		var Any a = key
 		nasm("mov rax, _String_equal_String_String")
 		var Function f = rax
-		return this.keys.find(a, f)
+		return this.keys.find(key, f)
 	}
 
 	func Any get(String key) {
@@ -21,11 +20,10 @@ class Map (Array keys, Array values) {
 	}
 
 	func void set(String key, Any value) {
-		var Any a = key
 		var ix = this.get_pos(key)
 
 		if (ix < 0) {
-			this.keys.append(a)
+			this.keys.append(key)
 			this.values.append(value)
 		} else {
 			this.values.set(ix, value)

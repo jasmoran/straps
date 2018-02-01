@@ -1,31 +1,19 @@
-func Dump Dump_new(Stream stream)(Any a, Array binops, Array scallreg, Boolean top) {
-	binops = Array_new(5)
-	a = "add "
-	binops.append(a)
-	a = "sub "
-	binops.append(a)
-	a = "shl "
-	binops.append(a)
-	a = "shr "
-	binops.append(a)
-	a = "mov "
-	binops.append(a)
+func Dump Dump_new(Stream stream)(Boolean top) {
+	var binops = Array<String>_new(5)
+	binops.append("add ")
+	binops.append("sub ")
+	binops.append("shl ")
+	binops.append("shr ")
+	binops.append("mov ")
 
-	scallreg = Array_new(7)
-	a = "rax"
-	scallreg.append(a)
-	a = "rdi"
-	scallreg.append(a)
-	a = "rsi"
-	scallreg.append(a)
-	a = "rdx"
-	scallreg.append(a)
-	a = "r10"
-	scallreg.append(a)
-	a = "r8"
-	scallreg.append(a)
-	a = "r9"
-	scallreg.append(a)
+	var scallreg = Array<String>_new(7)
+	scallreg.append("rax")
+	scallreg.append("rdi")
+	scallreg.append("rsi")
+	scallreg.append("rdx")
+	scallreg.append("r10")
+	scallreg.append("r8")
+	scallreg.append("r9")
 
 	top = true
 
@@ -35,7 +23,7 @@ func Dump Dump_new(Stream stream)(Any a, Array binops, Array scallreg, Boolean t
 	return dump
 }
 
-class virtual Dump < Visitor (Visitor v, Array binops, Array scallreg, Boolean top, Number counter,
+class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> scallreg, Boolean top, Number counter,
 					 String trueLabel, String falseLabel, String target, Boolean negate,
 					 Stream stream, String idloop) {
 	func void visit(Node n)() {

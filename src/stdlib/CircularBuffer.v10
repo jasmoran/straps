@@ -1,9 +1,9 @@
 func CircularBuffer CircularBuffer_new(Number capacity)() {
 	rax = capacity
-	return CircularBuffer_new(Array_new(capacity), capacity, 0, 0, 0)
+	return CircularBuffer_new(Array<Any>_new(capacity), capacity, 0, 0, 0)
 }
 
-class CircularBuffer (Array buffer, Number capacity, Number head, Number tail, Number length) {
+class CircularBuffer (Array<Any> buffer, Number capacity, Number head, Number tail, Number length) {
 	func void add_check()() {
 		if (this.length == this.capacity)
 			error("Attempted to add to a full CircularBuffer")

@@ -10,7 +10,7 @@ enum Token {
 }
 
 class Token(void type){
-		func String toString()(Array a, Number ix) {
+		func String toString()(Array<String> a, Number ix) {
 			nasm("mov rax, Token")
 			a = rax
 			ix = this
