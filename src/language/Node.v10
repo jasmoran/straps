@@ -17,7 +17,7 @@ enum NodeType {
 	nNONE nNASM nSYS nBLOCK nPAREN_LIST nFUNCTION nRETURN nCOMPARISON nIF
 	nNEXT nLOOP nBREAK nIDENTIFIER nENUM nCOMMENT nCHARACTER nSTRING nNUMBER
 	nINDEX nCALL nOPERATION nMEM_ACCESS nREGISTER nPUSH nPOP nCLASS nFIELD nGLOBAL
-	nSTRINGS nBINARYOP nUNARYOP nLIST nFUNCTIONS nVTAB_ACCESS
+	nSTRINGS nBINARYOP nUNARYOP nLIST nFUNCTIONS nVTAB_ACCESS nFOR
 }
 
 class NodeType() {
@@ -270,5 +270,29 @@ class virtual EnumNode < Node (String name, ListNode values) {
 		n = this.values
 		n = n.accept(v)
 		if (n != 0) this.values = n
+	}
+}
+
+
+
+func ForNode ForNode_new(StringNode item, Node iterable, ListNode block)() {
+	return ForNode_new(nFOR, item, iterable, block)
+}
+
+class virtual ForNode < Node (StringNode item, Node iterable, ListNode block) {
+	func void accept(Visitor v)() {
+		v.visit(this)
+	}
+
+	func void accept_children(Visitor v)(Node n) {
+		n = this.item
+		n = n.accept(v)
+		if (n != 0) this.item = n
+		n = this.iterable
+		n = n.accept(v)
+		if (n != 0) this.iterable = n
+		n = this.block
+		n = n.accept(v)
+		if (n != 0) this.block = n
 	}
 }

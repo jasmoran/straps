@@ -16,6 +16,7 @@ include "src/language/visitors/Strings.v10"
 include "src/language/visitors/Dump.v10"
 include "src/language/visitors/Variables.v10"
 include "src/language/visitors/Inherit.v10"
+include "src/language/visitors/ForLoop.v10"
 
 global(Scope scope)
 
@@ -46,6 +47,8 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path)(Stream input, St
 
 	load_loop()
 
+	v = ForLoop_new()
+	root.accept(v)
 	v = Variables_new()
 	root.accept(v)
 	v = Typing_new()

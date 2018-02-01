@@ -1,0 +1,67 @@
+func ForLoop ForLoop_new() {
+	var Visitor v = 0
+	var fl = ForLoop_new(v, 0)
+	fl.v = fl
+	return fl
+}
+
+
+class virtual ForLoop < Visitor (Visitor v, Number counter) {
+
+	func Node call_method(Node obj, String method) {
+		# Create method call
+		return BinaryOperationNode_new(Type_new(), PAREN_OPEN,
+			BinaryOperationNode_new(Type_new(), DOT,
+				obj,
+				StringNode_new(nIDENTIFIER, Type_new(), method).toNode()
+			).toNode(),
+			ListNode_new(nCALL).toNode()
+		)
+	}
+
+	func Node assign_method(StringNode vrbl, Node obj, String method) {
+		# Create method call
+		var Node methcall = this.call_method(obj, method)
+
+		# Assign result of methcall to vrbl
+		var infer = Type_new()
+		infer.raw = 1
+		vrbl.ret_type = infer
+		var Node assn = BinaryOperationNode_new(Type_new(), ASSIGN, vrbl.toNode(), methcall)
+
+		# Infer type of vrbl
+		return UnaryOperationNode_new(infer, VAR, assn, true)
+	}
+
+	func void visit(ForNode n)() {
+		var outer_block = ListNode_new(nBLOCK)
+
+		# Create iterator variable name
+		var iterstr = "_iterator_".clone(8).append(this.counter.toString())
+		var iterator = StringNode_new(nIDENTIFIER, Type_new(), iterstr)
+
+		# var $iterator$ = $n.iterable$.iter()
+		outer_block.append(this.assign_method(iterator, n.iterable, "iter"))
+
+		# Add item access to loop block
+		# var $n.item$ = $iterator$.next()
+		n.block.prepend(this.assign_method(n.item, iterator.toNode(), "fetch"))
+
+		# Create conditional
+		var Node cond = BinaryOperationNode_new(Type_new(), EQUAL,
+			this.call_method(iterator.toNode(), "finished"),
+			StringNode_new(nIDENTIFIER, Type_new(), "true").toNode()
+		)
+
+		# Create break block => { break }
+		var brblock = ListNode_new(nBLOCK).append(Node_new(nBREAK))
+
+		# Add end check to loop block
+		n.block.prepend(IfNode_new(cond, brblock))
+
+		# Create loop => loop { $n.block$ }
+		outer_block.append(LoopNode_new(n.block))
+
+  	return outer_block
+	}
+}

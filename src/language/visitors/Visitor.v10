@@ -52,4 +52,9 @@ class virtual Visitor() {
 		n.accept_children(this)
 		return 0
 	}
+
+	func void visit(ForNode n)() {
+		n.accept_children(this)
+		return 0
+	}
 }
