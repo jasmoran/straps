@@ -1,0 +1,26 @@
+#-UVWXYZ
+#-ZYXWVU
+#-
+
+include "src/stdlib/stdlib.v10"
+
+func void main() {
+	var arr = Array<String>_new(8)
+	arr.append("U")
+	arr.append("V")
+	arr.append("W")
+	arr.append("X")
+	arr.append("Y")
+	arr.append("Z")
+	# arr = [U V W X Y X]
+
+  # Test for loop
+  for (str in arr) {
+    str.print()
+  }
+	"\n".print()
+
+	# Test compact for loop in reverse
+  for (str in arr.iter().reverse()) str.print()
+	"\n".print()
+}

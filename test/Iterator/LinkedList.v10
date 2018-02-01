@@ -1,0 +1,29 @@
+#-ABCDEF
+#-FEDCBA
+#-
+
+include "src/stdlib/stdlib.v10"
+
+define t "String"
+include "src/stdlib/LinkedList.generic"
+
+func void main() {
+	var list = LinkedList<String>_new()
+	list.append("A")
+	list.append("B")
+	list.append("C")
+	list.append("D")
+	list.append("E")
+	list.append("F")
+	# list = [A B C D E F]
+
+  # Test for loop
+  for (str in list) {
+    str.print()
+  }
+  "\n".print()
+
+  # Test compact for loop in reverse
+  for (str in list.iter().reverse()) str.print()
+  "\n".print()
+}

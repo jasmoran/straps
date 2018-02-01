@@ -1,3 +1,38 @@
+func LLIterator<?t> LLIterator<?t>_new(LinkedList<?t> list) {
+	return LLIterator<?t>_new(list, list.first, false)
+}
+
+class LLIterator<?t> (LinkedList<?t> list, LinkedListNode<?t> curr, Boolean back) {
+	func ?t fetch() {
+		if (this.curr == 0) return 0
+		var payload = this.curr.payload
+		if (this.back == true) {
+			this.curr = this.curr.back
+		} else {
+			this.curr = this.curr.fwrd
+		}
+		return payload
+	}
+
+	func Boolean finished() {
+		if (this.curr == 0) return true
+		return false
+	}
+
+	func LLIterator<?t> reverse() {
+		if (this.back == true) {
+			this.back = false
+			this.curr = this.list.first
+		} else {
+			this.back = true
+			this.curr = this.list.last
+		}
+		return this
+	}
+
+	func LLIterator<?t> iter() return this
+}
+
 func LinkedList<?t> LinkedList<?t>_new()(LinkedListNode<?t> n) {
 	n = 0
 	return LinkedList<?t>_new(n, n, 0)
@@ -166,5 +201,9 @@ class LinkedList<?t> (LinkedListNode<?t> first, LinkedListNode<?t> last, Number 
 		  lln = lln.fwrd
 		}
 		return clone
+	}
+
+	func LLIterator<?t> iter() {
+		return LLIterator<?t>_new(this)
 	}
 }

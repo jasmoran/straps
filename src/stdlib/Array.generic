@@ -1,3 +1,41 @@
+func ArrIterator<?t> ArrIterator<?t>_new(Array<?t> arr) {
+	return ArrIterator<?t>_new(arr, 0, false)
+}
+
+class ArrIterator<?t> (Array<?t> arr, Number curr, Boolean back) {
+	func ?t fetch() {
+		if (this.curr < 0) return 0
+		if (this.curr >= this.arr.length) return 0
+		var payload = this.arr.get(this.curr)
+		if (this.back == true) {
+			this.curr--
+		} else {
+			this.curr++
+		}
+		return payload
+	}
+
+	func Boolean finished() {
+		if (this.curr < 0) return true
+		if (this.curr >= this.arr.length) return true
+		return false
+	}
+
+	func ArrIterator<?t> reverse() {
+		if (this.back == true) {
+			this.back = false
+			this.curr = 0
+		} else {
+			this.back = true
+			this.curr = this.arr.length
+			this.curr--
+		}
+		return this
+	}
+
+	func ArrIterator<?t> iter() return this
+}
+
 func Array<?t> Array<?t>_new(Number size)(Number byte_size) {
 	byte_size = size
 	byte_size << 3
@@ -64,5 +102,9 @@ class Array<?t> (Number length, Number size, void data) {
 			clone.append(this.get(ix))
 			ix++
 		}
+	}
+
+	func ArrIterator<?t> iter() {
+		return ArrIterator<?t>_new(this)
 	}
 }
