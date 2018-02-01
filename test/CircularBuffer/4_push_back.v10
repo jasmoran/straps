@@ -1,36 +1,32 @@
 #-A
 #-B
 #-C
-#-Error: Attempted to add to a full CircularBuffer
+#-Error: Attempted to add to a full CircularBuffer<String>
 #*
 
 include "src/stdlib/stdlib.v10"
 
-func void main()(CircularBuffer cb, Any a, String s) {
-	cb = CircularBuffer_new(3)
+define t "String"
+include "src/stdlib/CircularBuffer.generic"
+
+func void main() {
+	var cb = CircularBuffer<String>_new(3)
 	# cb = []
 
-	a = "A"
-	cb.push_back(a)
+	cb.push_back("A")
 	# cb = [A]
 
-	s = cb.peek(0)
-	s.println()
+	cb.peek(0).println()
 
-	a = "B"
-	cb.push_back(a)
+	cb.push_back("B")
 	# cb = [A B]
 
-	s = cb.peek(1)
-	s.println()
+	cb.peek(1).println()
 
-	a = "C"
-	cb.push_back(a)
+	cb.push_back("C")
 	# cb = [A B C]
 
-	s = cb.peek(2)
-	s.println()
+	cb.peek(2).println()
 
-	a = "D"
-	cb.push_back(a)
+	cb.push_back("D")
 }

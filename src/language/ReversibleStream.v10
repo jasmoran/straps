@@ -1,7 +1,11 @@
 include "src/language/MetaCharacter.v10"
 
+define t "MetaCharacter"
+include "src/stdlib/CircularBuffer.generic"
+include "src/stdlib/Array.generic"
+
 func ReversibleStream ReversibleStream_new(Stream stream, Number size)() {
-	return ReversibleStream_new(stream, CircularBuffer_new(size), 0, 0, 1)
+	return ReversibleStream_new(stream, CircularBuffer<MetaCharacter>_new(size), 0, 0, 1)
 }
 
 func ReversibleStream ReversibleStream_new(String input)(Character nulchar, Number len, ReversibleStream rs) {
@@ -19,8 +23,8 @@ func ReversibleStream ReversibleStream_new(String input)(Character nulchar, Numb
 	return rs
 }
 
-class ReversibleStream (Stream stream, CircularBuffer buffer, Number nxt_pos, Number col, Number line) {
-	func MetaCharacter get()(Character chr, Any mc) {
+class ReversibleStream (Stream stream, CircularBuffer<MetaCharacter> buffer, Number nxt_pos, Number col, Number line) {
+	func MetaCharacter get()(Character chr, MetaCharacter mc) {
 		# Get a character from the underlying Stream if necessary
 		if (this.nxt_pos == this.buffer.length) {
 			chr = this.stream.get()

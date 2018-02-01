@@ -1,37 +1,32 @@
 #-A
 #-D
 #-C
-#-Error: Peek index too low for CircularBuffer
+#-Error: Peek index too low for CircularBuffer<String>
 #*
 
 include "src/stdlib/stdlib.v10"
 
-func void main()(CircularBuffer cb, Any a, String s, Number n) {
-	cb = CircularBuffer_new(4)
-	a = "A"
-	cb.push_front(a)
-	a = "B"
-	cb.push_front(a)
-	a = "C"
-	cb.push_front(a)
-	a = "D"
-	cb.push_front(a)
+define t "String"
+include "src/stdlib/CircularBuffer.generic"
+
+func void main() {
+	var cb = CircularBuffer<String>_new(4)
+	cb.push_front("A")
+	cb.push_front("B")
+	cb.push_front("C")
+	cb.push_front("D")
 	# cb = [D C B A]
 
-	s = cb.peek(3)
-	s.println()
+	cb.peek(3).println()
 
-	s = cb.peek()
-	s.println()
+	cb.peek().println()
 
 	cb.pop_front()
 	# cb = [C B A]
 
-	s = cb.peek()
-	s.println()
+	cb.peek().println()
 
-	n = 0
+	var n = 0
 	n -= 7
-	s = cb.peek(n)
-	s.println()
+	cb.peek(n).println()
 }

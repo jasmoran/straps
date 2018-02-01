@@ -3,7 +3,7 @@
 #-e
 #-l
 #-l
-#-Error: Attempted to add to a full CircularBuffer
+#-Error: Attempted to add to a full CircularBuffer<MetaCharacter>
 #*
 
 include "src/stdlib/stdlib.v10"
