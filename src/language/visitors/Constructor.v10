@@ -40,8 +40,7 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 		if (n.vtable != 0) {
 			# Add vtable to fields
 			var Node vt_ident = StringNode_new(nIDENTIFIER, Type_new(), "vt")
-			var Any a = vt_ident
-			n.fields.children.prepend(a)
+			n.fields.prepend(vt_ident)
 
 			var tabname = "_vtable_".clone(n.name.length).append(n.name)
 

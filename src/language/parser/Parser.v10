@@ -96,11 +96,11 @@ class Parser(String name, Tokenizer t) {
 
 
 
-	func Node parse()(ListNode l, Any expr) {
+	func Node parse()(ListNode l) {
 		l = ListNode_new(nBLOCK)
 
 		loop {
-			expr = this.expression()
+			var expr = this.expression()
 			if (expr == EOF) { break }
 			l.children.append(expr)
 		}
@@ -108,7 +108,7 @@ class Parser(String name, Tokenizer t) {
 		return l
 	}
 
-	func ListNode block(NodeType t)(ListNode l, Any expr) {
+	func ListNode block(NodeType t)(ListNode l) {
 		l = ListNode_new(t)
 		this.skip_newlines()
 
@@ -118,21 +118,19 @@ class Parser(String name, Tokenizer t) {
 			loop {
 				if (this.t.peek() == CURLY_CLOSE) { break }
 				if (this.t.peek() == EOF) { break }
-				expr = this.expression()
-				l.children.append(expr)
+				l.children.append(this.expression())
 				this.skip_newlines()
 			}
 
 			this.t.consume(CURLY_CLOSE)
 		} else {
-			expr = this.expression()
-			l.children.append(expr)
+			l.children.append(this.expression())
 		}
 
 		return l
 	}
 
-	func ListNode typed_list(NodeType t)(ListNode l, Any n, String type, String vrbl) {
+	func ListNode typed_list(NodeType t)(ListNode l, String type, String vrbl) {
 		this.t.consume(PAREN_OPEN)
 		l = ListNode_new(t)
 
@@ -141,9 +139,9 @@ class Parser(String name, Tokenizer t) {
 
 			type = this.t.consume(IDENTIFIER)
 			vrbl = this.t.consume(IDENTIFIER)
-			n = StringNode_new(nIDENTIFIER, Type_new(type), vrbl)
+			var n = StringNode_new(nIDENTIFIER, Type_new(type), vrbl)
 
-			l.children.append(n)
+			l.append(n.toNode())
 
 			if (this.t.peek() != COMMA) { break }
 
@@ -155,14 +153,13 @@ class Parser(String name, Tokenizer t) {
 		return l
 	}
 
-	func LinkedList expression_list()(LinkedList l, Any expr) {
+	func LinkedList<Node> expression_list() {
 		this.t.consume(PAREN_OPEN)
-		l = LinkedList_new()
+		var l = LinkedList<Node>_new()
 
 		loop {
 			if (this.t.peek() == PAREN_CLOSE) { break }
-			expr = this.expression()
-			l.append(expr)
+			l.append(this.expression())
 			if (this.t.peek() != COMMA) { break }
 			this.t.consume(COMMA)
 		}

@@ -1,4 +1,4 @@
-func IndexCall IndexCall_new()(LinkedList pl, LinkedListNode plln) {
+func IndexCall IndexCall_new()(LinkedList<Node> pl, LinkedListNode<Node> plln) {
 	pl = 0
 	plln = 0
 	var Visitor v = 0
@@ -7,18 +7,19 @@ func IndexCall IndexCall_new()(LinkedList pl, LinkedListNode plln) {
 	return ixc
 }
 
-class virtual IndexCall < Visitor (Visitor v, LinkedList parent_list, LinkedListNode parent_lln, Node scratch_reg) {
-	func void prepend(Node child)(Any a) {
+class virtual IndexCall < Visitor (Visitor v, LinkedList<Node> parent_list,
+                                   LinkedListNode<Node> parent_lln, Node scratch_reg) {
+
+	func void prepend(Node child) {
 		if (this.parent_list == 0) error("Attempted to prepend when not enclosed by a block")
-		a = child
-		this.parent_list.insert_before(this.parent_lln, a)
+		this.parent_list.insert_before(this.parent_lln, child)
 	}
 
-	func void visit(BinaryOperationNode n)(Node nn, Boolean dumb_or, BinaryOperationNode child, ListNode args, LinkedListNode arg) {
+	func void visit(BinaryOperationNode n)(Node nn, Boolean dumb_or, BinaryOperationNode child, ListNode args) {
 		if (n.op == PAREN_OPEN) {
 			# Loop through arguments from last to first
 			args = n.rhs
-			arg = args.children.last
+			var arg = args.children.last
 			loop {
 				if (arg == 0) break
 
@@ -105,17 +106,17 @@ class virtual IndexCall < Visitor (Visitor v, LinkedList parent_list, LinkedList
 		return 0
 	}
 
-	func void visit(ListNode n)(LinkedListNode lln, LinkedList prev_list, LinkedListNode prev_lln) {
+	func void visit(ListNode n) {
 		if (n.type == nBLOCK) {
-			prev_list = this.parent_list
+			var prev_list = this.parent_list
 			this.parent_list = n.children
 
-			lln = n.children.first
+			var lln = n.children.first
 			loop {
 				if (lln == 0) { break }
 				n = lln.payload
 
-				prev_lln = this.parent_lln
+				var prev_lln = this.parent_lln
 				this.parent_lln = lln
 
 				n = n.accept(this.v)

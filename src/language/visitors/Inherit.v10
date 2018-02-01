@@ -7,7 +7,7 @@ func Inherit Inherit_new() {
 
 
 class virtual Inherit < Visitor (Visitor v) {
-	func void remove_duplicates(LinkedList list, StringNode field) {
+	func void remove_duplicates(LinkedList<Node> list, StringNode field) {
 		var lln = list.first
 		loop {
 			if (lln == 0) { break }

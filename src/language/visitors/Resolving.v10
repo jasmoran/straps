@@ -33,7 +33,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 
 	func void visit(BinaryOperationNode n)(Scope prev_scope, StringNode sn,
 																				 BinaryOperationNode binop, ListNode args,
-																				 LinkedListNode lln, StringNode field,
+																				 StringNode field,
 																				 Node nn, Boolean fixargs, Number num) {
 		# Handle fields
 		if (n.op == DOT) {
@@ -97,7 +97,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 				sn.string = sn.string.clone(256)
 
 				# Add args to function name
-				lln = args.children.first
+				var lln = args.children.first
 				loop {
 					if (lln == 0) { break }
 					field = lln.payload

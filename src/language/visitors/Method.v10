@@ -37,7 +37,7 @@ class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
   	return 0
 	}
 
-	func void visit(FunctionNode n)(Number length, LinkedListNode lln, StringNode arg, FunctionNode clone) {
+	func void visit(FunctionNode n)(Number length, StringNode arg, FunctionNode clone) {
 		# Leave main function alone
 		if (n.name.equal("main") == true) return 0
 		if (n.name.get(0) == '_') return 0
@@ -53,7 +53,7 @@ class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
 		var cls_scope_name = String_new(256).append(n.name)
 
 		# Loop through arguments
-		lln = n.args.children.first
+		var lln = n.args.children.first
 		loop {
 			if (lln == 0) { break }
 			arg = lln.payload

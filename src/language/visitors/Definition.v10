@@ -9,10 +9,10 @@ func Definition Definition_new()() {
 # and adds them to their respective scopes.
 # These "variables" are stored as { name => offset/label }
 class virtual Definition < Visitor (Visitor v) {
-	func void visit(ClassNode n)(Number ix, StringNode field, LinkedListNode lln) {
+	func void visit(ClassNode n)(Number ix, StringNode field) {
 		ix = 0
 
-		lln = n.fields.children.first
+		var lln = n.fields.children.first
 		loop {
 			if (lln == 0) { break }
 			field = lln.payload
@@ -31,12 +31,12 @@ class virtual Definition < Visitor (Visitor v) {
   	return 0
 	}
 
-	func void visit(EnumNode n)(Number ix, StringNode field, LinkedListNode lln, Scope sc, Type type) {
+	func void visit(EnumNode n)(Number ix, StringNode field, Scope sc, Type type) {
 		ix = 0
 
 		type = Type_new(n.name)
 
-		lln = n.values.children.first
+		var lln = n.values.children.first
 		loop {
 			if (lln == 0) { break }
 			field = lln.payload
@@ -56,10 +56,10 @@ class virtual Definition < Visitor (Visitor v) {
   	return 0
 	}
 
-	func void visit(FunctionNode n)(Number ix, StringNode field, LinkedListNode lln, Scope sc) {
+	func void visit(FunctionNode n)(Number ix, StringNode field, Scope sc) {
 		# Loop through arguments
 		ix = 16
-		lln = n.args.children.first
+		var lln = n.args.children.first
 		loop {
 			if (lln == 0) { break }
 			field = lln.payload
@@ -100,8 +100,8 @@ class virtual Definition < Visitor (Visitor v) {
   	return 0
 	}
 
-	func void visit(ListNode n)(StringNode field, LinkedListNode lln, Scope sc) {
-		lln = n.children.first
+	func void visit(ListNode n)(StringNode field, Scope sc) {
+		var lln = n.children.first
 		loop {
 			if (lln == 0) { break }
 			field = lln.payload

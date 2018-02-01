@@ -235,7 +235,7 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
   	return 0
 	}
 
-	func void visit(ListNode n)(LinkedListNode lln, StringNode nn, Number ix, String s) {
+	func void visit(ListNode n)(LinkedListNode<Node> lln, StringNode nn, Number ix, String s) {
 		if (this.top == true) {
 			"section .text\nglobal _start".println(this.stream)
 			this.top = false
@@ -407,7 +407,7 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
   	return 0
 	}
 
-	func void visit(EnumNode n)(String len, LinkedListNode lln, Node nn) {
+	func void visit(EnumNode n)(String len, Node nn) {
 		"section .data".println(this.stream)
 		n.name.print(this.stream)
 		":\ndq ".print(this.stream)
@@ -418,7 +418,7 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
 		", 24+".print(this.stream)
 		n.name.print(this.stream)
 
-		lln = n.values.children.first
+		var lln = n.values.children.first
 		loop {
 			if (lln == 0) { break }
 			nn = lln.payload
