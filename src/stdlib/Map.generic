@@ -1,15 +1,15 @@
-func Map Map_new(Number size)() {
-	return Map_new(Array<String>_new(size), Array<Any>_new(size))
+func Map<?k_?v> Map<?k_?v>_new(Number size)() {
+	return Map<?k_?v>_new(Array<?k>_new(size), Array<?v>_new(size))
 }
 
-class Map (Array<String> keys, Array<Any> values) {
-	func Number get_pos(String key) {
+class Map<?k_?v> (Array<?k> keys, Array<?v> values) {
+	func Number get_pos(?k key) {
 		nasm("mov rax, _String_equal_String_String")
 		var Function f = rax
 		return this.keys.find(key, f)
 	}
 
-	func Any get(String key) {
+	func ?v get(?k key) {
 		var ix = this.get_pos(key)
 
 		if (ix < 0) {
@@ -19,7 +19,7 @@ class Map (Array<String> keys, Array<Any> values) {
 		return this.values.get(ix)
 	}
 
-	func void set(String key, Any value) {
+	func void set(?k key, ?v value) {
 		var ix = this.get_pos(key)
 
 		if (ix < 0) {
@@ -35,17 +35,16 @@ class Map (Array<String> keys, Array<Any> values) {
 		this.values.clear()
 	}
 
-	func void print_keys()(Number index, String key) {
+	func void print_keys()(Number index) {
 		index = 0
 		loop {
 			if (this.keys.length == index) break
-			key = this.keys.get(index)
-			key.println()
+			this.keys.get(index).println()
 			index++
 		}
 	}
 
-	func Map shallow_clone() {
-		return Map_new(this.keys.shallow_clone(), this.values.shallow_clone())
+	func Map<?k_?v> shallow_clone() {
+		return Map<?k_?v>_new(this.keys.shallow_clone(), this.values.shallow_clone())
 	}
 }
