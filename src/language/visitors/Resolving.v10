@@ -41,42 +41,21 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			name = binop.rhs
 		}
 
+		if (name.type != nIDENTIFIER) error("CallNode function name is not an identifier")
+
 		# Resolve arguments
 		n.accept_args(this.v)
 
-		# Detect "pointer" methods, marked with m_
-		var fixargs = true
-		if (name.string < 1000) {
-			#error("NULL-ish string node as function name")
-			fixargs = false
-		}
-
-		#if (name.type != nIDENTIFIER && name.type != nFUNCTION) {
-		#	error("Function name is not an identifier it is a ", name.type.toString())
-		#}
-
 		# Fix arguments into function name
-		if (name.type == nIDENTIFIER && fixargs == true) {
-			# Extend function name
-			name.string = name.string.clone(256)
+		# Extend function name
+		name.string = name.string.clone(256)
 
-			# Add args to function name
-			for (arg in n.args) {
-				# Append type to function name
-				var type = arg.ret_type.raw
-				if (type < 2) error("Unknown type in call to ", name.string, "...")
-				name.string.append('_').append(type)
-			}
-		}
-
-		# If function is a DOT, add its LHS to arguments (this)
-		binop = n.cfunction
-		if (binop.type == nBINARYOP && binop.op == DOT) {
-		 	if (binop.rhs.type == nIDENTIFIER || binop.rhs.type == nFUNCTION) {
-				var StringNode nn = binop.lhs
-				nn = nn.accept(this.v)
-				n.args.prepend(nn)
-			}
+		# Add args to function name
+		for (arg in n.args) {
+			# Append type to function name
+			var type = arg.ret_type.raw
+			if (type < 2) error("Unknown type in call to ", name.string, "...")
+			name.string.append('_').append(type)
 		}
 
 		# Resolve function
@@ -86,6 +65,10 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 		# Fix up dot if it resolved to a function
 		binop = n.cfunction
 		if (binop.type == nBINARYOP && binop.op == DOT) {
+			# If function is a DOT, add its LHS to arguments (this)
+			var StringNode nn = binop.lhs
+			n.args.prepend(nn)
+
 			if (binop.rhs.type == nFUNCTION) {
 				n.cfunction = binop.rhs
 			}
@@ -112,9 +95,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 	}
 
 	func void visit(BinaryOperationNode n)(Scope prev_scope, StringNode sn,
-																				 BinaryOperationNode binop, ListNode args,
-																				 StringNode field,
-																				 Node nn, Boolean fixargs, Number num) {
+																				 StringNode field, Node nn, Number num) {
 		# Handle fields
 		if (n.op == DOT) {
 			# Resolve first item
@@ -157,6 +138,8 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 				sn = n.rhs
 
 				field.ret_type = sn.ret_type
+
+				return n
 			}
 		}
 
