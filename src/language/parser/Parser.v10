@@ -263,13 +263,13 @@ class Parser(String name, Tokenizer t) {
 		return UnaryOperationNode_new(tk, this.snd_expr(), true)
 	}
 
-	func Node top_expr()(Node node, Node list, Token tk) {
+	func Node top_expr()(Node node, Token tk) {
 		node = this.value()
 		loop {
 			tk = this.t.peek()
 			if (tk == PAREN_OPEN) {
-				list = ListNode_new(nCALL, this.expression_list())
-				node = BinaryOperationNode_new(PAREN_OPEN, node, list)
+				var LinkedList<StringNode> arglist = this.expression_list()
+				node = CallNode_new(node, arglist)
 			} else if (tk == SQUARE_OPEN) {
 				this.t.consume(SQUARE_OPEN)
 				node = BinaryOperationNode_new(SQUARE_OPEN, node, this.expression())

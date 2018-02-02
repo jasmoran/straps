@@ -15,39 +15,35 @@ class virtual IndexCall < Visitor (Visitor v, LinkedList<Node> parent_list,
 		this.parent_list.insert_before(this.parent_lln, child)
 	}
 
-	func void visit(BinaryOperationNode n)(Node nn, Boolean dumb_or, BinaryOperationNode child, ListNode args) {
-		if (n.op == PAREN_OPEN) {
-			# Loop through arguments from last to first
-			args = n.rhs
-			var arg = args.children.last
-			loop {
-				if (arg == 0) break
-
-				# Visit argument
-				nn = arg.payload
-				nn = nn.accept(this.v)
-				if (nn != 0) arg.payload = nn
-
-				# Push each argment onto block
-				nn = arg.payload
-				this.prepend(
-					UnaryOperationNode_new(PUSH, nn, true).toNode()
-				)
-				arg = arg.back
+	func void visit(CallNode n) {
+		# Loop through arguments from last to first
+		for (arg in n.args.iter().reverse()) {
+			# Visit argument
+			var nn = arg.accept(this.v)
+			if (nn != 0) {
+				arg = nn
+				arg_iter.set(arg)
 			}
 
-			# Visit left hand side
-			nn = n.lhs
-			nn = nn.accept(this.v)
-			if (nn != 0) n.lhs = nn
-
-			# Actually call function after pushing arguments
-			this.prepend(n.toNode())
-
-			# Replace with rax
-			return StringNode_new(nREGISTER, Type_new(), "rax")
+			# Push each argument onto block
+			this.prepend(
+				UnaryOperationNode_new(PUSH, arg.toNode(), true).toNode()
+			)
 		}
 
+		# Visit function
+		var nn = n.cfunction
+		nn = nn.accept(this.v)
+		if (nn != 0) n.cfunction = nn
+
+		# Actually call function after pushing arguments
+		this.prepend(n.toNode())
+
+		# Replace with rax
+		return StringNode_new(nREGISTER, Type_new(), "rax")
+	}
+
+	func void visit(BinaryOperationNode n)(Node nn, Boolean dumb_or, BinaryOperationNode child, ListNode args) {
 		# Visit left hand side
 		nn = n.lhs
 		nn = nn.accept(this.v)

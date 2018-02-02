@@ -16,15 +16,15 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 		size << 3
 
 		# Create allocate call + assign and append to block
-		var Node rando = ListNode_new(nCALL).append(
-			StringNode_new(nNUMBER, Type_new("Number"), size.toString()).toNode()
+		var rando = LinkedList<StringNode>_new()
+		rando.append(
+			StringNode_new(nNUMBER, Type_new("Number"), size.toString())
 		)
 		this.block = ListNode_new(nBLOCK).append(
 			BinaryOperationNode_new(
 				ASSIGN,
 				this.new_obj,
-				BinaryOperationNode_new(
-					PAREN_OPEN,
+				CallNode_new(
 					StringNode_new(nIDENTIFIER, Type_new(n.name), "allocate").toNode(),
 					rando
 				).toNode()

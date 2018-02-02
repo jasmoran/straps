@@ -12,6 +12,8 @@ include "src/stdlib/Array.generic"
 
 define t "Node"
 include "src/stdlib/LinkedList.generic"
+define t "StringNode"
+include "src/stdlib/LinkedList.generic"
 
 enum NodeType {
 	nNONE nNASM nSYS nBLOCK nPAREN_LIST nFUNCTION nRETURN nCOMPARISON nIF
@@ -42,6 +44,37 @@ class virtual Node(NodeType type) {
 
 class virtual RetNode < Node (Type ret_type) {}
 class virtual OpNode < RetNode (Token op) {}
+
+func CallNode CallNode_new(Node cfunction) {
+	var args = LinkedList<StringNode>_new()
+	return CallNode_new(cfunction, args)
+}
+
+func CallNode CallNode_new(Node cfunction, LinkedList<StringNode> args) {
+	return CallNode_new(nCALL, Type_new(), cfunction, args)
+}
+
+class virtual CallNode < RetNode (Node cfunction, LinkedList<StringNode> args) {
+	func void accept(Visitor v)() {
+		v.visit(this)
+	}
+
+	func void accept_args(Visitor v) {
+		for (arg in this.args) {
+			var Node nn = arg
+			var StringNode n = nn.accept(v)
+			if (n != 0) arg_iter.set(n)
+		}
+	}
+
+	func void accept_children(Visitor v) {
+		var n = this.cfunction
+		n = n.accept(v)
+		if (n != 0) this.cfunction = n
+
+		this.accept_args(v)
+	}
+}
 
 
 func BinaryOperationNode BinaryOperationNode_new(Token op, Node lhs, Node rhs)() {

@@ -31,6 +31,20 @@ class virtual Printer < Visitor (Visitor v, Number indent, Stream s, Number dept
   	return 0
 	}
 
+	func void visit(CallNode n) {
+		if (this.indent > this.depth) return 0
+		this.pi()
+		"nCALL(".print(this.s)
+		n.ret_type.print(this.s)
+		")\n".print(this.s)
+
+		this.indent++
+		n.accept_children(this.v)
+		this.indent--
+
+		return 0
+	}
+
 	func void visit(BinaryOperationNode n)() {
 		if (this.indent > this.depth) return 0
 		this.pi()

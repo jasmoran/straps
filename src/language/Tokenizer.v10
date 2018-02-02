@@ -313,7 +313,7 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 		if (this.match("else") == true) { return ELSE }
 		if (this.match("enum") == true) { return ENUM }
 		if (this.match("for") == true) { return FOR }
-		if (this.match("func") == true) { return FUNC }
+		if (this.match("func ") == true) { return FUNC }
 		if (this.match("global") == true) { return GLOBAL }
 		if (this.match("if") == true) { return IF }
 		if (this.match("include") == true) { return INCLUDE }

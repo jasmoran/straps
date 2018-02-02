@@ -31,6 +31,86 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 		return n
 	}
 
+	func void visit(CallNode n) {
+		# Target of arg fixing, default to normal function
+		var StringNode name = n.cfunction
+
+		# If a method, args fixing target is different
+		var BinaryOperationNode binop = n.cfunction
+		if (binop.type == nBINARYOP && binop.op == DOT) {
+			name = binop.rhs
+		}
+
+		# Resolve arguments
+		n.accept_args(this.v)
+
+		# Detect "pointer" methods, marked with m_
+		var fixargs = true
+		if (name.string < 1000) {
+			#error("NULL-ish string node as function name")
+			fixargs = false
+		}
+
+		#if (name.type != nIDENTIFIER && name.type != nFUNCTION) {
+		#	error("Function name is not an identifier it is a ", name.type.toString())
+		#}
+
+		# Fix arguments into function name
+		if (name.type == nIDENTIFIER && fixargs == true) {
+			# Extend function name
+			name.string = name.string.clone(256)
+
+			# Add args to function name
+			for (arg in n.args) {
+				# Append type to function name
+				var type = arg.ret_type.raw
+				if (type < 2) error("Unknown type in call to ", name.string, "...")
+				name.string.append('_').append(type)
+			}
+		}
+
+		# If function is a DOT, add its LHS to arguments (this)
+		binop = n.cfunction
+		if (binop.type == nBINARYOP && binop.op == DOT) {
+		 	if (binop.rhs.type == nIDENTIFIER || binop.rhs.type == nFUNCTION) {
+				var StringNode nn = binop.lhs
+				nn = nn.accept(this.v)
+				n.args.prepend(nn)
+			}
+		}
+
+		# Resolve function
+		nn = n.cfunction
+		n.cfunction = nn.accept(this.v)
+
+		# Fix up dot if it resolved to a function
+		binop = n.cfunction
+		if (binop.type == nBINARYOP && binop.op == DOT) {
+			if (binop.rhs.type == nFUNCTION) {
+				n.cfunction = binop.rhs
+			}
+
+			# Virtual methods
+			if (binop.rhs.type == nVTAB_ACCESS) {
+				var StringNode vtab_off = binop.rhs
+				n.cfunction = BinaryOperationNode_new(
+					vtab_off.ret_type, SQUARE_OPEN,
+					BinaryOperationNode_new(Type_new(), SQUARE_OPEN,
+						binop.lhs,
+						StringNode_new(nNUMBER, Type_new(), "0").toNode()
+					).toNode(),
+					StringNode_new(nNUMBER, Type_new(), vtab_off.string).toNode()
+				).toNode()
+			}
+		}
+
+		# Inherit ret_type from function
+		var RetNode rn = n.cfunction
+		n.ret_type = rn.ret_type
+
+		return n
+	}
+
 	func void visit(BinaryOperationNode n)(Scope prev_scope, StringNode sn,
 																				 BinaryOperationNode binop, ListNode args,
 																				 StringNode field,
@@ -60,99 +140,6 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 
 			# Restore scope
 			this.scope = prev_scope
-
-			return n
-		}
-
-		if (n.op == PAREN_OPEN) {
-			# Target of arg fixing, default to normal function
-			sn = n.lhs
-			args = n.rhs
-
-			# If a method, args fixing target is different
-			if (n.lhs.type == nBINARYOP) {
-				binop = n.lhs
-				if (binop.op == DOT) {
-					sn = binop.rhs
-				}
-			}
-
-			# Resolve arguments
-			n.rhs = args.accept(this.v)
-
-			# Detect "pointer" methods, marked with m_
-			fixargs = true
-			if (sn.string < 1000) {
-				fixargs = false
-			} else {
-				if (sn.string.get(0) == 'm')
-				if (sn.string.get(1) == '_')
-					fixargs = false
-			}
-
-			# Fix arguments into function name
-			if (sn.type == nIDENTIFIER)
-			if (fixargs == true) {
-				# Extend function name
-				sn.string = sn.string.clone(256)
-
-				# Add args to function name
-				var lln = args.children.first
-				loop {
-					if (lln == 0) { break }
-					field = lln.payload
-
-					# Append type to function name
-					if (field.ret_type.raw == 0) error("Unknown type in call to ", sn.string, "...")
-					sn.string.append('_').append(field.ret_type.raw)
-
-					lln = lln.fwrd
-				}
-			}
-
-			# If LHS is a DOT, add its LHS to arguments (this)
-			if (n.lhs.type == nBINARYOP) {
-				binop = n.lhs
-				if (binop.op == DOT) {
-					sn = binop.rhs
-
-					if (sn.type == nIDENTIFIER) {
-						nn = binop.lhs
-						nn = nn.accept(this.v)
-						args.prepend(nn)
-					}
-				}
-			}
-
-			# Resolve function
-			nn = n.lhs
-			n.lhs = nn.accept(this.v)
-
-			# Fix up dot if it resolved to a function
-			binop = n.lhs
-			if (n.lhs.type == nBINARYOP)
-			if (binop.op == DOT) {
-				if (binop.rhs.type == nFUNCTION) {
-					n.lhs = binop.rhs
-				}
-
-				# Virtual methods
-				if (binop.rhs.type == nVTAB_ACCESS) {
-					var StringNode vtab_off = binop.rhs
-					n.lhs = BinaryOperationNode_new(
-						vtab_off.ret_type, SQUARE_OPEN,
-						BinaryOperationNode_new(Type_new(), SQUARE_OPEN,
-							binop.lhs,
-							StringNode_new(nNUMBER, Type_new(), "0").toNode()
-						).toNode(),
-						StringNode_new(nNUMBER, Type_new(), vtab_off.string).toNode()
-					).toNode()
-				}
-			}
-
-			# Inherit ret_type from function
-			sn = n.lhs
-			n.ret_type = sn.ret_type
 
 			return n
 		}

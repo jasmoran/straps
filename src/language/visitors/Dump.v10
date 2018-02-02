@@ -38,18 +38,19 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
   	return 0
 	}
 
+	func void visit(CallNode n) {
+		"call ".print(this.stream)
+		if (n.cfunction.type == nFUNCTION) {
+			var FunctionNode fun = n.cfunction
+			fun.name.print(this.stream)
+		} else {
+			n.cfunction.accept(this.v)
+		}
+		"\n".print(this.stream)
+	}
+
 	func void visit(BinaryOperationNode n)(String op, Number ix, Node nn, FunctionNode fun, String lastTrue, String lastFalse, StringNode num) {
-		if (n.op == PAREN_OPEN) {
-			"call ".print(this.stream)
-			if (n.lhs.type == nFUNCTION) {
-				fun = n.lhs
-				fun.name.print(this.stream)
-			} else {
-				nn = n.lhs
-				nn.accept(this.v)
-			}
-			"\n".print(this.stream)
-		} else if (n.op == DOT) {
+		if (n.op == DOT) {
 			"QWORD[".print(this.stream)
 			nn = n.lhs
 			nn.accept(this.v)
