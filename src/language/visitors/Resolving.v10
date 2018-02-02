@@ -58,9 +58,31 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			name.string.append('_').append(type)
 		}
 
+
 		# Resolve function
-		nn = n.cfunction
-		n.cfunction = nn.accept(this.v)
+		if (binop.type == nBINARYOP && binop.op == DOT) {
+			# Resolve first item
+			binop.lhs = binop.lhs.accept(this.v)
+
+			# Set sc to that of the first items type
+			var RetNode rn = binop.lhs
+			rn.ret_type.resolve(this.scope)
+			var sc = rn.ret_type.getScope()
+			if (sc == 0) sc = this.scope
+
+			# Resolve function
+			var ListNode ln = sc.resolve(name.string)
+			binop.rhs = ln.children.get(0)
+
+			# Inherit ret_type from rhs
+			rn = binop.rhs
+			binop.ret_type = rn.ret_type
+		} else {
+			# Resolve function
+			var ListNode ln = this.scope.resolve(name.string)
+			n.cfunction = ln.children.get(0)
+		}
+
 
 		# Fix up dot if it resolved to a function
 		binop = n.cfunction

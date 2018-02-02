@@ -73,7 +73,9 @@ class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
 
 			if (this.cls.vtable == 0) {
 				# Add method (direct) to scope of class
-				this.cls.scope.set(cls_scope_name, clone.toNode())
+				var capsule = ListNode_new(nBLOCK)
+				capsule.append(clone.toNode())
+				this.cls.scope.set(cls_scope_name, capsule.toNode())
 			} else {
 				# Add method to vtable of class
 				this.cls.vtable.set(cls_scope_name, n)
@@ -83,9 +85,9 @@ class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
 				offset << 3
 
 				# Add method (via vtable) to scope of class
-				this.cls.scope.set(cls_scope_name,
-					StringNode_new(nVTAB_ACCESS, n.ret_type, offset.toString()).toNode()
-				)
+				capsule = ListNode_new(nBLOCK)
+				capsule.append(StringNode_new(nVTAB_ACCESS, n.ret_type, offset.toString()).toNode())
+				this.cls.scope.set(cls_scope_name, capsule.toNode())
 			}
 
 			# Save new method name "_CLASS_METHOD"
