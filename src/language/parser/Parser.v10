@@ -39,10 +39,12 @@ class Parser(String name, Tokenizer t) {
 	func Node nt_enum()(String name, ListNode values) {
 		this.t.consume(ENUM)
 
+		var pos = this.t.get_pos()
+
 		name = this.t.consume(IDENTIFIER)
 		values = this.block(nBLOCK)
 
-		return EnumNode_new(name, values)
+		return EnumNode_new(pos, name, values)
 	}
 
 	func Node nt_function()(String ret_type, String name, ListNode args, ListNode vrbls, ListNode block) {
