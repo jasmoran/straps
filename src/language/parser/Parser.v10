@@ -14,6 +14,8 @@ class Parser(String name, Tokenizer t) {
 	func Node nt_class()(String name, ListNode fields, ListNode block) {
 		this.t.consume(CLASS)
 
+		var pos = this.t.get_pos()
+
 		var Map<String_FunctionNode> vtable = 0
 		if (this.t.peek() == VIRTUAL) {
 			this.t.consume(VIRTUAL)
@@ -31,7 +33,7 @@ class Parser(String name, Tokenizer t) {
 		fields = this.typed_list(nLIST)
 		block = this.block(nBLOCK)
 
-		return ClassNode_new(name, fields, block, vtable, Type_new(parent))
+		return ClassNode_new(pos, name, fields, block, vtable, Type_new(parent))
 	}
 
 	func Node nt_enum()(String name, ListNode values) {

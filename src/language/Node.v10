@@ -134,20 +134,20 @@ class virtual StringNode < RetNode (String string) {
 
 
 
-func Node ClassNode_new(String name, ListNode fields, ListNode block, Map<String_FunctionNode> vtable, Type parent)(Scope sc) {
+func Node ClassNode_new(Position pos, String name, ListNode fields, ListNode block, Map<String_FunctionNode> vtable, Type parent)(Scope sc) {
 	sc = scope
 	sc = Scope_new(name, sc)
-	return ClassNode_new(nCLASS, name, fields, block, sc, vtable, parent)
+	return ClassNode_new(nCLASS, name, fields, block, sc, vtable, parent, pos)
 }
 
-func Node ClassNode_new(String name, ListNode fields, ListNode block) {
+func Node ClassNode_new(Position pos, String name, ListNode fields, ListNode block) {
 	var Map<String_FunctionNode> vtable = 0
 	var parent = Type_new()
-	return ClassNode_new(name, fields, block, vtable, parent)
+	return ClassNode_new(pos, name, fields, block, vtable, parent)
 }
 
 class virtual ClassNode < Node (String name, ListNode fields,
-								ListNode block, Scope scope, Map<String_FunctionNode> vtable, Type parent) {
+								ListNode block, Scope scope, Map<String_FunctionNode> vtable, Type parent, Position position) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
