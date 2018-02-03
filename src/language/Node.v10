@@ -102,14 +102,14 @@ class virtual BinaryOperationNode < OpNode (Node lhs, Node rhs, Position positio
 }
 
 
-func UnaryOperationNode UnaryOperationNode_new(Token op, Node expr, Boolean left)() {
-	return UnaryOperationNode_new(Type_new(), op, expr, left)
+func UnaryOperationNode UnaryOperationNode_new(Position pos, Token op, Node expr, Boolean left)() {
+	return UnaryOperationNode_new(pos, Type_new(), op, expr, left)
 }
-func UnaryOperationNode UnaryOperationNode_new(Type ret_type, Token op, Node expr, Boolean left)() {
-	return UnaryOperationNode_new(nUNARYOP, ret_type, op, expr, left)
+func UnaryOperationNode UnaryOperationNode_new(Position pos, Type ret_type, Token op, Node expr, Boolean left)() {
+	return UnaryOperationNode_new(nUNARYOP, ret_type, op, pos, expr, left)
 }
 
-class virtual UnaryOperationNode < OpNode (Node expr, Boolean left) {
+class virtual UnaryOperationNode < OpNode (Position position, Node expr, Boolean left) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}

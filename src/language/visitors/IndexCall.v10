@@ -28,7 +28,7 @@ class virtual IndexCall < Visitor (Visitor v, LinkedList<Node> parent_list,
 
 			# Push each argument onto block
 			this.prepend(
-				UnaryOperationNode_new(PUSH, arg.toNode(), true).toNode()
+				UnaryOperationNode_new(this.pos, PUSH, arg.toNode(), true).toNode()
 			)
 		}
 

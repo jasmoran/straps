@@ -31,7 +31,7 @@ class virtual ForLoop < Visitor (Visitor v, Position pos) {
 		var Node assn = BinaryOperationNode_new(Type_new(), this.pos, ASSIGN, vrbl.toNode(), methcall)
 
 		# Infer type of vrbl
-		return UnaryOperationNode_new(infer, VAR, assn, true)
+		return UnaryOperationNode_new(this.pos, infer, VAR, assn, true)
 	}
 
 	func void visit(ForNode n)() {

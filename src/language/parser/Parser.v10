@@ -281,7 +281,8 @@ class Parser(String name, Tokenizer t) {
 		if (tk != ASTERISK) return this.top_expr()
 
 		this.t.consume(tk)
-		return UnaryOperationNode_new(tk, this.snd_expr(), true)
+		var pos = this.t.get_pos()
+		return UnaryOperationNode_new(pos, tk, this.snd_expr(), true)
 	}
 
 	func Node top_expr()(Node node, Token tk) {
@@ -301,10 +302,10 @@ class Parser(String name, Tokenizer t) {
 				node = BinaryOperationNode_new(pos, DOT, node, this.value())
 			} else if (tk == INCREMENT) {
 				this.t.consume(INCREMENT)
-				node = UnaryOperationNode_new(INCREMENT, node, false)
+				node = UnaryOperationNode_new(pos, INCREMENT, node, false)
 			} else if (tk == DECREMENT) {
 				this.t.consume(DECREMENT)
-				node = UnaryOperationNode_new(DECREMENT, node, false)
+				node = UnaryOperationNode_new(pos, DECREMENT, node, false)
 			} else break
 		}
 		return node
@@ -416,6 +417,7 @@ class Parser(String name, Tokenizer t) {
 
 		if (tk == VAR) {
 			this.t.consume(VAR)
+			var vr_pos = this.t.get_pos()
 			raw_type = this.t.consume(IDENTIFIER)
 			var ident_pos = this.t.get_pos()
 			if (this.t.peek() == IDENTIFIER) {
@@ -431,7 +433,7 @@ class Parser(String name, Tokenizer t) {
 			this.t.consume(ASSIGN)
 			var ass_pos = this.t.get_pos()
 
-			return UnaryOperationNode_new(type, VAR,
+			return UnaryOperationNode_new(vr_pos, type, VAR,
 				BinaryOperationNode_new(Type_new(), ass_pos, ASSIGN,
 					StringNode_new(nIDENTIFIER, ident_pos, type, vrbl).toNode(),
 						this.expression()).toNode(), true)
