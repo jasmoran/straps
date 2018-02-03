@@ -25,26 +25,6 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 		this.scope.set(name, capsule.toNode())
 	}
 
-	func Number match(StringNode arg, StringNode optarg) {
-		var Scope sc = scope
-		optarg.ret_type.resolve(sc)
-		if (optarg.ret_type.res == 0) error("Option argument unresolved in match")
-
-		var argtype = arg.ret_type
-		var rank = 0
-		loop {
-			if (argtype == 0) return 0
-			argtype.resolve(sc)
-			if (argtype.res == 0) return 0
-
-			rank++
-			if (argtype.res == optarg.ret_type.res) return rank
-
-			argtype = argtype.res.parent
-		}
-		return 0
-	}
-
 	func FunctionNode resolve(String name, LinkedList<StringNode> args) {
 		var ListNode lnoptions = this.resolve(name)
     var LinkedList<FunctionNode> options = lnoptions.children
@@ -67,8 +47,11 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 
       # Loop through each of the options args
       for (index in Range_new(args.length)) {
+				var opt_type = optargs.get(index).ret_type
+				var arg_type = args.get(index).ret_type
+				opt_type.resolve(scope)
         # Returns the distance from the arg type to the optarg type
-        var match = this.match(args.get(index), optargs.get(index))
+        var match = opt_type.child_rank(arg_type)
 
         if (match > 0) {
           rank += match

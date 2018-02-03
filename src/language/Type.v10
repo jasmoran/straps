@@ -53,4 +53,33 @@ class Type (String raw, ClassNode res) {
 	func void print(Stream s)() {
 		this.toString().print(s)
 	}
+
+	# Check if this type has poss_child as a child (or equal)
+	# and therefore if poss_child vars can be assigned to this type
+	func Boolean has_child(Type poss_child) {
+		if (this.child_rank(poss_child) > 0) return true
+		return false
+	}
+
+	func Number child_rank(Type poss_child) {
+		if (this.res == 0) error("Assignee type is unresolved")
+
+		# Check if poss_child is the same type or a child of this type
+		var rank = 0
+		loop {
+			# Return 0 if we have reached the end of
+			# the inheritance list without a match
+			if (poss_child == 0) return 0
+			poss_child.resolve(scope)
+			if (poss_child.res == 0) return 0
+
+			# Return the distance between the types
+			# if we find a match
+			rank++
+			if (poss_child.res == this.res) return rank
+
+			# Move up one level of the iheritance list
+			poss_child = poss_child.res.parent
+		}
+	}
 }
