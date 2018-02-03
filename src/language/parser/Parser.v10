@@ -74,9 +74,11 @@ class Parser(String name, Tokenizer t) {
 	func Node nt_if()(IfNode node, Node expr, ListNode block_if) {
 		this.t.consume(IF)
 
+		var pos = this.t.get_pos()
+
 		expr = this.expression()
 		block_if = this.block(nBLOCK)
-		node = IfNode_new(expr, block_if)
+		node = IfNode_new(pos, expr, block_if)
 
 		this.skip_newlines()
 		if (this.t.peek() == ELSE) {

@@ -231,12 +231,12 @@ class virtual ListNode < Node (LinkedList<Node> children) {
 
 
 
-func Node IfNode_new(Node condition, ListNode block_if)(ListNode l) {
+func Node IfNode_new(Position pos, Node condition, ListNode block_if)(ListNode l) {
 	l = 0
-	return IfNode_new(nIF, condition, block_if, l)
+	return IfNode_new(nIF, pos, condition, block_if, l)
 }
 
-class virtual IfNode < Node (Node condition, ListNode block_if, ListNode block_else) {
+class virtual IfNode < Node (Position position, Node condition, ListNode block_if, ListNode block_else) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
