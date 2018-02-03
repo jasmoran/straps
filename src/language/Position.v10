@@ -1,0 +1,19 @@
+func Position Position_new(MetaCharacter start, String stream) {
+  return Position_new(start, stream, NullString)
+}
+
+class Position (MetaCharacter start, String stream, String note) {
+  func String toString() {
+    var line = this.start.get_line().toString()
+    var col = this.start.get_column().toString()
+    var str = this.stream.clone(8).append(' ').append(line).append(':').append(col)
+    if (this.note != NullString) {
+      str = str.clone(32).append(" <").append(this.note).append('>')
+    }
+    return str
+  }
+
+  func void print(Stream s) {
+    this.toString().print(s)
+  }
+}
