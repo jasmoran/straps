@@ -20,7 +20,7 @@ class virtual Definition < Visitor (Visitor v) {
 			# Store field offset in class scope
 			n.scope.set(
 				field.string,
-				StringNode_new(nINDEX, field.ret_type, ix.toString()).toNode()
+				StringNode_new(nINDEX, field.position.clone("Definition"), field.ret_type, ix.toString()).toNode()
 			)
 
 			ix += 8
@@ -45,7 +45,7 @@ class virtual Definition < Visitor (Visitor v) {
 			sc = scope
 			sc.set(
 				field.string,
-				StringNode_new(nNUMBER, type, ix.toString()).toNode()
+				StringNode_new(nNUMBER, field.position.clone("Definition"), type, ix.toString()).toNode()
 			)
 
 			ix++
@@ -67,7 +67,7 @@ class virtual Definition < Visitor (Visitor v) {
 			# Store value in function scope
 			n.scope.set(
 				field.string,
-				this.new_variable(ix, field.ret_type)
+				this.new_variable(ix, field)
 			)
 
 			ix += 8
@@ -92,7 +92,7 @@ class virtual Definition < Visitor (Visitor v) {
 			# Store value in function scope
 			n.scope.set(
 				field.string,
-				this.new_variable(ix, field.ret_type)
+				this.new_variable(ix, field)
 			)
 
 			lln = lln.fwrd
@@ -116,7 +116,8 @@ class virtual Definition < Visitor (Visitor v) {
 						field.ret_type,
 						SQUARE_OPEN,
 						field.toNode(),
-						StringNode_new(nNUMBER, Type_new("Number"), "0").toNode()
+						StringNode_new(nNUMBER, field.position.clone("Definition"),
+													 Type_new("Number"), "0").toNode()
 					).toNode()
 				)
 			} else {
@@ -139,12 +140,14 @@ class virtual Definition < Visitor (Visitor v) {
 
 
 
-	func Node new_variable(Number offset, Type ret_type)() {
+	func Node new_variable(Number offset, StringNode field)() {
 		return BinaryOperationNode_new(
-			ret_type,
+			field.ret_type,
 			SQUARE_OPEN,
-			StringNode_new(nREGISTER, Type_new(), "rbp").toNode(),
-			StringNode_new(nNUMBER, Type_new("Number"), offset.toString()).toNode()
+			StringNode_new(nREGISTER, field.position.clone("Definition"),
+			               Type_new(), "rbp").toNode(),
+			StringNode_new(nNUMBER, field.position.clone("Definition"),
+			               Type_new("Number"), offset.toString()).toNode()
 		)
 	}
 }

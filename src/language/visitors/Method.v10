@@ -48,7 +48,7 @@ class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
 		if (this.cls != 0) {
 			# Add 'this' to arguments
 			n.args.prepend(
-				StringNode_new(nIDENTIFIER, Type_new(this.cls.name), "this").toNode()
+				StringNode_new(nIDENTIFIER, n.position.clone("Method this"), Type_new(this.cls.name), "this").toNode()
 			)
 		}
 

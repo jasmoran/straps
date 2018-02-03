@@ -9,7 +9,8 @@ func Constructor Constructor_new()(ListNode ln, Node n) {
 
 class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Node new_obj) {
 	func void visit(ClassNode n)(Number size) {
-		this.new_obj = StringNode_new(nIDENTIFIER, Type_new(n.name), "obj")
+		var pos = n.position.clone("Constructor")
+		this.new_obj = StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "obj")
 
 		size = n.fields.children.length
 		if (n.vtable != 0) size++
@@ -18,14 +19,14 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 		# Create allocate call + assign and append to block
 		var rando = LinkedList<StringNode>_new()
 		rando.append(
-			StringNode_new(nNUMBER, Type_new("Number"), size.toString())
+			StringNode_new(nNUMBER, pos, Type_new("Number"), size.toString())
 		)
 		this.block = ListNode_new(nBLOCK).append(
 			BinaryOperationNode_new(
 				ASSIGN,
 				this.new_obj,
 				CallNode_new(
-					StringNode_new(nIDENTIFIER, Type_new(n.name), "allocate").toNode(),
+					StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "allocate").toNode(),
 					rando
 				).toNode()
 			 ).toNode()
@@ -39,7 +40,7 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 		# Add vtable
 		if (n.vtable != 0) {
 			# Add vtable to fields
-			var Node vt_ident = StringNode_new(nIDENTIFIER, Type_new(), "vt")
+			var Node vt_ident = StringNode_new(nIDENTIFIER, pos, Type_new(), "vt")
 			n.fields.prepend(vt_ident)
 
 			var tabname = "_vtable_".clone(n.name.length).append(n.name)
@@ -49,7 +50,7 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 				BinaryOperationNode_new(
 					ASSIGN,
 					BinaryOperationNode_new(DOT, this.new_obj, vt_ident).toNode(),
-					StringNode_new(nNASM, Type_new(), tabname).toNode()
+					StringNode_new(nNASM, pos, Type_new(), tabname).toNode()
 				).toNode()
 			)
 		}
@@ -62,7 +63,7 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 		# Create _new function and append to parent block
 		this.pb.append(
 			FunctionNode_new(
-				n.position.clone("Constructor"),
+				pos,
 				Type_new(n.name),
 				n.name.clone(4).append("_new"),
 				args,

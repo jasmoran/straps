@@ -1,19 +1,20 @@
 func ForLoop ForLoop_new() {
 	var Visitor v = 0
-	var fl = ForLoop_new(v)
+	var Position p = Position_new(MetaCharacter_new('?', 0, 0), "ForLoop")
+	var fl = ForLoop_new(v, p)
 	fl.v = fl
 	return fl
 }
 
 
-class virtual ForLoop < Visitor (Visitor v) {
+class virtual ForLoop < Visitor (Visitor v, Position pos) {
 
 	func Node call_method(Node obj, String method) {
 		# Create method call
 		return CallNode_new(
 			BinaryOperationNode_new(Type_new(), DOT,
 				obj,
-				StringNode_new(nIDENTIFIER, Type_new(), method).toNode()
+				StringNode_new(nIDENTIFIER, this.pos, Type_new(), method).toNode()
 			).toNode()
 		)
 	}
@@ -33,13 +34,16 @@ class virtual ForLoop < Visitor (Visitor v) {
 	}
 
 	func void visit(ForNode n)() {
+		# TODO: Better than this
+		#this.pos = n.position.clone("ForNode")
+
 		n.block.accept(this.v)
 
 		var outer_block = ListNode_new(nBLOCK)
 
 		# Create iterator variable name
 		var iterstr = n.item.string.clone(5).append("_iter")
-		var iterator = StringNode_new(nIDENTIFIER, Type_new(), iterstr)
+		var iterator = StringNode_new(nIDENTIFIER, this.pos, Type_new(), iterstr)
 
 		# var $iterator$ = $n.iterable$.iter()
 		outer_block.append(this.assign_method(iterator, n.iterable, "iter"))
@@ -51,7 +55,7 @@ class virtual ForLoop < Visitor (Visitor v) {
 		# Create conditional
 		var Node cond = BinaryOperationNode_new(Type_new(), EQUAL,
 			this.call_method(iterator.toNode(), "finished"),
-			StringNode_new(nIDENTIFIER, Type_new(), "true").toNode()
+			StringNode_new(nIDENTIFIER, this.pos, Type_new(), "true").toNode()
 		)
 
 		# Create break block => { break }

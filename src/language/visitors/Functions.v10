@@ -9,8 +9,9 @@ class virtual Functions < Visitor (Visitor v, ListNode lfuncs, Boolean root) {
 	func void visit(FunctionNode n)(String name) {
 		name = n.name
 		if (n.name.equal("main") == true) name = "_start"
-		this.lfuncs.append(StringNode_new(nIDENTIFIER, Type_new(), name).toNode())
-		this.lfuncs.append(StringNode_new(nSTRING, Type_new(), n.name).toNode())
+		var pos = n.position.clone("Functions")
+		this.lfuncs.append(StringNode_new(nIDENTIFIER, pos, Type_new(), name).toNode())
+		this.lfuncs.append(StringNode_new(nSTRING, pos, Type_new(), n.name).toNode())
 
 		return 0
 	}

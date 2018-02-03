@@ -2,13 +2,14 @@ func IndexCall IndexCall_new()(LinkedList<Node> pl, LinkedListNode<Node> plln) {
 	pl = 0
 	plln = 0
 	var Visitor v = 0
-	var ixc = IndexCall_new(v, pl, plln, StringNode_new(nREGISTER, Type_new(), "r12").toNode())
+	var pos = Position_new(MetaCharacter_new('?', 0, 0), "IndexCall_scratchreg")
+	var ixc = IndexCall_new(v, pl, plln, StringNode_new(nREGISTER, pos, Type_new(), "r12").toNode(), pos)
 	ixc.v = ixc
 	return ixc
 }
 
 class virtual IndexCall < Visitor (Visitor v, LinkedList<Node> parent_list,
-                                   LinkedListNode<Node> parent_lln, Node scratch_reg) {
+                                   LinkedListNode<Node> parent_lln, Node scratch_reg, Position pos) {
 
 	func void prepend(Node child) {
 		if (this.parent_list == 0) error("Attempted to prepend when not enclosed by a block")
@@ -40,7 +41,7 @@ class virtual IndexCall < Visitor (Visitor v, LinkedList<Node> parent_list,
 		this.prepend(n.toNode())
 
 		# Replace with rax
-		return StringNode_new(nREGISTER, Type_new(), "rax")
+		return StringNode_new(nREGISTER, this.pos, Type_new(), "rax")
 	}
 
 	func void visit(BinaryOperationNode n)(Node nn, Boolean dumb_or, BinaryOperationNode child, ListNode args) {
@@ -75,7 +76,7 @@ class virtual IndexCall < Visitor (Visitor v, LinkedList<Node> parent_list,
 			}
 		} else {
 			# Visit right hand side
-			this.scratch_reg = StringNode_new(nREGISTER, Type_new(), "r13")
+			this.scratch_reg = StringNode_new(nREGISTER, this.pos, Type_new(), "r13")
 			nn = n.rhs
 			nn = nn.accept(this.v)
 			if (nn != 0) n.rhs = nn
@@ -96,7 +97,7 @@ class virtual IndexCall < Visitor (Visitor v, LinkedList<Node> parent_list,
 				)
 				n.rhs = this.scratch_reg
 			}
-			this.scratch_reg = StringNode_new(nREGISTER, Type_new(), "r12")
+			this.scratch_reg = StringNode_new(nREGISTER, this.pos, Type_new(), "r12")
 		}
 
 		return 0

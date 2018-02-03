@@ -122,9 +122,11 @@ class virtual UnaryOperationNode < OpNode (Node expr, Boolean left) {
 }
 
 
+func StringNode StringNode_new(NodeType type, Position pos, Type ret_type, String string) {
+	return StringNode_new(type, ret_type, string, pos)
+}
 
-
-class virtual StringNode < RetNode (String string) {
+class virtual StringNode < RetNode (String string, Position position) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}

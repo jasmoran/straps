@@ -7,7 +7,8 @@ func Strings Strings_new()() {
 
 class virtual Strings < Visitor (Visitor v, Number counter, ListNode strings, Boolean root, Boolean do_idents) {
 	func void addString(StringNode n)() {
-		this.strings.append(StringNode_new(nSTRING, Type_new(), n.string).toNode())
+		var pos = Position_new(MetaCharacter_new('?', 0, 0), "Strings")
+		this.strings.append(StringNode_new(nSTRING, pos, Type_new(), n.string).toNode())
 		n.string = "string_".clone(4).append(this.counter.toString())
 		n.type = nIDENTIFIER
 		this.counter++
