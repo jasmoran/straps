@@ -32,10 +32,10 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 	}
 
 	func void visit(CallNode n) {
-		# Target of arg fixing, default to normal function
+		# Function name, default to normal function
 		var StringNode name = n.cfunction
 
-		# If a method, args fixing target is different
+		# If a method, function name location is different
 		var BinaryOperationNode binop = n.cfunction
 		if (binop.type == nBINARYOP && binop.op == DOT) {
 			name = binop.rhs
@@ -45,20 +45,6 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 
 		# Resolve arguments
 		n.accept_args(this.v)
-
-		# Fix arguments into function name
-		# Extend function name
-		var pure = name.string.clone()
-		name.string = name.string.clone(256)
-
-		# Add args to function name
-		for (arg in n.args) {
-			# Append type to function name
-			var type = arg.ret_type.raw
-			if (type < 2) error("Unknown type in call to ", name.string, "...")
-			name.string.append('_').append(type)
-		}
-
 
 		# Resolve function
 		if (binop.type == nBINARYOP && binop.op == DOT) {
@@ -76,14 +62,14 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			if (sc == 0) sc = this.scope
 
 			# Resolve function
-			binop.rhs = sc.resolve(pure, n.args)
+			binop.rhs = sc.resolve(name.string, n.args)
 
 			# Inherit ret_type from rhs
 			rn = binop.rhs
 			binop.ret_type = rn.ret_type
 		} else {
 			# Resolve function
-			n.cfunction = this.scope.resolve(pure, n.args)
+			n.cfunction = this.scope.resolve(name.string, n.args)
 		}
 
 
