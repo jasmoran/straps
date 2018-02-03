@@ -58,7 +58,7 @@ class Parser(String name, Tokenizer t) {
 		if (this.t.peek() == PAREN_OPEN) {
 			vrbls = this.typed_list(nLIST)
 		} else {
-			vrbls = ListNode_new(nLIST)
+			vrbls = ListNode_new(nLIST, this.t.get_pos())
 		}
 		block = this.block(nBLOCK)
 
@@ -112,7 +112,8 @@ class Parser(String name, Tokenizer t) {
 
 
 	func Node parse()(ListNode l) {
-		l = ListNode_new(nBLOCK)
+		var pos = this.t.get_pos()
+		l = ListNode_new(nBLOCK, pos)
 
 		loop {
 			var expr = this.expression()
@@ -124,10 +125,13 @@ class Parser(String name, Tokenizer t) {
 	}
 
 	func ListNode block(NodeType t)(ListNode l) {
-		l = ListNode_new(t)
 		this.skip_newlines()
 
-		if (this.t.peek() == CURLY_OPEN) {
+		var peek = this.t.peek()
+		var pos = this.t.get_pos()
+		l = ListNode_new(t, pos)
+
+		if (peek == CURLY_OPEN) {
 			this.t.consume(CURLY_OPEN)
 
 			loop {
@@ -147,7 +151,7 @@ class Parser(String name, Tokenizer t) {
 
 	func ListNode typed_list(NodeType t)(ListNode l, String type, String vrbl) {
 		this.t.consume(PAREN_OPEN)
-		l = ListNode_new(t)
+		l = ListNode_new(t, this.t.get_pos())
 
 		loop {
 			if (this.t.peek() == PAREN_CLOSE) { break }
@@ -408,7 +412,7 @@ class Parser(String name, Tokenizer t) {
 
 		if (tk == SYS) {
 			this.t.consume(SYS)
-			return ListNode_new(nSYS, this.expression_list())
+			return ListNode_new(nSYS, this.t.get_pos(), this.expression_list())
 		}
 
 		if (tk == VAR) {

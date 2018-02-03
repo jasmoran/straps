@@ -39,7 +39,7 @@ class virtual ForLoop < Visitor (Visitor v, Position pos) {
 
 		n.block.accept(this.v)
 
-		var outer_block = ListNode_new(nBLOCK)
+		var outer_block = ListNode_new(nBLOCK, this.pos)
 
 		# Create iterator variable name
 		var iterstr = n.item.string.clone(5).append("_iter")
@@ -59,7 +59,7 @@ class virtual ForLoop < Visitor (Visitor v, Position pos) {
 		)
 
 		# Create break block => { break }
-		var brblock = ListNode_new(nBLOCK).append(Node_new(nBREAK))
+		var brblock = ListNode_new(nBLOCK, this.pos).append(Node_new(nBREAK))
 
 		# Add end check to loop block
 		n.block.prepend(IfNode_new(this.pos, cond, brblock))

@@ -1,6 +1,7 @@
 func Strings Strings_new()() {
 	var Visitor v = 0
-	var str = Strings_new(v, 0, ListNode_new(nSTRINGS), true, false)
+	var pos = Position_new(MetaCharacter_new('?', 0, 0), "Strings")
+	var str = Strings_new(v, 0, ListNode_new(nSTRINGS, pos), true, false)
 	str.v = str
 	return str
 }

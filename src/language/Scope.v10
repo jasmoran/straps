@@ -19,7 +19,7 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 
 	func void set(String name, FunctionNode node) {
 		var ListNode capsule = this.scope.get(name)
-		if (capsule < 1) capsule = ListNode_new(nBLOCK)
+		if (capsule < 1) capsule = ListNode_new(nBLOCK, Position_new(MetaCharacter_new('?', 0, 0), "Scope Capsule"))
 		capsule.append(node.toNode())
 
 		this.scope.set(name, capsule.toNode())

@@ -162,6 +162,11 @@ class virtual ClassNode < Node (String name, ListNode fields,
 		n = n.accept(v)
 		if (n != 0) this.block = n
 	}
+
+	func ClassNode shallow_clone() {
+		return ClassNode_new(this.position, this.name, ListNode_new(nLIST, this.fields.position),
+												 ListNode_new(nLIST, this.block.position), this.vtable, this.parent)
+	}
 }
 
 
@@ -190,7 +195,7 @@ class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls
 	}
 
 	func FunctionNode shallow_clone()(FunctionNode fn) {
-		fn = FunctionNode_new(this.position, this.ret_type, this.name, this.args, this.vrbls, ListNode_new(nBLOCK))
+		fn = FunctionNode_new(this.position, this.ret_type, this.name, this.args, this.vrbls, ListNode_new(nBLOCK, this.block.position))
 		fn.scope = this.scope
 		return fn
 	}
@@ -198,11 +203,11 @@ class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls
 
 
 
-func ListNode ListNode_new(NodeType type)() {
-	return ListNode_new(type, LinkedList<Node>_new())
+func ListNode ListNode_new(NodeType type, Position pos)() {
+	return ListNode_new(type, pos, LinkedList<Node>_new())
 }
 
-class virtual ListNode < Node (LinkedList<Node> children) {
+class virtual ListNode < Node (Position position, LinkedList<Node> children) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}

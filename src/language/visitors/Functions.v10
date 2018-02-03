@@ -1,6 +1,7 @@
 func Functions Functions_new()() {
 	var Visitor v = 0
-	var fun = Functions_new(v, ListNode_new(nFUNCTIONS), true)
+	var pos = Position_new(MetaCharacter_new('?', 0, 0), "Functions")
+	var fun = Functions_new(v, ListNode_new(nFUNCTIONS, pos), true)
 	fun.v = fun
 	return fun
 }

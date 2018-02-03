@@ -21,7 +21,7 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 		rando.append(
 			StringNode_new(nNUMBER, pos, Type_new("Number"), size.toString())
 		)
-		this.block = ListNode_new(nBLOCK).append(
+		this.block = ListNode_new(nBLOCK, pos).append(
 			BinaryOperationNode_new(
 				pos,
 				ASSIGN,
@@ -36,7 +36,7 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 		# Loop through fields
 		n.fields.accept_children(this.v)
 
-		var ListNode args = ListNode_new(nLIST, n.fields.children.shallow_clone())
+		var ListNode args = ListNode_new(nLIST, pos, n.fields.children.shallow_clone())
 
 		# Add vtable
 		if (n.vtable != 0) {
@@ -69,7 +69,7 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 				Type_new(n.name),
 				n.name.clone(4).append("_new"),
 				args,
-				ListNode_new(nLIST).append(this.new_obj),
+				ListNode_new(nLIST, pos).append(this.new_obj),
 				this.block
 			).toNode()
 		)
