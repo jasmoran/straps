@@ -23,6 +23,7 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 		)
 		this.block = ListNode_new(nBLOCK).append(
 			BinaryOperationNode_new(
+				pos,
 				ASSIGN,
 				this.new_obj,
 				CallNode_new(
@@ -48,8 +49,9 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 			# Assign vtable
 			this.block.append(
 				BinaryOperationNode_new(
+					pos,
 					ASSIGN,
-					BinaryOperationNode_new(DOT, this.new_obj, vt_ident).toNode(),
+					BinaryOperationNode_new(pos, DOT, this.new_obj, vt_ident).toNode(),
 					StringNode_new(nNASM, pos, Type_new(), tabname).toNode()
 				).toNode()
 			)
@@ -93,10 +95,12 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 	func void visit(StringNode n)() {
 		if (this.block != 0) {
 			# Assign passed values to this field and append to block
+			var pos = n.position.clone("Constructor")
 			this.block.append(
 				BinaryOperationNode_new(
+					pos,
 					ASSIGN,
-					BinaryOperationNode_new(DOT, this.new_obj, n.toNode()).toNode(),
+					BinaryOperationNode_new(pos, DOT, this.new_obj, n.toNode()).toNode(),
 					n.toNode()
 				).toNode()
 			)

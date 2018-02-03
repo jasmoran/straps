@@ -79,14 +79,14 @@ class virtual CallNode < RetNode (Node cfunction, LinkedList<StringNode> args) {
 }
 
 
-func BinaryOperationNode BinaryOperationNode_new(Token op, Node lhs, Node rhs)() {
-	return BinaryOperationNode_new(Type_new(), op, lhs, rhs)
+func BinaryOperationNode BinaryOperationNode_new(Position pos, Token op, Node lhs, Node rhs)() {
+	return BinaryOperationNode_new(Type_new(), pos, op, lhs, rhs)
 }
-func BinaryOperationNode BinaryOperationNode_new(Type ret_type, Token op, Node lhs, Node rhs)() {
-	return BinaryOperationNode_new(nBINARYOP, ret_type, op, lhs, rhs)
+func BinaryOperationNode BinaryOperationNode_new(Type ret_type, Position pos, Token op, Node lhs, Node rhs)() {
+	return BinaryOperationNode_new(nBINARYOP, ret_type, op, lhs, rhs, pos)
 }
 
-class virtual BinaryOperationNode < OpNode (Node lhs, Node rhs) {
+class virtual BinaryOperationNode < OpNode (Node lhs, Node rhs, Position position) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}

@@ -66,6 +66,7 @@ class virtual IndexCall < Visitor (Visitor v, LinkedList<Node> parent_list,
 					# Move lhs to parent block
 					this.prepend(
 						BinaryOperationNode_new(
+							n.position.clone("IndexCall"),
 							ASSIGN,
 							this.scratch_reg,
 							n.lhs
@@ -90,6 +91,7 @@ class virtual IndexCall < Visitor (Visitor v, LinkedList<Node> parent_list,
 				# Move rhs to parent block
 				this.prepend(
 					BinaryOperationNode_new(
+						n.position.clone("IndexCall"),
 						ASSIGN,
 						this.scratch_reg,
 						n.rhs

@@ -86,8 +86,8 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 				var pos = Position_new(MetaCharacter_new('?', 0, 0), "Resolving vtab")
 				var FunctionNode vtab_off = binop.rhs
 				n.cfunction = BinaryOperationNode_new(
-					vtab_off.ret_type, SQUARE_OPEN,
-					BinaryOperationNode_new(Type_new(), SQUARE_OPEN,
+					vtab_off.ret_type, pos, SQUARE_OPEN,
+					BinaryOperationNode_new(Type_new(), pos, SQUARE_OPEN,
 						binop.lhs,
 						StringNode_new(nNUMBER, pos, Type_new(), "0").toNode()
 					).toNode(),

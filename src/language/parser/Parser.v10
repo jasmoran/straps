@@ -204,7 +204,8 @@ class Parser(String name, Tokenizer t) {
 			if (tk != SHIFTL)
 			if (tk != SHIFTR) break
 			this.t.consume(tk)
-			node = BinaryOperationNode_new(tk, node, this.logic_expr())
+			var pos = this.t.get_pos()
+			node = BinaryOperationNode_new(pos, tk, node, this.logic_expr())
 		}
 		return node
 	}
@@ -216,7 +217,8 @@ class Parser(String name, Tokenizer t) {
 			if (tk != AND)
 			if (tk != OR) break
 			this.t.consume(tk)
-			node = BinaryOperationNode_new(tk, node, this.comp_expr())
+			var pos = this.t.get_pos()
+			node = BinaryOperationNode_new(pos, tk, node, this.comp_expr())
 		}
 		return node
 	}
@@ -232,7 +234,8 @@ class Parser(String name, Tokenizer t) {
 			if (tk != LESS)
 			if (tk != LESS_EQ) break
 			this.t.consume(tk)
-			node = BinaryOperationNode_new(tk, node, this.add_expr())
+			var pos = this.t.get_pos()
+			node = BinaryOperationNode_new(pos, tk, node, this.add_expr())
 		}
 		return node
 	}
@@ -245,7 +248,8 @@ class Parser(String name, Tokenizer t) {
 			if (tk != PLUS)
 			if (tk != MINUS) break
 			this.t.consume(tk)
-			node = BinaryOperationNode_new(tk, node, this.mult_expr())
+			var pos = this.t.get_pos()
+			node = BinaryOperationNode_new(pos, tk, node, this.mult_expr())
 		}
 		return node
 	}
@@ -257,7 +261,8 @@ class Parser(String name, Tokenizer t) {
 			if (tk != ASTERISK)
 			if (tk != FWD_SLASH) break
 			this.t.consume(tk)
-			node = BinaryOperationNode_new(tk, node, this.snd_expr())
+			var pos = this.t.get_pos()
+			node = BinaryOperationNode_new(pos, tk, node, this.snd_expr())
 		}
 		return node
 	}
@@ -282,11 +287,13 @@ class Parser(String name, Tokenizer t) {
 				node = CallNode_new(node, arglist)
 			} else if (tk == SQUARE_OPEN) {
 				this.t.consume(SQUARE_OPEN)
-				node = BinaryOperationNode_new(SQUARE_OPEN, node, this.expression())
+				var pos = this.t.get_pos()
+				node = BinaryOperationNode_new(pos, SQUARE_OPEN, node, this.expression())
 				this.t.consume(SQUARE_CLOSE)
 			} else if (tk == DOT) {
 				this.t.consume(DOT)
-				node = BinaryOperationNode_new(DOT, node, this.value())
+				var pos = this.t.get_pos()
+				node = BinaryOperationNode_new(pos, DOT, node, this.value())
 			} else if (tk == INCREMENT) {
 				this.t.consume(INCREMENT)
 				node = UnaryOperationNode_new(INCREMENT, node, false)
@@ -405,7 +412,7 @@ class Parser(String name, Tokenizer t) {
 		if (tk == VAR) {
 			this.t.consume(VAR)
 			raw_type = this.t.consume(IDENTIFIER)
-			var pos = this.t.get_pos()
+			var ident_pos = this.t.get_pos()
 			if (this.t.peek() == IDENTIFIER) {
 				# Explicit
 				vrbl = this.t.consume(IDENTIFIER)
@@ -417,10 +424,11 @@ class Parser(String name, Tokenizer t) {
 				type.raw = 1
 			}
 			this.t.consume(ASSIGN)
+			var ass_pos = this.t.get_pos()
 
 			return UnaryOperationNode_new(type, VAR,
-				BinaryOperationNode_new(Type_new(), ASSIGN,
-					StringNode_new(nIDENTIFIER, pos, type, vrbl).toNode(),
+				BinaryOperationNode_new(Type_new(), ass_pos, ASSIGN,
+					StringNode_new(nIDENTIFIER, ident_pos, type, vrbl).toNode(),
 						this.expression()).toNode(), true)
 		}
 
