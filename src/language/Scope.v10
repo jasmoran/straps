@@ -17,35 +17,18 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 		this.scope.set(name, node)
 	}
 
-	func void set(String name, String uglyname, FunctionNode node) {
-		var ListNode capsule = this.scope.get(uglyname)
+	func void set(String name, FunctionNode node) {
+		var ListNode capsule = this.scope.get(name)
 		if (capsule < 1) capsule = ListNode_new(nBLOCK)
-		capsule.prepend(node.toNode())
-		this.scope.set(uglyname, capsule.toNode())
-
-		capsule = this.scope.get(name)
-		if (capsule < 1) {
-			"^".print()
-			node.args.children.length.toString().print()
-			name.println()
-			capsule = ListNode_new(nBLOCK)
-		}
 		capsule.append(node.toNode())
-		if(name.equal("error") == true) {
-			for (item in capsule.children) {
-				var Number num = item
-				num.toString().println()
-			}
-		}
+
 		this.scope.set(name, capsule.toNode())
 	}
 
 	func Number match(StringNode arg, StringNode optarg) {
 		var Scope sc = scope
 		optarg.ret_type.resolve(sc)
-		if (optarg.ret_type.res == 0) error("Option arg unresolved in match")
-		optarg.ret_type.raw.print()
-		": ".print()
+		if (optarg.ret_type.res == 0) error("Option argument unresolved in match")
 
 		var argtype = arg.ret_type
 		var rank = 0
@@ -53,9 +36,6 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 			if (argtype == 0) return 0
 			argtype.resolve(sc)
 			if (argtype.res == 0) return 0
-
-			argtype.raw.print()
-			", ".print()
 
 			rank++
 			if (argtype.res == optarg.ret_type.res) return rank
@@ -65,12 +45,10 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 		return 0
 	}
 
-	func FunctionNode resolve(String name, String uglyname, LinkedList<StringNode> args) {
-		uglyname.println()
+	func FunctionNode resolve(String name, LinkedList<StringNode> args) {
 		var ListNode lnoptions = this.resolve(name)
     var LinkedList<FunctionNode> options = lnoptions.children
-		"Opt len: ".print()
-		options.length.toString().println()
+
     # Track the best option, best is the distance => smaller is better
     var FunctionNode best_match = 0
     var best = 9999
@@ -78,11 +56,8 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
     # Loop through each possible match
     for (option in options) {
       var LinkedList<StringNode> optargs = option.args.children
-			"Option =>".print()
-			optargs.length.toString().print()
-			for (opt in optargs) opt.ret_type.raw.print()
-			"\n".print()
-      if (optargs.length != args.length) next
+			if (optargs.length != args.length) next
+
 			if (args.length == 0) {
         best = rank
         best_match = option
@@ -94,7 +69,7 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
       for (index in Range_new(args.length)) {
         # Returns the distance from the arg type to the optarg type
         var match = this.match(args.get(index), optargs.get(index))
-				match.toString().println()
+
         if (match > 0) {
           rank += match
         } else {
@@ -111,30 +86,10 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
       }
     }
 
-		if (best_match == 0) {
-			"Act Args: ".print()
-			for (opt in args) opt.ret_type.raw.println()
-			name.print()
-			" args.length = ".print()
-			args.length.toString().print()
-			" options.length = ".print()
-			options.length.toString().println()
-			#exit()
-		} else {
-			"XXX".println()
-		}
-
-		lnoptions = this.resolve(uglyname)
-		var normal_match = lnoptions.children.get(0)
-		if (best_match != normal_match) {
-			error("Normal and best matches don't match")
-		}
-
     # Check we found a match
     if (best_match == 0) error("Could not resolve function ", name, " args don't match")
 
-		# Ignore everything above for now
-		return normal_match
+		return best_match
 	}
 
 	func Node resolve(String name)(Scope s, Node res) {

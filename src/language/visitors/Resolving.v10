@@ -76,14 +76,14 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			if (sc == 0) sc = this.scope
 
 			# Resolve function
-			binop.rhs = sc.resolve(pure, name.string, n.args)
+			binop.rhs = sc.resolve(pure, n.args)
 
 			# Inherit ret_type from rhs
 			rn = binop.rhs
 			binop.ret_type = rn.ret_type
 		} else {
 			# Resolve function
-			n.cfunction = this.scope.resolve(pure, name.string, n.args)
+			n.cfunction = this.scope.resolve(pure, n.args)
 		}
 
 
