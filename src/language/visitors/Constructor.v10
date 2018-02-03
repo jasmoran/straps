@@ -27,6 +27,7 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 				ASSIGN,
 				this.new_obj,
 				CallNode_new(
+					pos,
 					StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "allocate").toNode(),
 					rando
 				).toNode()

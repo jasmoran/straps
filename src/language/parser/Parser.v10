@@ -288,17 +288,16 @@ class Parser(String name, Tokenizer t) {
 		node = this.value()
 		loop {
 			tk = this.t.peek()
+			var pos = this.t.get_pos()
 			if (tk == PAREN_OPEN) {
 				var LinkedList<StringNode> arglist = this.expression_list()
-				node = CallNode_new(node, arglist)
+				node = CallNode_new(pos, node, arglist)
 			} else if (tk == SQUARE_OPEN) {
 				this.t.consume(SQUARE_OPEN)
-				var pos = this.t.get_pos()
 				node = BinaryOperationNode_new(pos, SQUARE_OPEN, node, this.expression())
 				this.t.consume(SQUARE_CLOSE)
 			} else if (tk == DOT) {
 				this.t.consume(DOT)
-				var pos = this.t.get_pos()
 				node = BinaryOperationNode_new(pos, DOT, node, this.value())
 			} else if (tk == INCREMENT) {
 				this.t.consume(INCREMENT)

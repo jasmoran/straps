@@ -12,6 +12,7 @@ class virtual ForLoop < Visitor (Visitor v, Position pos) {
 	func Node call_method(Node obj, String method) {
 		# Create method call
 		return CallNode_new(
+			this.pos,
 			BinaryOperationNode_new(Type_new(), this.pos, DOT,
 				obj,
 				StringNode_new(nIDENTIFIER, this.pos, Type_new(), method).toNode()
