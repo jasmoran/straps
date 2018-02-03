@@ -48,6 +48,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 
 		# Fix arguments into function name
 		# Extend function name
+		var pure = name.string.clone()
 		name.string = name.string.clone(256)
 
 		# Add args to function name
@@ -64,6 +65,10 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			# Resolve first item
 			binop.lhs = binop.lhs.accept(this.v)
 
+			# If function is a DOT, add its LHS to arguments (this)
+			var StringNode nn = binop.lhs
+			n.args.prepend(nn)
+
 			# Set sc to that of the first items type
 			var RetNode rn = binop.lhs
 			rn.ret_type.resolve(this.scope)
@@ -71,40 +76,34 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			if (sc == 0) sc = this.scope
 
 			# Resolve function
-			var ListNode ln = sc.resolve(name.string)
-			binop.rhs = ln.children.get(0)
+			binop.rhs = sc.resolve(pure, name.string, n.args)
 
 			# Inherit ret_type from rhs
 			rn = binop.rhs
 			binop.ret_type = rn.ret_type
 		} else {
 			# Resolve function
-			var ListNode ln = this.scope.resolve(name.string)
-			n.cfunction = ln.children.get(0)
+			n.cfunction = this.scope.resolve(pure, name.string, n.args)
 		}
 
 
 		# Fix up dot if it resolved to a function
 		binop = n.cfunction
 		if (binop.type == nBINARYOP && binop.op == DOT) {
-			# If function is a DOT, add its LHS to arguments (this)
-			var StringNode nn = binop.lhs
-			n.args.prepend(nn)
-
 			if (binop.rhs.type == nFUNCTION) {
 				n.cfunction = binop.rhs
 			}
 
 			# Virtual methods
 			if (binop.rhs.type == nVTAB_ACCESS) {
-				var StringNode vtab_off = binop.rhs
+				var FunctionNode vtab_off = binop.rhs
 				n.cfunction = BinaryOperationNode_new(
 					vtab_off.ret_type, SQUARE_OPEN,
 					BinaryOperationNode_new(Type_new(), SQUARE_OPEN,
 						binop.lhs,
 						StringNode_new(nNUMBER, Type_new(), "0").toNode()
 					).toNode(),
-					StringNode_new(nNUMBER, Type_new(), vtab_off.string).toNode()
+					StringNode_new(nNUMBER, Type_new(), vtab_off.name).toNode()
 				).toNode()
 			}
 		}

@@ -38,6 +38,9 @@ class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
 	}
 
 	func void visit(FunctionNode n)(Number length, StringNode arg, FunctionNode clone) {
+		var pure = n.name.clone()
+		n.pure = pure
+
 		# Leave main function alone
 		if (n.name.equal("main") == true) return 0
 		if (n.name.get(0) == '_') return 0
@@ -73,9 +76,7 @@ class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
 
 			if (this.cls.vtable == 0) {
 				# Add method (direct) to scope of class
-				var capsule = ListNode_new(nBLOCK)
-				capsule.append(clone.toNode())
-				this.cls.scope.set(cls_scope_name, capsule.toNode())
+				this.cls.scope.set(pure, cls_scope_name, clone)
 			} else {
 				# Add method to vtable of class
 				this.cls.vtable.set(cls_scope_name, n)
@@ -85,9 +86,10 @@ class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
 				offset << 3
 
 				# Add method (via vtable) to scope of class
-				capsule = ListNode_new(nBLOCK)
-				capsule.append(StringNode_new(nVTAB_ACCESS, n.ret_type, offset.toString()).toNode())
-				this.cls.scope.set(cls_scope_name, capsule.toNode())
+				var vtab = n.shallow_clone()
+				vtab.type = nVTAB_ACCESS
+				vtab.name = offset.toString()
+				this.cls.scope.set(pure, cls_scope_name, vtab)
 			}
 
 			# Save new method name "_CLASS_METHOD"

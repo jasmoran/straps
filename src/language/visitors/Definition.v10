@@ -76,10 +76,13 @@ class virtual Definition < Visitor (Visitor v) {
 		}
 
 		# Store cloned FunctionNode in the global scope
-		var capsule = ListNode_new(nBLOCK)
-		capsule.append(n.shallow_clone().toNode())
 		sc = scope
-		sc.set(n.name, capsule.toNode())
+		if (n.pure == 0) error("Null pure")
+		"@".print()
+		n.name.print()
+		"&".print()
+		n.pure.println()
+		sc.set(n.pure, n.name, n.shallow_clone())
 
 		# Loop through variables
 		ix = 0

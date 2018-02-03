@@ -14,6 +14,8 @@ define t "Node"
 include "src/stdlib/LinkedList.generic"
 define t "StringNode"
 include "src/stdlib/LinkedList.generic"
+define t "FunctionNode"
+include "src/stdlib/LinkedList.generic"
 
 enum NodeType {
 	nNONE nNASM nSYS nBLOCK nPAREN_LIST nFUNCTION nRETURN nCOMPARISON nIF
@@ -165,10 +167,10 @@ class virtual ClassNode < Node (String name, ListNode fields,
 func FunctionNode FunctionNode_new(Type ret_type, String name, ListNode args, ListNode vrbls, ListNode block)(Scope sc) {
 	sc = scope
 	sc = Scope_new(name, sc)
-	return FunctionNode_new(nFUNCTION, ret_type, name, args, vrbls, block, sc)
+	return FunctionNode_new(nFUNCTION, ret_type, name, args, vrbls, block, sc, NullString)
 }
 
-class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls, ListNode block, Scope scope) {
+class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls, ListNode block, Scope scope, String pure) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
