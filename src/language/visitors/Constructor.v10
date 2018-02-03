@@ -62,6 +62,7 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 		# Create _new function and append to parent block
 		this.pb.append(
 			FunctionNode_new(
+				n.position.clone("Constructor"),
 				Type_new(n.name),
 				n.name.clone(4).append("_new"),
 				args,

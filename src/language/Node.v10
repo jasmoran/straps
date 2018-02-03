@@ -164,13 +164,13 @@ class virtual ClassNode < Node (String name, ListNode fields,
 
 
 
-func FunctionNode FunctionNode_new(Type ret_type, String name, ListNode args, ListNode vrbls, ListNode block)(Scope sc) {
+func FunctionNode FunctionNode_new(Position pos, Type ret_type, String name, ListNode args, ListNode vrbls, ListNode block)(Scope sc) {
 	sc = scope
 	sc = Scope_new(name, sc)
-	return FunctionNode_new(nFUNCTION, ret_type, name, args, vrbls, block, sc, NullString)
+	return FunctionNode_new(nFUNCTION, ret_type, name, args, vrbls, block, sc, NullString, pos)
 }
 
-class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls, ListNode block, Scope scope, String pure) {
+class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls, ListNode block, Scope scope, String pure, Position position) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
@@ -188,7 +188,7 @@ class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls
 	}
 
 	func FunctionNode shallow_clone()(FunctionNode fn) {
-		fn = FunctionNode_new(this.ret_type, this.name, this.args, this.vrbls, ListNode_new(nBLOCK))
+		fn = FunctionNode_new(this.position, this.ret_type, this.name, this.args, this.vrbls, ListNode_new(nBLOCK))
 		fn.scope = this.scope
 		return fn
 	}

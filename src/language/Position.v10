@@ -16,4 +16,8 @@ class Position (MetaCharacter start, String stream, String note) {
   func void print(Stream s) {
     this.toString().print(s)
   }
+
+  func Position clone(String note) {
+    return Position_new(this.start, this.stream, note)
+  }
 }
