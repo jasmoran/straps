@@ -317,11 +317,11 @@ class virtual EnumNode < Node (String name, ListNode values, Position position) 
 
 
 
-func ForNode ForNode_new(StringNode item, Node iterable, ListNode block)() {
-	return ForNode_new(nFOR, item, iterable, block)
+func ForNode ForNode_new(Position pos, StringNode item, Node iterable, ListNode block)() {
+	return ForNode_new(nFOR, pos, item, iterable, block)
 }
 
-class virtual ForNode < Node (StringNode item, Node iterable, ListNode block) {
+class virtual ForNode < Node (Position position, StringNode item, Node iterable, ListNode block) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}

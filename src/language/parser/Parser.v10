@@ -347,13 +347,14 @@ class Parser(String name, Tokenizer t) {
 
 		if (tk == FOR) {
 			this.t.consume(FOR)
+			var pos = this.t.get_pos()
 			this.t.consume(PAREN_OPEN)
 			var item = this.nt_identifier()
 			this.t.consume(IN)
 			var iter = this.expression()
 			this.t.consume(PAREN_CLOSE)
 
-			return ForNode_new(item, iter, this.block(nBLOCK))
+			return ForNode_new(pos, item, iter, this.block(nBLOCK))
 		}
 
 		if (tk == FUNC) {
