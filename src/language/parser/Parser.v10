@@ -328,7 +328,8 @@ class Parser(String name, Tokenizer t) {
 
 		if (tk == BREAK) {
 			this.t.consume(BREAK)
-			return Node_new(nBREAK)
+			var pos = this.t.get_pos()
+			return Node_new(nBREAK, pos)
 		}
 
 		if (tk == CHARACTER) {
@@ -390,7 +391,8 @@ class Parser(String name, Tokenizer t) {
 
 		if (tk == NEXT) {
 			this.t.consume(NEXT)
-			return Node_new(nNEXT)
+			var pos = this.t.get_pos()
+			return Node_new(nNEXT, pos)
 		}
 
 		if (tk == NUMBER) {

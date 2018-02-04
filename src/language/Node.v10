@@ -33,7 +33,7 @@ class NodeType() {
 	}
 }
 
-class virtual Node(NodeType type) {
+class virtual Node(NodeType type, Position position) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
@@ -53,10 +53,10 @@ func CallNode CallNode_new(Position pos, Node cfunction) {
 }
 
 func CallNode CallNode_new(Position pos, Node cfunction, LinkedList<StringNode> args) {
-	return CallNode_new(nCALL, Type_new(), pos, cfunction, args)
+	return CallNode_new(nCALL, pos, Type_new(), cfunction, args)
 }
 
-class virtual CallNode < RetNode (Position position, Node cfunction, LinkedList<StringNode> args) {
+class virtual CallNode < RetNode (Node cfunction, LinkedList<StringNode> args) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
@@ -83,10 +83,10 @@ func BinaryOperationNode BinaryOperationNode_new(Position pos, Token op, Node lh
 	return BinaryOperationNode_new(Type_new(), pos, op, lhs, rhs)
 }
 func BinaryOperationNode BinaryOperationNode_new(Type ret_type, Position pos, Token op, Node lhs, Node rhs)() {
-	return BinaryOperationNode_new(nBINARYOP, ret_type, op, lhs, rhs, pos)
+	return BinaryOperationNode_new(nBINARYOP, pos, ret_type, op, lhs, rhs)
 }
 
-class virtual BinaryOperationNode < OpNode (Node lhs, Node rhs, Position position) {
+class virtual BinaryOperationNode < OpNode (Node lhs, Node rhs) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
@@ -106,10 +106,10 @@ func UnaryOperationNode UnaryOperationNode_new(Position pos, Token op, Node expr
 	return UnaryOperationNode_new(pos, Type_new(), op, expr, left)
 }
 func UnaryOperationNode UnaryOperationNode_new(Position pos, Type ret_type, Token op, Node expr, Boolean left)() {
-	return UnaryOperationNode_new(nUNARYOP, ret_type, op, pos, expr, left)
+	return UnaryOperationNode_new(nUNARYOP, pos, ret_type, op, expr, left)
 }
 
-class virtual UnaryOperationNode < OpNode (Position position, Node expr, Boolean left) {
+class virtual UnaryOperationNode < OpNode (Node expr, Boolean left) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
@@ -122,11 +122,8 @@ class virtual UnaryOperationNode < OpNode (Position position, Node expr, Boolean
 }
 
 
-func StringNode StringNode_new(NodeType type, Position pos, Type ret_type, String string) {
-	return StringNode_new(type, ret_type, string, pos)
-}
 
-class virtual StringNode < RetNode (String string, Position position) {
+class virtual StringNode < RetNode (String string) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
@@ -139,7 +136,7 @@ class virtual StringNode < RetNode (String string, Position position) {
 func Node ClassNode_new(Position pos, String name, ListNode fields, ListNode block, Map<String_FunctionNode> vtable, Type parent)(Scope sc) {
 	sc = scope
 	sc = Scope_new(name, sc)
-	return ClassNode_new(nCLASS, name, fields, block, sc, vtable, parent, pos)
+	return ClassNode_new(nCLASS, pos, name, fields, block, sc, vtable, parent)
 }
 
 func Node ClassNode_new(Position pos, String name, ListNode fields, ListNode block) {
@@ -149,7 +146,7 @@ func Node ClassNode_new(Position pos, String name, ListNode fields, ListNode blo
 }
 
 class virtual ClassNode < Node (String name, ListNode fields,
-								ListNode block, Scope scope, Map<String_FunctionNode> vtable, Type parent, Position position) {
+								ListNode block, Scope scope, Map<String_FunctionNode> vtable, Type parent) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
@@ -174,10 +171,10 @@ class virtual ClassNode < Node (String name, ListNode fields,
 func FunctionNode FunctionNode_new(Position pos, Type ret_type, String name, ListNode args, ListNode vrbls, ListNode block)(Scope sc) {
 	sc = scope
 	sc = Scope_new(name, sc)
-	return FunctionNode_new(nFUNCTION, ret_type, name, args, vrbls, block, sc, NullString, pos)
+	return FunctionNode_new(nFUNCTION, pos, ret_type, name, args, vrbls, block, sc, NullString)
 }
 
-class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls, ListNode block, Scope scope, String pure, Position position) {
+class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls, ListNode block, Scope scope, String pure) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
@@ -207,7 +204,7 @@ func ListNode ListNode_new(NodeType type, Position pos)() {
 	return ListNode_new(type, pos, LinkedList<Node>_new())
 }
 
-class virtual ListNode < Node (Position position, LinkedList<Node> children) {
+class virtual ListNode < Node (LinkedList<Node> children) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
@@ -241,7 +238,7 @@ func Node IfNode_new(Position pos, Node condition, ListNode block_if)(ListNode l
 	return IfNode_new(nIF, pos, condition, block_if, l)
 }
 
-class virtual IfNode < Node (Position position, Node condition, ListNode block_if, ListNode block_else) {
+class virtual IfNode < Node (Node condition, ListNode block_if, ListNode block_else) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
@@ -267,7 +264,7 @@ func Node LoopNode_new(Position pos, ListNode block)() {
 	return LoopNode_new(nLOOP, pos, block)
 }
 
-class virtual LoopNode < Node (Position position, ListNode block) {
+class virtual LoopNode < Node (ListNode block) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
@@ -285,7 +282,7 @@ func Node ReturnNode_new(Position pos, Node expr)() {
 	return ReturnNode_new(nRETURN, pos, expr)
 }
 
-class virtual ReturnNode < Node (Position position, Node expr) {
+class virtual ReturnNode < Node (Node expr) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
@@ -300,10 +297,10 @@ class virtual ReturnNode < Node (Position position, Node expr) {
 
 
 func Node EnumNode_new(Position pos, String name, ListNode values)() {
-	return EnumNode_new(nENUM, name, values, pos)
+	return EnumNode_new(nENUM, pos, name, values)
 }
 
-class virtual EnumNode < Node (String name, ListNode values, Position position) {
+class virtual EnumNode < Node (String name, ListNode values) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}
@@ -321,7 +318,7 @@ func ForNode ForNode_new(Position pos, StringNode item, Node iterable, ListNode 
 	return ForNode_new(nFOR, pos, item, iterable, block)
 }
 
-class virtual ForNode < Node (Position position, StringNode item, Node iterable, ListNode block) {
+class virtual ForNode < Node (StringNode item, Node iterable, ListNode block) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}

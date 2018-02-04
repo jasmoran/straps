@@ -1,6 +1,6 @@
 func ForLoop ForLoop_new() {
 	var Visitor v = 0
-	var Position p = Position_new(MetaCharacter_new('?', 0, 0), "ForLoop")
+	var Position p = 0
 	var fl = ForLoop_new(v, p)
 	fl.v = fl
 	return fl
@@ -36,7 +36,7 @@ class virtual ForLoop < Visitor (Visitor v, Position pos) {
 
 	func void visit(ForNode n)() {
 		# TODO: Better than this
-		#this.pos = n.position.clone("ForNode")
+		this.pos = n.position.clone("ForNode")
 
 		n.block.accept(this.v)
 
@@ -60,7 +60,7 @@ class virtual ForLoop < Visitor (Visitor v, Position pos) {
 		)
 
 		# Create break block => { break }
-		var brblock = ListNode_new(nBLOCK, this.pos).append(Node_new(nBREAK))
+		var brblock = ListNode_new(nBLOCK, this.pos).append(Node_new(nBREAK, this.pos))
 
 		# Add end check to loop block
 		n.block.prepend(IfNode_new(this.pos, cond, brblock))
