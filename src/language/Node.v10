@@ -41,6 +41,10 @@ class virtual Node(NodeType type, Position position) {
 	func void accept_children(Visitor v)() {}
 
 	func Node toNode()() { return this }
+
+	func Node clone() {
+		return Node_new(this.type, this.position)
+	}
 }
 
 
@@ -76,6 +80,10 @@ class virtual CallNode < RetNode (Node cfunction, LinkedList<StringNode> args) {
 
 		this.accept_args(v)
 	}
+
+	func CallNode clone() {
+		return CallNode_new(this.type, this.position, this.ret_type, this.cfunction, this.args)
+	}
 }
 
 
@@ -99,6 +107,10 @@ class virtual BinaryOperationNode < OpNode (Node lhs, Node rhs) {
 		n = n.accept(v)
 		if (n != 0) this.rhs = n
 	}
+
+	func BinaryOperationNode clone() {
+		return BinaryOperationNode_new(this.type, this.position, this.ret_type, this.op, this.lhs, this.rhs)
+	}
 }
 
 
@@ -119,6 +131,10 @@ class virtual UnaryOperationNode < OpNode (Node expr, Boolean left) {
 		n = n.accept(v)
 		if (n != 0) this.expr = n
 	}
+
+	func UnaryOperationNode clone() {
+		return UnaryOperationNode_new(this.type, this.position, this.ret_type, this.op, this.expr, this.left)
+	}
 }
 
 
@@ -129,6 +145,10 @@ class virtual StringNode < RetNode (String string) {
 	}
 
 	func void accept_children(Visitor v)() {}
+
+	func StringNode clone() {
+		return StringNode_new(this.type, this.position, this.ret_type, this.string)
+	}
 }
 
 
@@ -164,6 +184,10 @@ class virtual ClassNode < Node (String name, ListNode fields,
 		return ClassNode_new(this.position, this.name, ListNode_new(nLIST, this.fields.position),
 												 ListNode_new(nLIST, this.block.position), this.vtable, this.parent)
 	}
+
+	func ClassNode clone() {
+		return ClassNode_new(this.type, this.position, this.name, this.fields, this.block, this.scope, this.vtable, this.parent)
+	}
 }
 
 
@@ -195,6 +219,10 @@ class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls
 		fn = FunctionNode_new(this.position, this.ret_type, this.name, this.args, this.vrbls, ListNode_new(nBLOCK, this.block.position))
 		fn.scope = this.scope
 		return fn
+	}
+
+	func FunctionNode clone() {
+		return FunctionNode_new(this.type, this.position, this.ret_type, this.name, this.args, this.vrbls, this.block, this.scope, this.pure)
 	}
 }
 
@@ -229,6 +257,10 @@ class virtual ListNode < Node (LinkedList<Node> children) {
 		this.children.prepend(n)
 		return this
 	}
+
+	func ListNode clone() {
+		return ListNode_new(this.type, this.position, this.children)
+	}
 }
 
 
@@ -256,6 +288,10 @@ class virtual IfNode < Node (Node condition, ListNode block_if, ListNode block_e
 			if (n != 0) this.block_else = n
 		}
 	}
+
+	func IfNode clone() {
+		return IfNode_new(this.type, this.position, this.condition, this.block_if, this.block_else)
+	}
 }
 
 
@@ -264,6 +300,7 @@ func Node LoopNode_new(Position pos, ListNode block)() {
 	return LoopNode_new(nLOOP, pos, block)
 }
 
+# TODO: Make this a subclass of ListNode?
 class virtual LoopNode < Node (ListNode block) {
 	func void accept(Visitor v)() {
 		v.visit(this)
@@ -273,6 +310,10 @@ class virtual LoopNode < Node (ListNode block) {
 		n = this.block
 		n = n.accept(v)
 		if (n != 0) this.block = n
+	}
+
+	func LoopNode clone() {
+		return LoopNode_new(this.type, this.position, this.block)
 	}
 }
 
@@ -292,6 +333,10 @@ class virtual ReturnNode < Node (Node expr) {
 		n = n.accept(v)
 		if (n != 0) this.expr = n
 	}
+
+	func ReturnNode clone() {
+		return ReturnNode_new(this.type, this.position, this.expr)
+	}
 }
 
 
@@ -309,6 +354,10 @@ class virtual EnumNode < Node (String name, ListNode values) {
 		n = this.values
 		n = n.accept(v)
 		if (n != 0) this.values = n
+	}
+
+	func EnumNode clone() {
+		return EnumNode_new(this.type, this.position, this.name, this.values)
 	}
 }
 
@@ -333,5 +382,9 @@ class virtual ForNode < Node (StringNode item, Node iterable, ListNode block) {
 		n = this.block
 		n = n.accept(v)
 		if (n != 0) this.block = n
+	}
+
+	func ForNode clone() {
+		return ForNode_new(this.type, this.position, this.item, this.iterable, this.block)
 	}
 }
