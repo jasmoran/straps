@@ -281,11 +281,11 @@ class virtual LoopNode < Node (Position position, ListNode block) {
 
 
 
-func Node ReturnNode_new(Node expr)() {
-	return ReturnNode_new(nRETURN, expr)
+func Node ReturnNode_new(Position pos, Node expr)() {
+	return ReturnNode_new(nRETURN, pos, expr)
 }
 
-class virtual ReturnNode < Node (Node expr) {
+class virtual ReturnNode < Node (Position position, Node expr) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}

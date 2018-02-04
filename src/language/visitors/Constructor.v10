@@ -60,7 +60,7 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 
 		# Create return node and append to block
 		this.block.append(
-			ReturnNode_new(this.new_obj).toNode()
+			ReturnNode_new(pos, this.new_obj).toNode()
 		)
 
 		# Create _new function and append to parent block

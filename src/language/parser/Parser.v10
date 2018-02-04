@@ -400,7 +400,8 @@ class Parser(String name, Tokenizer t) {
 
 		if (tk == RETURN) {
 			this.t.consume(RETURN)
-			return ReturnNode_new(this.expression())
+			var pos = this.t.get_pos()
+			return ReturnNode_new(pos, this.expression())
 		}
 
 		if (tk == STRING) {
