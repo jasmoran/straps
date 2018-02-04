@@ -66,7 +66,7 @@ class virtual ForLoop < Visitor (Visitor v, Position pos) {
 		n.block.prepend(IfNode_new(this.pos, cond, brblock))
 
 		# Create loop => loop { $n.block$ }
-		outer_block.append(LoopNode_new(n.block))
+		outer_block.append(LoopNode_new(this.pos, n.block))
 
   	return outer_block
 	}

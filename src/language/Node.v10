@@ -263,11 +263,11 @@ class virtual IfNode < Node (Position position, Node condition, ListNode block_i
 
 
 
-func Node LoopNode_new(ListNode block)() {
-	return LoopNode_new(nLOOP, block)
+func Node LoopNode_new(Position pos, ListNode block)() {
+	return LoopNode_new(nLOOP, pos, block)
 }
 
-class virtual LoopNode < Node (ListNode block) {
+class virtual LoopNode < Node (Position position, ListNode block) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}

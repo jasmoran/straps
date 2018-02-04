@@ -379,7 +379,8 @@ class Parser(String name, Tokenizer t) {
 
 		if (tk == LOOP) {
 			this.t.consume(LOOP)
-			return LoopNode_new(this.block(nBLOCK))
+			var pos = this.t.get_pos()
+			return LoopNode_new(pos, this.block(nBLOCK))
 		}
 
 		if (tk == NASM) {
