@@ -1,15 +1,20 @@
+func Type Type_new(String raw, Boolean cast)(ClassNode cn) {
+	cn = 0
+	return Type_new(raw, cn, cast)
+}
+
 func Type Type_new(String raw)(ClassNode cn) {
 	cn = 0
-	return Type_new(raw, cn)
+	return Type_new(raw, cn, false)
 }
 
 func Type Type_new()(String s, ClassNode cn) {
 	s = 0
 	cn = 0
-	return Type_new(s, cn)
+	return Type_new(s, cn, false)
 }
 
-class Type (String raw, ClassNode res) {
+class Type (String raw, ClassNode res, Boolean cast) {
 	func String toString()(String s) {
 		if (this.raw == 0) {
 			return "Unknown"

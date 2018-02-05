@@ -8,9 +8,11 @@ func Resolving Resolving_new()(Scope sc) {
 
 class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_idents) {
 	func void visit(StringNode n)(Node replacement) {
-		n.ret_type.resolve(this.scope)
+		var orig_type = n.ret_type
+		orig_type.resolve(this.scope)
 		if (n.type == nIDENTIFIER) {
 			if (this.resolve_idents == true) n = this.scope.resolve(n.string)
+			if (orig_type.cast == true) n.ret_type = orig_type
 		}
 		return n
 	}
@@ -49,27 +51,38 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 		# Resolve function
 		if (binop.type == nBINARYOP && binop.op == DOT) {
 			# Resolve first item
+			var RetNode rn = binop.lhs
+			var orig_type = rn.ret_type
 			binop.lhs = binop.lhs.accept(this.v)
+			rn = binop.lhs
+			if (orig_type.cast == true) rn.ret_type = orig_type
 
 			# If function is a DOT, add its LHS to arguments (this)
 			var StringNode nn = binop.lhs
 			n.args.prepend(nn)
 
 			# Set sc to that of the first items type
-			var RetNode rn = binop.lhs
 			rn.ret_type.resolve(this.scope)
 			var sc = rn.ret_type.getScope()
 			if (sc == 0) sc = this.scope
 
 			# Resolve function
+			rn = binop.rhs
+			orig_type = rn.ret_type
 			binop.rhs = sc.resolve(name.string, n.args)
+			rn = binop.rhs
+			if (orig_type.cast == true) rn.ret_type = orig_type
 
 			# Inherit ret_type from rhs
 			rn = binop.rhs
 			binop.ret_type = rn.ret_type
 		} else {
 			# Resolve function
+			var RetNode rn = n.cfunction
+			var orig_type = rn.ret_type
 			n.cfunction = this.scope.resolve(name.string, n.args)
+			rn = n.cfunction
+			if (orig_type.cast == true) rn.ret_type = orig_type
 		}
 
 
@@ -109,7 +122,10 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 		if (n.op == DOT) {
 			# Resolve first item
 			sn = n.lhs
+			var orig_type = sn.ret_type
 			n.lhs = sn.accept(this.v)
+			sn = n.lhs
+			if (orig_type.cast == true) sn.ret_type = orig_type
 
 			# Save current scope
 			prev_scope = this.scope
@@ -122,7 +138,10 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 
 			# Resolve second item
 			sn = n.rhs
+			orig_type = sn.ret_type
 			n.rhs = sn.accept(this.v)
+			sn = n.rhs
+			if (orig_type.cast == true) sn.ret_type = orig_type
 
 			# Inherit ret_type from rhs
 			sn = n.rhs
@@ -142,9 +161,11 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 				n.lhs = this.scope.resolve(field.string)
 				field = n.lhs
 
-				nn = n.rhs
-				n.rhs = nn.accept(this.v)
 				sn = n.rhs
+				orig_type = sn.ret_type
+				n.rhs = sn.accept(this.v)
+				sn = n.rhs
+				if (orig_type.cast == true) sn.ret_type = orig_type
 
 				field.ret_type = sn.ret_type
 

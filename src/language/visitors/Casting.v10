@@ -1,0 +1,29 @@
+func Casting Casting_new() {
+	var Visitor v = 0
+	var c = Casting_new(v)
+	c.v = c
+	return c
+}
+
+
+class virtual Casting < Visitor (Visitor v) {
+	func void visit(CallNode n) {
+		n.accept_children(this.v)
+		
+		# Only deal with method-like calls
+		var BinaryOperationNode binop = n.cfunction
+		if (binop.type != nBINARYOP || binop.op != DOT) return n
+
+		# Only interested in "cast" or "to" methods
+		var StringNode name = binop.rhs
+		if (name.string.equal("cast") == false && name.string.equal("to") == false) return n
+
+		# Check for the right number of args
+		if (n.args.length != 1) error("Cast must be passed a single type")
+
+		var RetNode rn = binop.lhs
+		rn.ret_type = Type_new(n.args.get(0).string, true)
+
+		return binop.lhs
+	}
+}
