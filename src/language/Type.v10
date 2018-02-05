@@ -62,7 +62,7 @@ class Type (String raw, ClassNode res) {
 	}
 
 	func Number child_rank(Type poss_child) {
-		if (this.res == 0) error("Assignee type is unresolved")
+		if (this.res == 0) return 0
 
 		# Check if poss_child is the same type or a child of this type
 		var rank = 0

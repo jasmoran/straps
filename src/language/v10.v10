@@ -18,6 +18,7 @@ include "src/language/visitors/Dump.v10"
 include "src/language/visitors/Variables.v10"
 include "src/language/visitors/Inherit.v10"
 include "src/language/visitors/ForLoop.v10"
+include "src/language/visitors/TypeCheck.v10"
 
 global(Scope scope)
 
@@ -67,6 +68,8 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	v = Definition_new()
 	root.accept(v)
 	v = Resolving_new()
+	root.accept(v)
+	v = TypeCheck_new()
 	root.accept(v)
 	v = IndexCall_new()
 	root.accept(v)
