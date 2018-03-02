@@ -44,25 +44,80 @@ class virtual IndexCall < Visitor (Visitor v, LinkedList<Node> parent_list,
 		return StringNode_new(nREGISTER, this.pos, Type_new(), "rax")
 	}
 
-	func void visit(BinaryOperationNode n)(Node nn, Boolean dumb_or, BinaryOperationNode child, ListNode args) {
+	func void visit(BinaryOperationNode n)(Node nn, BinaryOperationNode child, ListNode args) {
 		# Visit left hand side
 		nn = n.lhs
 		nn = nn.accept(this.v)
 		if (nn != 0) n.lhs = nn
 
-		dumb_or = false
-		if (n.op == DOT) dumb_or = true
-		if (n.op == SQUARE_OPEN) dumb_or = true
+		if (n.op == ASTERISK || n.op == FWD_SLASH || n.op == PLUS || n.op == MINUS) {
+			# Visit rhs
+			nn = n.rhs
+			nn = nn.accept(this.v)
+			if (nn != 0) {
+				# Free up rax by moving value to scratch reg
+				this.prepend(
+					BinaryOperationNode_new(
+						n.position.clone("IndexCall"),
+						ASSIGN,
+						this.scratch_reg,
+						nn
+					).toNode()
+				)
 
-		if (dumb_or == true) {
+				n.rhs = this.scratch_reg
+			}
+
+			var Node rx = StringNode_new(nREGISTER, this.pos, Type_new(), "rax")
+			# Move lhs to parent block
+			this.prepend(
+				BinaryOperationNode_new(
+					n.position.clone("IndexCall"),
+					ASSIGN,
+					rx,
+					n.lhs
+				).toNode()
+			)
+			n.lhs = rx
+
+
+			if (n.op == ASTERISK || n.op == FWD_SLASH) {
+				# Move rhs to parent block
+				this.prepend(
+					BinaryOperationNode_new(
+						n.position.clone("IndexCall"),
+						ASSIGN,
+						this.scratch_reg,
+						n.rhs
+					).toNode()
+				)
+
+				# Prepend unary op
+				this.prepend(
+					UnaryOperationNode_new(
+						n.position.clone("IndexCall"),
+						n.op,
+						this.scratch_reg,
+						true
+					).toNode()
+				)
+			} else {
+				if (n.op == PLUS)  n.op = ADD
+				if (n.op == MINUS) n.op = SUB
+
+				# Prepend op
+				this.prepend(n.toNode())
+			}
+
+			return rx
+		}
+
+		if (n.op == DOT || n.op == SQUARE_OPEN) {
 			# Check if lhs is also DOT/SQUARE_OPEN
 			if (n.lhs.type == nBINARYOP) {
 				child = n.lhs
 
-				dumb_or = false
-				if (child.op == DOT) dumb_or = true
-				if (child.op == SQUARE_OPEN) dumb_or = true
-				if (dumb_or == true) {
+				if (child.op == DOT || child.op == SQUARE_OPEN) {
 					# Move lhs to parent block
 					this.prepend(
 						BinaryOperationNode_new(
@@ -84,10 +139,7 @@ class virtual IndexCall < Visitor (Visitor v, LinkedList<Node> parent_list,
 
 			child = n.rhs
 
-			dumb_or = false
-			if (child.op == DOT) dumb_or = true
-			if (child.op == SQUARE_OPEN) dumb_or = true
-			if (dumb_or == true) {
+			if (child.op == DOT || child.op == SQUARE_OPEN) {
 				# Move rhs to parent block
 				this.prepend(
 					BinaryOperationNode_new(
