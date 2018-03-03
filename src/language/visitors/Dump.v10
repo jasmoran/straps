@@ -171,6 +171,7 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
 		else if (n.op == PUSH) "push ".print(this.stream)
 		else if (n.op == ASTERISK) "mul ".print(this.stream)
 		else if (n.op == FWD_SLASH) "div ".print(this.stream)
+		else if (n.op == MINUS) "neg ".print(this.stream)
 		else error("Can't use ", n.op.toString(), " as a unary operator")
 
 		n.accept_children(this.v)

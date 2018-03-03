@@ -190,4 +190,26 @@ class virtual IndexCall < Visitor (Visitor v, LinkedList<Node> parent_list,
 
 		return 0
 	}
+
+	func void visit(UnaryOperationNode n) {
+		if (n.op == MINUS) {
+			this.prepend(
+				BinaryOperationNode_new(
+					n.position.clone("IndexCall"),
+					ASSIGN,
+					this.scratch_reg,
+					n.expr
+				).toNode()
+			)
+
+			n.expr = this.scratch_reg
+
+			this.prepend(n.toNode())
+
+			return this.scratch_reg
+		}
+
+		n.accept_children(this.v)
+		return 0
+	}
 }
