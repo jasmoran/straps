@@ -1,8 +1,10 @@
 include "src/language/Node.v10"
 include "src/language/Tokenizer.v10"
+define t "String"
+include "src/stdlib/LinkedList.generic"
 
 func Parser Parser_new(String stream_name, Stream input)() {
-	return Parser_new(stream_name, Tokenizer_new(stream_name, input))
+	return Parser_new(stream_name, Tokenizer_new(stream_name, input), LinkedList<String>_new())
 }
 
 func Node Parser_parse(String stream_name, Stream input)(Parser p) {
@@ -10,7 +12,7 @@ func Node Parser_parse(String stream_name, Stream input)(Parser p) {
 	return p.parse()
 }
 
-class Parser(String name, Tokenizer t) {
+class Parser(String name, Tokenizer t, LinkedList<String> reqs) {
 	func Node nt_class()(String name, ListNode fields, ListNode block) {
 		this.t.consume(CLASS)
 
@@ -104,6 +106,15 @@ class Parser(String name, Tokenizer t) {
 		node = StringNode_new(nNASM, pos, Type_new("void"), this.t.consume(STRING))
 		this.t.consume(PAREN_CLOSE)
 		return node
+	}
+
+	func void nt_require() {
+		this.t.consume(REQUIRE)
+		var pos = this.t.get_pos()
+		this.t.consume(PAREN_OPEN)
+		this.reqs.append(this.t.consume(STRING))
+		this.reqs.length.toString().println()
+		this.t.consume(PAREN_CLOSE)
 	}
 
 
@@ -405,6 +416,11 @@ class Parser(String name, Tokenizer t) {
 			this.t.consume(RETURN)
 			var pos = this.t.get_pos()
 			return ReturnNode_new(pos, this.expression())
+		}
+
+		if (tk == REQUIRE) {
+			this.nt_require()
+			return this.value()
 		}
 
 		if (tk == STRING) {
