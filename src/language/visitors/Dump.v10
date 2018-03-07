@@ -1,4 +1,8 @@
-func Dump Dump_new(Stream stream)(Boolean top) {
+func Dump Dump_new() {
+	return Dump_new(STDOUT, true, LinkedList<String>_new())
+}
+
+func Dump Dump_new(Stream stream, Boolean root_file, LinkedList<String> ext_funcs)(Boolean top) {
 	var binops = Array<String>_new(5)
 	binops.append("add ")
 	binops.append("sub ")
@@ -18,14 +22,14 @@ func Dump Dump_new(Stream stream)(Boolean top) {
 	top = true
 
 	var Visitor v = 0
-	var dump = Dump_new(v, binops, scallreg, top, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true, stream, " ")
+	var dump = Dump_new(v, binops, scallreg, top, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true, stream, " ", root_file, ext_funcs)
 	dump.v = dump
 	return dump
 }
 
 class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> scallreg, Boolean top, Number counter,
 					 String trueLabel, String falseLabel, String target, Boolean negate,
-					 Stream stream, String idloop) {
+					 Stream stream, String idloop, Boolean root_file, LinkedList<String> ext_funcs) {
 	func void visit(Node n)() {
 		if (n.type == nNEXT) {
 			"jmp .loop_".print(this.stream)
@@ -213,9 +217,12 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
 	}
 
 	func void visit(FunctionNode n)(Number size) {
+		"global ".print(this.stream)
 		if (n.name.equal("main") == 1) {
+			"_start".println(this.stream)
 			"_start".print(this.stream)
 		} else {
+			n.name.println(this.stream)
 			n.name.print(this.stream)
 		}
 		":\npush rbp\nmov rbp, rsp\nsub rsp, ".print(this.stream)
@@ -236,12 +243,31 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
 			size << 3
 			size.toString().println(this.stream)
 		}
-  	return 0
+		return 0
 	}
 
 	func void visit(ListNode n)(LinkedListNode<Node> lln, StringNode nn, Number ix, String s) {
 		if (this.top == true) {
-			"section .text\nglobal _start".println(this.stream)
+			"section .text".println(this.stream)
+			if (this.root_file == true) {
+				"global _FUNCTIONLIST, _FUNCTIONNAMELIST".println(this.stream)
+			} else {
+				"extern _FUNCTIONLIST, _FUNCTIONNAMELIST".println(this.stream)
+			}
+
+			# Declare external functions
+			if (this.ext_funcs.length > 0) {
+				"extern ".print(this.stream)
+				for (ext_func in this.ext_funcs) {
+					ext_func.print(this.stream)
+
+					if (ext_func_iter.finished() == false) {
+						", ".print(this.stream)
+					}
+				}
+				"\n".print(this.stream)
+			}
+
 			this.top = false
 		}
 

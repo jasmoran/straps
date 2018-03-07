@@ -21,23 +21,160 @@ include "src/language/visitors/ForLoop.v10"
 include "src/language/visitors/TypeCheck.v10"
 include "src/language/visitors/Casting.v10"
 include "src/language/visitors/PlusMinus.v10"
+include "src/language/visitors/ListFunctions.v10"
+
+define t "LinkedList<String>"
+include "src/stdlib/Array.generic"
+
+define k "String"
+define v "LinkedList<String>"
+include "src/stdlib/Map.generic"
 
 global(Scope scope)
 
-func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)(Stream input, Stream output, Parser parser, Node root, Visitor v, Scope sc) {
-	# Open input file
-	input = File_open(in_path)
-	if (input < 0) { return 1 }
-
-	# Read flags
-	var keep = false
-	if (caflags != 0) {
-		var flags = String_fromTerminated(caflags)
-		if (flags.length > 1 && flags.get(1) == 'k') keep = true
+# Returns: List of all functions defined in
+#          built file and its dependencies
+func LinkedList<String> build(String name, Boolean build_deps, Boolean keep_asm, Boolean root_file, Map<String_LinkedList<String>> source_files, ListNode lfuncs) {
+	#######################
+	#    FILE HANDLING    #
+	#######################
+	
+	# Normalise source file path
+	var String source_path = 0
+	var Number dot_pos = name.length - 4
+	if (name.get(dot_pos) == '.') {
+		source_path = name.clone()
+		name.length -= 4
+	} else {
+		source_path = name.clone(4).append(".v10")
 	}
 
-	parser = Parser_new(String_fromTerminated(in_path), input)
-	root = parser.parse()
+	# Construct obj and asm paths
+	var asm_out = name.clone(4).append(".asm")
+	var obj_out = name.clone(2).append(".o")
+
+	# Dont rebuild files
+	var existing = source_files.get(obj_out)
+	if (existing > 0) return existing
+
+	# Open source file
+	var input = File_open(source_path)
+	if (input < 0) exit(1)
+	
+
+	#################
+	#    PARSING    #
+	#################
+
+	"Parsing file ".print()
+	source_path.println()
+
+	# Parse file
+	var parser = Parser_new(source_path, input)
+	var Node root = parser.parse()
+
+	# Create list of external functions
+	var ext_funcs = LinkedList<String>_new()
+
+	# Parse required files
+	for (req in parser.reqs) {
+		var funs = build(req, build_deps, keep_asm, false, source_files, lfuncs)
+		for (fun in funs) {
+			ext_funcs.append(fun)
+		}
+	}
+
+	# Add file to source file map
+	source_files.set(obj_out, ext_funcs)
+
+
+	###########################
+	#    DEFINING VISITORS    #
+	###########################
+
+	root.accept(Typing_new())
+	root.accept(Inherit_new())
+	root.accept(Constructor_new())
+	root.accept(Method_new())
+
+	# Full build-only defining visitors
+	if (root_file == true || build_deps == true) {
+		root.accept(ForLoop_new())
+		root.accept(Variables_new())
+	}
+
+	root.accept(Definition_new())
+	root.accept(Functions_new(lfuncs, root_file))
+
+	# Resolve and build
+	if (root_file == true || build_deps == true) {
+		############################
+		#    RESOLVING VISITORS    #
+		############################
+
+		root.accept(PlusMinus_new())
+		root.accept(Casting_new())
+		root.accept(Resolving_new())
+		root.accept(TypeCheck_new())
+		root.accept(IndexCall_new())
+		root.accept(Strings_new())
+
+		# Dump asm to file
+		var output = File_create(asm_out)
+		if (output < 0) exit(1)
+		root.accept(Dump_new(output, root_file, ext_funcs))
+
+
+		##################
+		#    ASSEMBLY    #
+		##################
+
+		"Assembling file ".print()
+		source_path.println()
+
+		# Assemble
+		# nasm -f elf64 out.asm
+		Run_new(4).add("/usr/bin/nasm").add("-f").add("elf64").add(asm_out).exec()
+
+		# Clean up generated asm file
+		if (keep_asm == false) File_delete(asm_out)
+	}
+
+	# Get a list of all exported functions
+	root.accept(ListFunctions_new(ext_funcs))
+
+	return ext_funcs
+}
+
+func void main(CharArr comp, CharArr source_path, CharArr out_path, CharArr caflags)(Stream input, Stream output, Parser parser, Node root, Visitor v, Scope sc) {
+	# Read flags
+	var build_deps = true  # Build required dependencies
+	var link       = true  # Link created object files into executable
+	var keep_asm   = false # Keep generated asm files
+	var keep_obj   = true  # Keep generated object files
+	var obj_force  = false # Force build of up to date object files
+
+	if (caflags != 0) {
+		var flags = String_fromTerminated(caflags)
+		if (flags.contains('h') == true) {
+			"Straps Compiler".println()
+			"Usage: straps SOURCE_FILE OUTPUT_EXECUTABLE [-flags]\n".println()
+			"Flags:".println()
+			"  h - Display this help text".println()
+			"  d - Don't build required dependencies".println()
+			"  l - Don't link object files into a final executable".println()
+			"  a - Keep generated asm files".println()
+			"  o - Delete generated object files".println()
+			"  f - Force the build of up to date object files".println()
+			exit()
+		}
+		if (flags.contains('d') == true) build_deps = false
+		if (flags.contains('l') == true) link       = false
+		if (flags.contains('a') == true) keep_asm   = true
+		if (flags.contains('o') == true) keep_obj   = false
+		if (flags.contains('f') == true) obj_force  = true
+	}
+
 	sc = Scope_new()
 	scope = sc
 
@@ -55,52 +192,33 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 
 	load_loop()
 
-	v = PlusMinus_new()
-	root.accept(v)
-	v = Casting_new()
-	root.accept(v)
-	v = ForLoop_new()
-	root.accept(v)
-	v = Variables_new()
-	root.accept(v)
-	v = Typing_new()
-	root.accept(v)
-	v = Inherit_new()
-	root.accept(v)
-	v = Constructor_new()
-	root.accept(v)
-	v = Method_new()
-	root.accept(v)
-	v = Definition_new()
-	root.accept(v)
-	v = Resolving_new()
-	root.accept(v)
-	v = TypeCheck_new()
-	root.accept(v)
-	v = IndexCall_new()
-	root.accept(v)
-	v = Functions_new()
-	root.accept(v)
-	v = Strings_new()
-	root.accept(v)
+	var source_files = Map<String_LinkedList<String>>_new(128)
+	var lfuncs = ListNode_new(nFUNCTIONS, Position_new(MetaCharacter_new('?', 0, 0), "Functions"))
 
-	# Open output file
-	output = File_create("out.asm")
-	if (output < 0) { return 1 }
+	build(String_fromTerminated(source_path), build_deps, keep_asm, true, source_files, lfuncs)
 
-	v = Dump_new(output)
-	root.accept(v)
+	# Link object files into executable
+	if (link == true) {
+		# Get number of arguments
+		var Number arg_cnt = source_files.keys.length + 5
 
-	# nasm -f elf64 out.asm
-	Run_new(4).add("/usr/bin/nasm").add("-f").add("elf64").add("out.asm").exec()
+		# ld -m elf_x86_64 -o out_path out.o
+		var ld = Run_new(arg_cnt).add("/usr/bin/ld").add("-m").add("elf_x86_64")
+														 .add("-o").add(String_fromTerminated(out_path))
 
-	# ld -m elf_x86_64 -o out_path out.o
-	Run_new(6).add("/usr/bin/ld").add("-m").add("elf_x86_64")
-						.add("-o").add(String_fromTerminated(out_path)).add("out.o").exec()
+		# Add object paths to arguments
+		for (obj in source_files.keys) {
+			ld.add(obj)
+		}
 
-	# Clean up
-	if (keep == false) {
-		File_delete("out.asm")
-		File_delete("out.o")
+		# Run command
+		ld.exec()
+	}
+
+	# Clean up object files
+	if (keep_obj == false) {
+		for (obj in source_files.keys) {
+			File_delete(obj)
+		}
 	}
 }

@@ -179,7 +179,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 	}
 
 	func void visit(ListNode n)() {
-		if (n.type != nGLOBAL) {
+		if (n.type != nGLOBAL && n.type != nFUNCTIONS) {
 			n.accept_children(this.v)
 		}
 

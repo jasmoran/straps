@@ -1,0 +1,20 @@
+func ListFunctions ListFunctions_new(LinkedList<String> list) {
+	var Visitor v = 0
+	var fun = ListFunctions_new(v, list)
+	fun.v = fun
+	return fun
+}
+
+func ListFunctions ListFunctions_new() {
+	return ListFunctions_new(LinkedList<String>_new())
+}
+
+class virtual ListFunctions < Visitor (Visitor v, LinkedList<String> list) {
+	func void visit(FunctionNode n) {
+		var name = n.name
+		if (n.name.equal("main") == true) name = "_start"
+		this.list.append(name)
+
+		return 0
+	}
+}

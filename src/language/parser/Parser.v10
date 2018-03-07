@@ -113,7 +113,6 @@ class Parser(String name, Tokenizer t, LinkedList<String> reqs) {
 		var pos = this.t.get_pos()
 		this.t.consume(PAREN_OPEN)
 		this.reqs.append(this.t.consume(STRING))
-		this.reqs.length.toString().println()
 		this.t.consume(PAREN_CLOSE)
 	}
 
