@@ -71,7 +71,7 @@ class LinkedList<?t> (LinkedListNode<?t> first, LinkedListNode<?t> last, Number 
 		this.fetch(ix).payload = payload
 	}
 
-	func LinkedListNode<?t> append(?t payload)(LinkedListNode<?t> node) {
+	func LinkedList<?t> append(?t payload)(LinkedListNode<?t> node) {
 		node = LinkedListNode<?t>_new(payload)
 
 		node.back = this.last
@@ -87,14 +87,15 @@ class LinkedList<?t> (LinkedListNode<?t> first, LinkedListNode<?t> last, Number 
 
 		this.length++
 
-		return node
+		return this
 	}
 
-	func LinkedListNode<?t> prepend(?t payload)() {
-		return this.insert_before(this.first, payload)
+	func LinkedList<?t> prepend(?t payload)() {
+		this.insert_before(this.first, payload)
+		return this
 	}
 
-	func LinkedListNode<?t> insert_before(LinkedListNode<?t> anchor, ?t payload)(LinkedListNode<?t> node) {
+	func LinkedList<?t> insert_before(LinkedListNode<?t> anchor, ?t payload)(LinkedListNode<?t> node) {
 		node = LinkedListNode<?t>_new(payload)
 
 		if (anchor != 0) {
@@ -120,7 +121,7 @@ class LinkedList<?t> (LinkedListNode<?t> first, LinkedListNode<?t> last, Number 
 		}
 		this.length++
 
-		return node
+		return this
 	}
 
 	func void remove(LinkedListNode<?t> node)() {
