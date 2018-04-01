@@ -21,6 +21,7 @@ include "src/language/visitors/ForLoop.v10"
 include "src/language/visitors/TypeCheck.v10"
 include "src/language/visitors/Casting.v10"
 include "src/language/visitors/PlusMinus.v10"
+include "src/language/visitors/Statics.v10"
 
 global(Scope scope)
 
@@ -56,6 +57,8 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	load_loop()
 
 	v = PlusMinus_new()
+	root.accept(v)
+	v = Statics_new()
 	root.accept(v)
 	v = Casting_new()
 	root.accept(v)

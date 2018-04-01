@@ -126,10 +126,9 @@ class virtual Definition < Visitor (Visitor v) {
 			} else {
 				field.accept(this.v)
 
-				# Truncate class nodes once they have been visited
+				# Remove class nodes once they have been visited
 				if (field.type == nCLASS) {
-					var ClassNode cn = field
-					lln.payload = cn.shallow_clone()
+					n.children.remove(lln)
 				}
 			}
 

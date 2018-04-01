@@ -21,7 +21,7 @@ enum NodeType {
 	nNONE nNASM nSYS nBLOCK nPAREN_LIST nFUNCTION nRETURN nCOMPARISON nIF
 	nNEXT nLOOP nBREAK nIDENTIFIER nENUM nCOMMENT nCHARACTER nSTRING nNUMBER
 	nINDEX nCALL nOPERATION nMEM_ACCESS nREGISTER nPUSH nPOP nCLASS nFIELD nGLOBAL
-	nSTRINGS nBINARYOP nUNARYOP nLIST nFUNCTIONS nVTAB_ACCESS nFOR
+	nSTRINGS nBINARYOP nUNARYOP nLIST nFUNCTIONS nVTAB_ACCESS nFOR nSTATIC_CLASS
 }
 
 class NodeType() {
@@ -151,12 +151,17 @@ class virtual StringNode < RetNode (String string) {
 	}
 }
 
-
+class virtual StaticClassNode < Node (ClassNode klass) {
+	func void accept(Visitor v)() {
+		v.visit(this)
+	}
+}
 
 func Node ClassNode_new(Position pos, String name, ListNode fields, ListNode block, Map<String_FunctionNode> vtable, Type parent)(Scope sc) {
 	sc = scope
 	sc = Scope_new(name, sc)
-	return ClassNode_new(nCLASS, pos, name, fields, block, sc, vtable, parent)
+	var ret_type = Type_new(name.clone(6).append("Static"))
+	return ClassNode_new(nCLASS, pos, ret_type, name, fields, block, sc, vtable, parent)
 }
 
 func Node ClassNode_new(Position pos, String name, ListNode fields, ListNode block) {
@@ -165,7 +170,7 @@ func Node ClassNode_new(Position pos, String name, ListNode fields, ListNode blo
 	return ClassNode_new(pos, name, fields, block, vtable, parent)
 }
 
-class virtual ClassNode < Node (String name, ListNode fields,
+class virtual ClassNode < RetNode (String name, ListNode fields,
 								ListNode block, Scope scope, Map<String_FunctionNode> vtable, Type parent) {
 	func void accept(Visitor v)() {
 		v.visit(this)
@@ -186,7 +191,7 @@ class virtual ClassNode < Node (String name, ListNode fields,
 	}
 
 	func ClassNode clone() {
-		return ClassNode_new(this.type, this.position, this.name, this.fields, this.block, this.scope, this.vtable, this.parent)
+		return ClassNode_new(this.type, this.position, this.ret_type, this.name, this.fields, this.block, this.scope, this.vtable, this.parent)
 	}
 }
 

@@ -18,6 +18,11 @@ class virtual Visitor() {
 		return 0
 	}
 
+	func void visit(StaticClassNode n)() {
+		n.accept_children(this)
+		return 0
+	}
+
 	func void visit(ClassNode n)() {
 		n.accept_children(this)
 		return 0

@@ -1,0 +1,30 @@
+func Statics Statics_new() {
+  var Visitor v = 0
+  var ListNode ln = 0
+  var s = Statics_new(v, ln)
+  s.v = s
+  return s
+}
+
+
+class virtual Statics < Visitor (Visitor v, ListNode pb) {
+  func void visit(ClassNode n) {
+    this.pb.append(
+      StaticClassNode_new(nSTATIC_CLASS, n.position.clone("Static Class"), n)
+    )
+
+    return 0
+  }
+
+  func void visit(ListNode n) {
+    var old_pb = this.pb
+    if (n.type == nBLOCK)
+      this.pb = n
+
+    n.accept_children(this.v)
+
+    this.pb = old_pb
+
+    return 0
+  }
+}

@@ -193,12 +193,25 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
 	}
 
 	func void visit(ClassNode n)() {
-		if (n.vtable == 0) return 0
-		"section .data\n_vtable_".print(this.stream)
 		n.name.print(this.stream)
+		"Static".print(this.stream)
+
+		return 0
+	}
+
+	func void visit(StaticClassNode n)() {
+		"section .bss".println(this.stream)
+		n.klass.name.print(this.stream)
+		"Static:\nresq ".print(this.stream)
+		n.klass.fields.children.length.toString().println(this.stream)
+		"section .text".println(this.stream)
+		
+		if (n.klass.vtable == 0) return 0
+		"section .data\n_vtable_".print(this.stream)
+		n.klass.name.print(this.stream)
 		":\ndq ".print(this.stream)
 
-		var array = n.vtable.values
+		var array = n.klass.vtable.values
 		var ix = 0
 		loop {
 			if (ix == array.length) { break }
@@ -209,7 +222,7 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
 		}
 
 		"0\nsection .text".println(this.stream)
-  	return 0
+		return 0
 	}
 
 	func void visit(FunctionNode n)(Number size) {
