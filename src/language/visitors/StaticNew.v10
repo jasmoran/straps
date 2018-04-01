@@ -1,0 +1,124 @@
+func StaticNew StaticNew_new() {
+  var Visitor v = 0
+  var ListNode ln = 0
+  var cnst = StaticNew_new(v, ln)
+  cnst.v = cnst
+  return cnst
+}
+
+class virtual StaticNew < Visitor (Visitor v, ListNode pb) {
+  func void visit(ClassNode n) {
+    # Find any init methods
+    var inits = LinkedList<FunctionNode>_new()
+    for (nmeth in n.block.children) {
+      var FunctionNode meth = nmeth
+
+      if (meth.name.equal("init") == true) {
+        inits.append(meth)
+      }
+    }
+
+    # Check if any init methods have been defined
+    if (inits.length == 0) return 0
+
+    # Calculate size of allocation
+    var size = n.fields.children.length
+    if (n.vtable != 0) size++
+    size << 3
+
+    var pos = n.position.clone("StaticNew")
+
+    # Create obj identifier
+    var obj = StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "obj")
+
+    # Create allocation call
+    var Node allocation = BinaryOperationNode_new(
+      pos, ASSIGN,
+      obj,
+      CallNode_new(
+        pos,
+        StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "allocate").toNode(),
+        LinkedList<StringNode>_new().append(
+          StringNode_new(nNUMBER, pos, Type_new("Number"), size.toString())
+        )
+      ).toNode()
+    )
+
+    # Create return node
+    var ret = ReturnNode_new(pos, obj)
+
+    # Create static class block
+    var block = ListNode_new(nBLOCK, pos)
+
+    for (init in inits) {
+      var LinkedList<StringNode> args = init.args.children.shallow_clone()
+
+      # Create init call
+      var Node init_call = CallNode_new(
+        pos,
+        BinaryOperationNode_new(pos, DOT, obj,
+          StringNode_new(nIDENTIFIER, pos, Type_new(), "init").toNode()).toNode(),
+        args
+      )
+
+      # Create block for new function
+      var new_block = ListNode_new(nBLOCK, pos)
+                        .append(allocation)
+      
+      # Assign vtable
+      if (n.vtable != 0) {
+        var Node vt = StringNode_new(nIDENTIFIER, pos, Type_new(), "vt")
+        var tabname = "_vtable_".clone(n.name.length).append(n.name)
+
+        # Assign vtable
+        new_block.append(
+          BinaryOperationNode_new(
+            pos,
+            ASSIGN,
+            BinaryOperationNode_new(pos, DOT, obj, vt).toNode(),
+            StringNode_new(nNASM, pos, Type_new(), tabname).toNode()
+          ).toNode()
+        )
+      }
+
+      # Call init and return
+      new_block.append(init_call)
+      new_block.append(ret)
+
+      # Create args to new function
+      var new_args = ListNode_new(nLIST, pos)
+      new_args.children = init.args.children.shallow_clone()
+
+      block.append(
+        FunctionNode_new(
+          pos,
+          Type_new(n.name),
+          "new",
+          new_args,
+          ListNode_new(nLIST, pos).append(obj),
+          new_block
+        ).toNode()
+      )
+    }
+
+    # Create and attach static class
+    var name = n.name.clone(6).append("Static")
+    this.pb.prepend(
+      ClassNode_new(pos, name, ListNode_new(nLIST, pos), block)
+    )
+
+    return 0
+  }
+
+  func void visit(ListNode n) {
+    var old_pb = this.pb
+    if (n.type == nBLOCK)
+      this.pb = n
+
+    n.accept_children(this.v)
+
+    this.pb = old_pb
+
+    return 0
+  }
+}

@@ -1,17 +1,5 @@
 include "src/stdlib/stdlib.v10"
 
-class NodeStatic() {
-	func Node new(Number num) {
-		var Node obj = allocate(8).to(Node)
-		obj.init(num)
-		return obj
-	}
-
-	func void doStuff() {
-		"Stuff done.".println()
-	}
-}
-
 class Node(String message) {
 	func void init(Number num) {
 		this.message = num.toString()
@@ -25,5 +13,5 @@ class Node(String message) {
 func void main()(Number ix) {
 	var n = Node.new(1338)
 	n.message.println()
-	Node.doStuff()
+	#Node.doStuff()
 }
