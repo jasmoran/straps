@@ -43,7 +43,10 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			name = binop.rhs
 		}
 
-		if (name.type != nIDENTIFIER) error("CallNode function name is not an identifier")
+		if (name.type != nIDENTIFIER) {
+			error("CallNode function name is not an identifier it is ",
+				name.type.toString(), " at ", n.position.toString())
+		}
 
 		# Resolve arguments
 		n.accept_args(this.v)
