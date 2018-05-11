@@ -1,0 +1,9 @@
+#-Hello World
+#-
+
+require("test/b1l2")
+require("test/b1al2")
+
+func void b1l1f1() {}
+func void b1l1f2() {b1l2f3()}
+func void b1l1f3() {}

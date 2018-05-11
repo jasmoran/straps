@@ -1,0 +1,14 @@
+#-Hello World
+#-
+
+require("src/stdlib/stdlib")
+require("src/stdlib/stdlib")
+require("test/b1l1")
+
+func void main()(String str) {
+	str = "Hello World"
+	str.contains('H').toString().println()
+	str.println(STDOUT)
+	#str.callanerror()
+	b1l1f2()
+}

@@ -51,6 +51,8 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
 			n.cfunction.accept(this.v)
 		}
 		"\n".print(this.stream)
+		
+		return 0
 	}
 
 	func void visit(BinaryOperationNode n)(String op, Number ix, Node nn, FunctionNode fun, String lastTrue, String lastFalse, StringNode num) {
@@ -294,6 +296,9 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
 			loop {
 				if (lln == 0) { break }
 				nn = lln.payload
+				"global ".print(this.stream)
+				nn.accept(this.v)
+				"\n".print(this.stream)
 				nn.accept(this.v)
 				": resq 1".println(this.stream)
 

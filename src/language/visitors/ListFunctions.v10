@@ -14,7 +14,21 @@ class virtual ListFunctions < Visitor (Visitor v, LinkedList<String> list) {
 		var name = n.name
 		if (n.name.equal("main") == true) name = "_start"
 		this.list.append(name)
+		#"=> ".print()
+		#this.v.to(Number).toString().println()
+		n.accept_children(this.v)
+		return 0
+	}
 
+	func void visit(ListNode n) {
+		if (n.type == nGLOBAL) {
+			for (node in n.children) {
+				node.type.toString().println()
+				this.list.append(node.to(StringNode).string)
+			}
+		}
+
+		n.accept_children(this.v)
 		return 0
 	}
 }

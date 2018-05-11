@@ -1,3 +1,5 @@
+require("src/language/MetaCharacter")
+
 func Position Position_new(MetaCharacter start, String stream) {
   return Position_new(start, stream, NullString)
 }

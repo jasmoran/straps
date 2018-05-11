@@ -71,6 +71,12 @@ class LinkedList<?t> (LinkedListNode<?t> first, LinkedListNode<?t> last, Number 
 		this.fetch(ix).payload = payload
 	}
 
+	func LinkedList<?t> join(LinkedList<?t> other) {
+		this.last.fwrd = other.first
+		other.first.back = this.last
+		this.last = other.last
+	}
+
 	func LinkedListNode<?t> append(?t payload)(LinkedListNode<?t> node) {
 		node = LinkedListNode<?t>_new(payload)
 

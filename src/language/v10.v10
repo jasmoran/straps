@@ -1,10 +1,11 @@
-include "src/stdlib/stdlib.v10"
+#include "src/stdlib/stdlib.v10"
 include "src/language/parser/Parser.v10"
 include "src/language/Scope.v10"
 include "src/language/Type.v10"
 include "src/language/Position.v10"
 
-include "src/language/visitors/Visitor.v10"
+#include "src/language/visitors/Visitor.v10"
+require("src/language/visitors/Visitor")
 include "src/language/visitors/Printer.v10"
 include "src/language/visitors/Constructor.v10"
 include "src/language/visitors/Typing.v10"
@@ -77,6 +78,8 @@ func LinkedList<String> build(String name, Boolean build_deps, Boolean keep_asm,
 	var ext_funcs = LinkedList<String>_new()
 
 	# Parse required files
+	if (parser.reqs.length == 0 && name.equal("src/stdlib/stdlib") != true)
+		parser.reqs.append("src/stdlib/stdlib")
 	for (req in parser.reqs) {
 		var funs = build(req, build_deps, keep_asm, false, source_files, lfuncs)
 		for (fun in funs) {

@@ -1,3 +1,5 @@
+require("src/language/nodes/NamedNode")
+
 func Type Type_new(String raw, Boolean cast)(ClassNode cn) {
 	cn = 0
 	return Type_new(raw, cn, cast)

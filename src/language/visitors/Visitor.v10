@@ -1,3 +1,5 @@
+require("src/language/Node")
+
 class virtual Visitor() {
 	func void visit(Node n)() {
 		return 0
