@@ -3,18 +3,25 @@ class Character () {}
 class Number () {}
 class String () {}
 class Boolean () {}
+class void () {}
+class virtual Fib () {
+  func Fib fib(Number n)(Number tmp) {
+    return this
+  }
+}
 
-func Any allocate(Number size)() {}
+func Any allocate(Number num_bytes)(Any addr) {
+	sys(12, 0)
+	addr = rax
+	num_bytes += rax
+	sys(12, num_bytes)
 
-func Number fib(Number n)(Number tmp) {
-  if (n == 0 || n == 1) return n
-  n--
-  tmp = fib(n)
-  n--
-  tmp += fib(n)
-  return tmp
+	return addr
 }
 
 func Boolean main()(Number num) {
-	return fib(10)
+	var fib = Fib_new()
+  nasm("shittake:")
+  fib.fib(9).fib(8).fib(7)
+  nasm("mushrooms:")
 }

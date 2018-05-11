@@ -130,6 +130,30 @@ class virtual IndexCall < Visitor (Visitor v, LinkedList<Node> parent_list,
 					n.lhs = this.scratch_reg
 				}
 			}
+
+			if (n.rhs.type == nVTAB_ACCESS) {
+				var pos = n.position.clone("IndexCall vtab")
+
+				# Put vtable in scratch register
+				this.prepend(
+					BinaryOperationNode_new(
+						pos,
+						ASSIGN,
+						this.scratch_reg,
+						BinaryOperationNode_new(Type_new(), pos, SQUARE_OPEN,
+							n.lhs,
+							StringNode_new(nNUMBER, pos, Type_new(), "99").toNode()
+						).toNode()
+					).toNode()
+				)
+
+				var FunctionNode vtab_off = n.rhs
+				return BinaryOperationNode_new(
+					vtab_off.ret_type, pos, SQUARE_OPEN,
+					this.scratch_reg,
+					StringNode_new(nNUMBER, pos, Type_new(), "72").toNode()
+				).toNode()
+			}
 		} else {
 			# Visit right hand side
 			this.scratch_reg = StringNode_new(nREGISTER, this.pos, Type_new(), "r13")
