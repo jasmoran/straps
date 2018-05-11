@@ -23,88 +23,165 @@ include "src/language/visitors/Casting.v10"
 include "src/language/visitors/PlusMinus.v10"
 include "src/language/visitors/ListFunctions.v10"
 
-define t "LinkedList<String>"
+define t "SourceFile"
+include "src/stdlib/Array.generic"
+
+define t "Boolean"
 include "src/stdlib/Array.generic"
 
 define k "String"
-define v "LinkedList<String>"
+define v "SourceFile"
 include "src/stdlib/Map.generic"
 
-global(Scope scope)
+define k "String"
+define v "Boolean"
+include "src/stdlib/Map.generic"
 
-# Returns: List of all functions defined in
-#          built file and its dependencies
-func LinkedList<String> build(String name, Boolean build_deps, Boolean keep_asm, Boolean root_file, Map<String_LinkedList<String>> source_files, ListNode lfuncs) {
-	#######################
-	#    FILE HANDLING    #
-	#######################
-	
-	# Normalise source file path
-	var String source_path = 0
-	var Number dot_pos = name.length - 4
-	if (name.get(dot_pos) == '.') {
-		source_path = name.clone()
-		name.length -= 4
-	} else {
-		source_path = name.clone(4).append(".v10")
+define t "SourceFile"
+include "src/stdlib/LinkedList.generic"
+
+func SourceFile SourceFile_new(String name, Boolean clone, Node ast) {
+	return SourceFile_new(name, clone, ast, LinkedList<SourceFile>_new())
+}
+
+class SourceFile(String name, Boolean clone, Node ast, LinkedList<SourceFile> reqs) {
+	func void print(Number depth) {
+		for (x in Range_new(depth)) "  ".print()
+		
+		this.name.print()
+		if (this.clone == true) "*".print()
+		":".println()
+		
+		if (depth > 6) return 0
+
+		depth++
+		for (req in this.reqs) {
+			req.print(depth)
+		}
 	}
 
-	# Construct obj and asm paths
-	var asm_out = name.clone(4).append(".asm")
-	var obj_out = name.clone(2).append(".o")
+	# Remove cycles in the sourcefile graph
+	# by introducing clones
+	func void decycle() this.decycle(Map<String_Boolean>_new(128))
+	func void decycle(Map<String_Boolean> encountered) {
+		# Mark this source file as encountered
+		encountered.set(this.name, true)
 
-	# Dont rebuild files
-	var existing = source_files.get(obj_out)
-	if (existing > 0) return existing
+		for (req in this.reqs) {
+			# Check if required file has already
+			# been encountered and replace with a clone
+			if (encountered.get(req.name) == true) {
+				req_iter.set(SourceFile_new(req.name, true, req.ast))
+			} else {
+				req.decycle(encountered.shallow_clone())
+			}
+		}
+	}
+}
 
-	# Open source file
-	var input = File_open(source_path)
-	if (input < 0) exit(1)
+class Main(Map<String_SourceFile> source_files, ListNode tb_functions) {
+	# Normalises file names
+	# e.g. "LinkedList.v10" => "LinkedList"
+	#      "LinkedList"     => "LinkedList"
+	func String norm_name(String name) {
+		var Number dot_pos = name.length - 4
+		if (name.get(dot_pos) == '.') {
+			name.length -= 4
+		}
+		return name
+	}
+
+	# Returns SourceFile for given path
+	# Uses cached value if available
+	func SourceFile get_source_file(String path) {
+		var name = this.norm_name(path)
+
+		# Return pre-existing SourceFiles from cache
+		var existing = this.source_files.get(name)
+		if (existing > 0) {
+			return existing
+		}
+
+		return this.parse(name)
+	}
+
+	# Builds a graph of connected source files
+	# Returns a SourceFile with all required children
+	func SourceFile parse(String name) {
+		"Parsing ".print()
+		name.println()
+
+		# Open source file
+		var source_path = name.clone(4).append(".v10")
+		var input = File_open(source_path)
+		if (input < 0) exit(1)
+
+		# Parse file
+		var parser = Parser_new(source_path, input)
+		var Node ast = parser.parse()
+
+		# Add file to source file cache
+		var sf = SourceFile_new(name, false, ast)
+		this.source_files.set(name, sf)
+
+		# Retrieve required files
+		for (req in parser.reqs) {
+			sf.reqs.append(this.get_source_file(req))
+		}
+
+		return sf
+	}
+
+	func void definition(SourceFile sf, Boolean root_file, Boolean build_deps) {
+		"Extracting definitions from ".print()
+		sf.name.println()
+
+		sf.ast.accept(Typing_new(sf.scope))
+		sf.ast.accept(Inherit_new(sf.scope))
+		sf.ast.accept(Constructor_new())
+		sf.ast.accept(Method_new(sf.scope))
+
+		# Full build-only defining visitors
+		if (root_file == true || build_deps == true) {
+			sf.ast.accept(ForLoop_new())
+			sf.ast.accept(Variables_new())
+		}
+
+		sf.ast.accept(Definition_new(sf.scope))
+		#sf.ast.accept(Functions_new(this.tb_funcs, root_file))
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+func LinkedList<String> build(SourceFile pt, Boolean build_deps, Boolean keep_asm, Boolean root_file) {
+	#var Number nc = pt
+	#nc.to(Number).toString().println()
+	"Building file ".print()
+	pt.name.println()
 	
+	var root = pt.ast
 
-	#################
-	#    PARSING    #
-	#################
-
-	"Parsing file ".print()
-	source_path.println()
-
-	# Parse file
-	var parser = Parser_new(source_path, input)
-	var Node root = parser.parse()
+	# Construct asm path
+	var asm_out = pt.name.clone(4).append(".asm")
 
 	# Create list of external functions
 	var ext_funcs = LinkedList<String>_new()
 
-	# Parse required files
-	for (req in parser.reqs) {
-		var funs = build(req, build_deps, keep_asm, false, source_files, lfuncs)
+	for (req in pt.reqs) {
+		var funs = build(req, build_deps, keep_asm, false)
 		for (fun in funs) {
 			ext_funcs.append(fun)
 		}
 	}
-
-	# Add file to source file map
-	source_files.set(obj_out, ext_funcs)
-
-
-	###########################
-	#    DEFINING VISITORS    #
-	###########################
-
-	root.accept(Typing_new())
-	root.accept(Inherit_new())
-	root.accept(Constructor_new())
-	root.accept(Method_new())
-
-	# Full build-only defining visitors
-	if (root_file == true || build_deps == true) {
-		root.accept(ForLoop_new())
-		root.accept(Variables_new())
-	}
-
-	root.accept(Definition_new())
-	root.accept(Functions_new(lfuncs, root_file))
 
 	# Resolve and build
 	if (root_file == true || build_deps == true) {
@@ -115,7 +192,7 @@ func LinkedList<String> build(String name, Boolean build_deps, Boolean keep_asm,
 		root.accept(PlusMinus_new())
 		root.accept(Casting_new())
 		root.accept(Resolving_new())
-		root.accept(TypeCheck_new())
+		#root.accept(TypeCheck_new())
 		root.accept(IndexCall_new())
 		root.accept(Strings_new())
 
@@ -130,7 +207,7 @@ func LinkedList<String> build(String name, Boolean build_deps, Boolean keep_asm,
 		##################
 
 		"Assembling file ".print()
-		source_path.println()
+		pt.name.println()
 
 		# Assemble
 		# nasm -f elf64 out.asm
@@ -141,7 +218,9 @@ func LinkedList<String> build(String name, Boolean build_deps, Boolean keep_asm,
 	}
 
 	# Get a list of all exported functions
+	ext_funcs.length.toString().println()
 	root.accept(ListFunctions_new(ext_funcs))
+	ext_funcs.length.toString().println()
 
 	return ext_funcs
 }
@@ -192,10 +271,18 @@ func void main(CharArr comp, CharArr source_path, CharArr out_path, CharArr cafl
 
 	load_loop()
 
-	var source_files = Map<String_LinkedList<String>>_new(128)
+	var source_files = Map<String_SourceFile>_new(128)
 	var lfuncs = ListNode_new(nFUNCTIONS, Position_new(MetaCharacter_new('?', 0, 0), "Functions"))
 
-	build(String_fromTerminated(source_path), build_deps, keep_asm, true, source_files, lfuncs)
+	var mobj = Main_new(source_files, lfuncs)
+	var sf = mobj.get_source_file(String_fromTerminated(source_path))
+	sf.print(0)
+	sf.decycle()
+	sf.print(0)
+
+	#var PT = parse(String_fromTerminated(source_path), build_deps, keep_asm, true, source_files, lfuncs)
+	#build(PT, build_deps, keep_asm, true)
+	link = false
 
 	# Link object files into executable
 	if (link == true) {

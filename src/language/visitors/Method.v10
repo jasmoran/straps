@@ -1,19 +1,19 @@
-func Method Method_new()(ListNode ln, ClassNode cn) {
+func Method Method_new()(ListNode ln, ClassNode cn, Scope scope) {
 	ln = 0
 	cn = 0
 	var Visitor v = 0
-	var meth = Method_new(v, ln, cn)
+	var meth = Method_new(v, ln, cn, scope)
 	meth.v = meth
 	return meth
 }
 
-class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
+class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls, Scope scope) {
 	func void visit(ClassNode n)() {
 		this.cls = n
 
 		if (n.parent.raw != 0) {
 			# Resolve parent type
-			n.parent.resolve(scope)
+			n.parent.resolve(this.scope)
 
 			# Link scopes
 			n.scope.parent = n.parent.res.scope

@@ -153,9 +153,8 @@ class virtual StringNode < RetNode (String string) {
 
 
 
-func Node ClassNode_new(Position pos, String name, ListNode fields, ListNode block, Map<String_FunctionNode> vtable, Type parent)(Scope sc) {
-	sc = scope
-	sc = Scope_new(name, sc)
+func Node ClassNode_new(Position pos, String name, ListNode fields, ListNode block, Map<String_FunctionNode> vtable, Type parent, Scope file_scope) {
+	var sc = Scope_new(name, file_scope)
 	return ClassNode_new(nCLASS, pos, name, fields, block, sc, vtable, parent)
 }
 
@@ -192,9 +191,8 @@ class virtual ClassNode < Node (String name, ListNode fields,
 
 
 
-func FunctionNode FunctionNode_new(Position pos, Type ret_type, String name, ListNode args, ListNode vrbls, ListNode block)(Scope sc) {
-	sc = scope
-	sc = Scope_new(name, sc)
+func FunctionNode FunctionNode_new(Position pos, Type ret_type, String name, ListNode args, ListNode vrbls, ListNode block) {
+	var sc = Scope_new(name, file_scope)
 	return FunctionNode_new(nFUNCTION, pos, ret_type, name, args, vrbls, block, sc, NullString)
 }
 

@@ -1,12 +1,12 @@
-func Inherit Inherit_new() {
+func Inherit Inherit_new(Scope scope) {
 	var Visitor v = 0
-	var inh = Inherit_new(v)
+	var inh = Inherit_new(v, scope)
 	inh.v = inh
 	return inh
 }
 
 
-class virtual Inherit < Visitor (Visitor v) {
+class virtual Inherit < Visitor (Visitor v, Scope scope) {
 	func void remove_duplicates(LinkedList<Node> list, StringNode field) {
 		var lln = list.first
 		loop {
@@ -26,7 +26,7 @@ class virtual Inherit < Visitor (Visitor v) {
 	func void visit(ClassNode n)() {
 		if (n.parent.raw != 0) {
 			# Resolve parent type
-			n.parent.resolve(scope)
+			n.parent.resolve(this.scope)
 
 			if (n.parent.res > 0) {
 				var par_flds = n.parent.res.fields
@@ -48,6 +48,6 @@ class virtual Inherit < Visitor (Visitor v) {
 			}
 		}
 
-  	return 0
+		return 0
 	}
 }

@@ -1,6 +1,6 @@
-func Definition Definition_new()() {
+func Definition Definition_new(Scope scope)() {
 	var Visitor v = 0
-	var defn = Definition_new(v)
+	var defn = Definition_new(v, scope)
 	defn.v = defn
 	return defn
 }
@@ -8,7 +8,7 @@ func Definition Definition_new()() {
 # Gets all local & global variables, arguments, fields and enum values
 # and adds them to their respective scopes.
 # These "variables" are stored as { name => offset/label }
-class virtual Definition < Visitor (Visitor v) {
+class virtual Definition < Visitor (Visitor v, Scope scope) {
 	func void visit(ClassNode n)(Number ix, StringNode field) {
 		ix = 0
 
@@ -31,7 +31,7 @@ class virtual Definition < Visitor (Visitor v) {
   	return 0
 	}
 
-	func void visit(EnumNode n)(Number ix, StringNode field, Scope sc, Type type) {
+	func void visit(EnumNode n)(Number ix, StringNode field, Type type) {
 		ix = 0
 
 		type = Type_new(n.name)
@@ -42,8 +42,7 @@ class virtual Definition < Visitor (Visitor v) {
 			field = lln.payload
 
 			# Store value in global scope
-			sc = scope
-			sc.set(
+			this.scope.set(
 				field.string,
 				StringNode_new(nNUMBER, field.position.clone("Definition"), type, ix.toString()).toNode()
 			)
@@ -56,7 +55,7 @@ class virtual Definition < Visitor (Visitor v) {
   	return 0
 	}
 
-	func void visit(FunctionNode n)(Number ix, StringNode field, Scope sc) {
+	func void visit(FunctionNode n)(Number ix, StringNode field) {
 		# Loop through arguments
 		ix = 16
 		var lln = n.args.children.first
@@ -76,9 +75,8 @@ class virtual Definition < Visitor (Visitor v) {
 		}
 
 		# Store cloned FunctionNode in the global scope
-		sc = scope
 		if (n.pure == 0) error("Null pure")
-		sc.set(n.pure, n.shallow_clone())
+		this.scope.set(n.pure, n.shallow_clone())
 
 		# Loop through variables
 		ix = 0
@@ -101,7 +99,7 @@ class virtual Definition < Visitor (Visitor v) {
   	return 0
 	}
 
-	func void visit(ListNode n)(StringNode field, Scope sc) {
+	func void visit(ListNode n)(StringNode field) {
 		var lln = n.children.first
 		loop {
 			if (lln == 0) { break }
@@ -112,8 +110,7 @@ class virtual Definition < Visitor (Visitor v) {
 
 			if (n.type == nGLOBAL) {
 				# Store global variable in global scope
-				sc = scope
-				sc.set(
+				this.scope.set(
 					field.string,
 					BinaryOperationNode_new(
 						field.ret_type,
