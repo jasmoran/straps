@@ -1,0 +1,43 @@
+func Completions Completions_new() {
+	var Visitor v = 0
+	var fun = Completions_new(v, NullString)
+	fun.v = fun
+	return fun
+}
+
+func void printPos(Position pos) {
+	var mc = pos.start
+	"    file: ".print()
+	pos.stream.println()
+	"    line: ".print()
+	mc.get_line().toString().println()
+	"    char: ".print()
+	mc.get_column().toString().println()
+}
+
+class virtual Completions < Visitor (Visitor v, String previousFile) {
+	func void visit(FunctionNode n) {
+		if (n.position.stream == this.previousFile) {
+			"  end:".println()
+			printPos(n.position)
+		}
+		this.previousFile = n.position.stream
+
+		"- start:".println()
+		printPos(n.block.position)
+
+		if (n.position.note != NullString) {
+			"  generator: ".print()
+			n.position.note.println()
+		}
+
+		"  function: ".print()
+		n.name.println()
+		"  variables:".println()
+		for (name in n.scope.scope.keys) {
+			"  - ".print()
+			name.println()
+		}
+		return 0
+	}
+}

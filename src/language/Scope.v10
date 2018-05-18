@@ -27,6 +27,7 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 
 	func FunctionNode resolve(String name, LinkedList<StringNode> args) {
 		var ListNode lnoptions = this.resolve(name)
+		if (lnoptions == 0) return 0
     var LinkedList<FunctionNode> options = lnoptions.children
 
     # Track the best option, best is the distance => smaller is better
@@ -70,7 +71,9 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
     }
 
     # Check we found a match
-    if (best_match == 0) error("Could not resolve function ", name, " args don't match")
+    if (best_match == 0)
+			return 1
+			# error("Could not resolve function ", name, " args don't match")
 
 		return best_match.clone()
 	}
@@ -89,7 +92,8 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 		s = scope
 		res = s.get(name)
 		if (res > 0) return res.clone()
-		error("Could not resolve value ", name)
+		#error("Could not resolve value ", name)
+		return 0
 	}
 
 	func void print()(Number index, Visitor printer) {

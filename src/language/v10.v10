@@ -23,13 +23,14 @@ include "src/language/visitors/Casting.v10"
 include "src/language/visitors/PlusMinus.v10"
 include "src/language/visitors/Statics.v10"
 include "src/language/visitors/StaticNew.v10"
+include "src/language/visitors/Completions.v10" 
 
 global(Scope scope)
 
 func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)(Stream input, Stream output, Parser parser, Node root, Visitor v, Scope sc) {
 	# Open input file
-	input = File_open(in_path)
-	if (input < 0) { return 1 }
+	# input = File_open(in_path)
+	# if (input < 0) { return 1 }
 
 	# Read flags
 	var keep = false
@@ -38,7 +39,7 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 		if (flags.length > 1 && flags.get(1) == 'k') keep = true
 	}
 
-	parser = Parser_new(String_fromTerminated(in_path), input)
+	parser = Parser_new(String_fromTerminated(in_path), STDIN)
 	root = parser.parse()
 	sc = Scope_new()
 	scope = sc
@@ -79,8 +80,11 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	root.accept(v)
 	v = Definition_new()
 	root.accept(v)
+	"issues:".println()
 	v = Resolving_new()
 	root.accept(v)
+	# v = Printer_new()
+	# root.accept(v)
 	v = TypeCheck_new()
 	root.accept(v)
 	v = IndexCall_new()
@@ -89,6 +93,11 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	root.accept(v)
 	v = Strings_new()
 	root.accept(v)
+	"functions:".println()
+	v = Completions_new()
+	root.accept(v)
+
+	return 0
 
 	# Open output file
 	output = File_create("out.asm")

@@ -43,9 +43,10 @@ class Type (String raw, ClassNode res, Boolean cast) {
 		sc = scope
 		this.res = sc.get(this.raw)
 		if (this.res > 0) return 0
-		this.res = 0
+		this.raw = "Any"
+		this.res = sc.get(this.raw)
 
-		error("Could not resolve type: ", this.raw)
+		# error("Could not resolve type: ", this.raw)
 	}
 
 	func Scope getScope()() {

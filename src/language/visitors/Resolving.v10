@@ -11,7 +11,43 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 		var orig_type = n.ret_type
 		orig_type.resolve(this.scope)
 		if (n.type == nIDENTIFIER) {
-			if (this.resolve_idents == true) n = this.scope.resolve(n.string)
+			if (this.resolve_idents == true) {
+				var orig_pos = n.position
+				var new = this.scope.resolve(n.string)
+				if (new == 0 || new.type == nBLOCK) {
+					"- start:".println()
+					printPos(orig_pos)
+
+					"  end:\n    file: ".print()
+					orig_pos.stream.println()
+					"    line: ".print()
+					orig_pos.start.get_line().toString().println()
+					var endChar = orig_pos.start.get_column()
+					endChar += n.string.length
+					"    char: ".print()
+					endChar.toString().println()
+		
+					"  level: error".println()
+
+					"  message: ".print()
+					if (new == 0) {
+						"Could not resolve ".print()
+						n.string.println()
+					} else {
+						n.string.print()
+						" is a function".println()
+					}
+
+					"  options:".println()
+					for (name in this.scope.scope.keys) {
+						"  - ".print()
+						name.println()
+					}
+				} else {
+					n = new.clone()
+				}
+				n.position = orig_pos
+			}
 			if (orig_type.cast == true) n.ret_type = orig_type
 		}
 		return n
@@ -72,8 +108,41 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			# Resolve function
 			rn = binop.rhs
 			orig_type = rn.ret_type
-			binop.rhs = sc.resolve(name.string, n.args)
-			rn = binop.rhs
+			var orig_pos = n.position
+			var new = sc.resolve(name.string, n.args)
+			if (new == 0) {
+				"- start:".println()
+				printPos(orig_pos)
+
+				"  end:\n    file: ".print()
+				orig_pos.stream.println()
+				"    line: ".print()
+				orig_pos.start.get_line().toString().println()
+				var endChar = orig_pos.start.get_column()
+				endChar += name.string.length
+				"    char: ".print()
+				endChar.toString().println()
+	
+				"  level: error".println()
+
+				"  message: ".print()
+				if (new == 0) {
+					"Could not resolve ".print()
+					name.string.println()
+				} else {
+					name.string.print()
+					" is a function".println()
+				}
+
+				"  options:".println()
+				for (fname in sc.scope.keys) {
+					"  - ".print()
+					fname.println()
+				}
+			} else {
+				binop.rhs = new
+				rn = new
+			}
 			if (orig_type.cast == true) rn.ret_type = orig_type
 
 			# Inherit ret_type from rhs
