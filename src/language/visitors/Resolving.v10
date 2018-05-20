@@ -13,7 +13,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 		if (n.type == nIDENTIFIER) {
 			if (this.resolve_idents == true) {
 				var orig_pos = n.position
-				var new = this.scope.resolve(n.string)
+				var ListNode new = this.scope.resolve(n.string)
 				if (new == 0 || new.type == nBLOCK) {
 					"- start:".println()
 					printPos(orig_pos)
@@ -33,15 +33,57 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 					if (new == 0) {
 						"Could not resolve ".print()
 						n.string.println()
+						"  options:".println()
+						for (ix in Range_new(this.scope.scope.keys.length)) {
+							var ListNode item = this.scope.scope.values.get(ix)
+							var name = this.scope.scope.keys.get(ix)
+							if (item.type == nBLOCK) {
+								for (nopt2 in item.children) {
+									opt = nopt2
+									"  - name: ".print()
+									name.println()
+									"    type: ".print()
+									opt.ret_type.raw.println()
+									"    args:".println()
+									for (narg in opt.args.children) {
+										if (narg == opt.args.children.first.payload) next
+										
+										arg = narg
+										"    - name: ".print()
+										arg.string.println()
+										"      type: ".print()
+										arg.ret_type.raw.println()
+									}
+								}
+							} else {
+								var StringNode sitem = item
+								"  - name: ".print()
+								name.println()
+								"    type: ".print()
+								sitem.ret_type.raw.println()
+							}
+						}
 					} else {
 						n.string.print()
 						" is a function".println()
-					}
-
-					"  options:".println()
-					for (name in this.scope.scope.keys) {
-						"  - ".print()
-						name.println()
+						"  options:".println()
+						for (nopt in new.children) {
+							var FunctionNode opt = nopt
+							"  - name: ".print()
+							n.string.println()
+							"    type: ".print()
+							opt.ret_type.raw.println()
+							"    args:".println()
+							for (narg in opt.args.children) {
+								if (narg == opt.args.children.first.payload) next
+								
+								var StringNode arg = narg
+								"    - name: ".print()
+								arg.string.println()
+								"      type: ".print()
+								arg.ret_type.raw.println()
+							}
+						}
 					}
 				} else {
 					n = new.clone()
