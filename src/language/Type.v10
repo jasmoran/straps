@@ -60,6 +60,18 @@ class Type (String raw, ClassNode res, Boolean cast) {
 		this.toString().print(s)
 	}
 
+	func String basicString() {
+	if (this.raw == 0) {
+		return "Unknown"
+	} else if (this.raw == 1) {
+		return "ToBeInferred"
+	} else if (this.res == 0) {
+		return this.raw
+	} else {
+		return this.res.name
+	}
+}
+
 	# Check if this type has poss_child as a child (or equal)
 	# and therefore if poss_child vars can be assigned to this type
 	func Boolean has_child(Type poss_child) {
