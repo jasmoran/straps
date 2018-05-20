@@ -1,3 +1,54 @@
+func MapIterator<?k_?v> MapIterator<?k_?v>_new(Map<?k_?v> map) {
+	return MapIterator<?k_?v>_new(map, 0, false)
+}
+
+class MapIterator<?k_?v> (Map<?k_?v> map, Number curr, Boolean back) {
+	func Pair<?k_?v> fetch() {
+		if (this.curr < 0) return 0
+		if (this.curr >= this.map.keys.length) return 0
+		var payload = Pair<?k_?v>_new(this.map.keys.get(this.curr), this.map.values.get(this.curr))
+		if (this.back == true) {
+			this.curr--
+		} else {
+			this.curr++
+		}
+		return payload
+	}
+
+	func Boolean finished() {
+		if (this.curr < 0) return true
+		if (this.curr >= this.map.keys.length) return true
+		return false
+	}
+
+	func MapIterator<?k_?v> reverse() {
+		if (this.back == true) {
+			this.back = false
+			this.curr = 0
+		} else {
+			this.back = true
+			this.curr = this.map.keys.length
+			this.curr--
+		}
+		return this
+	}
+
+	func void set(?v value) {
+		var ix = this.curr
+		if (this.back == true) {
+			ix++
+		} else {
+			ix--
+		}
+		this.map.values.set(ix, value)
+	}
+
+	func MapIterator<?k_?v> iter() return this
+}
+
+class Pair<?k_?v> (?k key, ?v value) {} 
+
+
 func Map<?k_?v> Map<?k_?v>_new(Number size)() {
 	return Map<?k_?v>_new(Array<?k>_new(size), Array<?v>_new(size))
 }
@@ -46,5 +97,9 @@ class Map<?k_?v> (Array<?k> keys, Array<?v> values) {
 
 	func Map<?k_?v> shallow_clone() {
 		return Map<?k_?v>_new(this.keys.shallow_clone(), this.values.shallow_clone())
+	}
+
+	func MapIterator<?k_?v> iter() {
+		return MapIterator<?k_?v>_new(this)
 	}
 }
