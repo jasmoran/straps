@@ -5,16 +5,6 @@ func Completions Completions_new() {
 	return fun
 }
 
-func void printPos(Position pos) {
-	var mc = pos.start
-	"    file: ".print()
-	pos.stream.println()
-	"    line: ".print()
-	mc.get_line().toString().println()
-	"    char: ".print()
-	mc.get_column().toString().println()
-}
-
 class virtual Completions < Visitor (Visitor v, String previousFile) {
 	func void visit(FunctionNode n) {
 		if (n.position.stream == this.previousFile) {

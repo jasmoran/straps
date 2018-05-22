@@ -5,13 +5,6 @@ func TypeCheck TypeCheck_new() {
 	return tc
 }
 
-func void printPos(Position start, Position end) {
-	"- start:".println(STDOUT)
-	printPos(start)
-	"  end: ".println(STDOUT)
-	printPos(end)
-}
-
 class virtual TypeCheck < Visitor (Visitor v, Type fret_type) {
 	func void visit(BinaryOperationNode n) {
 		var RetNode lhs = n.lhs
