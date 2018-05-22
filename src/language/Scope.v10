@@ -25,75 +25,130 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 		this.scope.set(name, capsule.toNode())
 	}
 
-	func FunctionNode resolve(String name, LinkedList<StringNode> args) {
-		var ListNode lnoptions = this.resolve(name)
-		if (lnoptions == 0) return 0
-    var LinkedList<FunctionNode> options = lnoptions.children
-
-    # Track the best option, best is the distance => smaller is better
-    var FunctionNode best_match = 0
-    var best = 9999
-
-    # Loop through each possible match
-    for (option in options) {
-      var LinkedList<StringNode> optargs = option.args.children
-			if (optargs.length != args.length) next
-
-			if (args.length == 0) {
-        best = rank
-        best_match = option
-      }
-
-      var rank = 0
-
-      # Loop through each of the options args
-      for (index in Range_new(args.length)) {
-				var opt_type = optargs.get(index).ret_type
-				var arg_type = args.get(index).ret_type
-				opt_type.resolve(scope)
-        # Returns the distance from the arg type to the optarg type
-        var match = opt_type.child_rank(arg_type)
-
-        if (match > 0) {
-          rank += match
-        } else {
-          # No match
-          rank = 0
-          break
-        }
-      }
-
-      # Check how this option compares
-      if (rank > 0 && rank < best) {
-        best = rank
-        best_match = option
-      }
-    }
-
-    # Check we found a match
-    if (best_match == 0)
-			return 1
-			# error("Could not resolve function ", name, " args don't match")
-
-		return best_match.clone()
-	}
-
-	func Node resolve(String name)(Scope s, Node res) {
-		s = this
+	func Node search(String name) {
+		var s = this
 		if (s == 0) error("Attempted to resolve on NULL scope")
 		loop {
 			if (s == 0) break
-			res = s.get(name)
+			var res = s.get(name)
 			if (res > 0) return res
 			s = s.parent
 		}
 
 		# Add special GLOBAL scope check
 		s = scope
-		res = s.get(name)
-		if (res > 0) return res.clone()
-		#error("Could not resolve value ", name)
-		return 0
+		return s.get(name)
+	}
+
+	func FunctionNode resolve(StringNode name, LinkedList<StringNode> args) {
+		var ListNode lnoptions = this.search(name.string)
+		
+		if (lnoptions > 0 && lnoptions.type == nBLOCK) {
+			var LinkedList<FunctionNode> options = lnoptions.children
+
+			# Track the best option, best is the distance => smaller is better
+			var FunctionNode best_match = 0
+			var best = 9999
+
+			# Loop through each possible match
+			for (option in options) {
+				var LinkedList<StringNode> optargs = option.args.children
+				if (optargs.length != args.length) next
+
+				if (args.length == 0) {
+					best = rank
+					best_match = option
+				}
+
+				var rank = 0
+
+				# Loop through each of the options args
+				for (index in Range_new(args.length)) {
+					var opt_type = optargs.get(index).ret_type
+					var arg_type = args.get(index).ret_type
+					opt_type.resolve(scope)
+					# Returns the distance from the arg type to the optarg type
+					var match = opt_type.child_rank(arg_type)
+
+					if (match > 0) {
+						rank += match
+					} else {
+						# No match
+						rank = 0
+						break
+					}
+				}
+
+				# Check how this option compares
+				if (rank > 0 && rank < best) {
+					best = rank
+					best_match = option
+				}
+			}
+
+			# Check we found a match
+			if (best_match != 0) return best_match.clone()
+		}
+
+		printStringLocation(name)
+
+		"  level: error".println()
+
+		"  message: ".print()
+		if (lnoptions > 0 && lnoptions.type == nBLOCK) {
+			"Given arguments don't match a defined function. Got ".print()
+			for (arg in args) {
+				arg.ret_type.basicString().print()
+				" ".print()
+			}
+			"\n".print()
+			
+			"  options: [".print()
+			printFuncs(name.string, lnoptions)
+			"]".println()
+		} else {
+			if (lnoptions == 0) {
+				"Could not resolve ".print()
+				name.string.println()
+			} else {
+				# lnoptions.type != nBLOCK
+				name.string.print()
+				" is not a function".println()
+			}
+			
+			printScopeOptions(this.scope)
+		}
+
+		# error("Could not resolve function ", name, " args don't match")
+		return name.clone()
+	}
+
+	func Node resolve(StringNode name) {
+		var ListNode res = this.search(name.string)
+
+		# Can't clone here because Inferring process needs to modify the
+		# existing identifier in the scope not a clone.
+		if (res > 0 && res.type != nBLOCK) return res
+
+		printStringLocation(name)
+
+		"  level: error".println()
+
+		"  message: ".print()
+		if (res <= 0) {
+			"Could not resolve ".print()
+			name.string.println()
+			printScopeOptions(this.scope)
+		} else {
+			name.string.print()
+			" is a function".println()
+			"  options: [".print()
+			printFuncs(name.string, res)
+			"]".println()
+		}
+
+		# Just use unresolved identifier
+		return name
 	}
 
 	func void print()(Number index, Visitor printer) {

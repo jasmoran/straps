@@ -13,81 +13,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 		if (n.type == nIDENTIFIER) {
 			if (this.resolve_idents == true) {
 				var orig_pos = n.position
-				var ListNode new = this.scope.resolve(n.string)
-				if (new == 0 || new.type == nBLOCK) {
-					"- start:".println()
-					printPos(orig_pos)
-
-					"  end:\n    file: ".print()
-					orig_pos.stream.println()
-					"    line: ".print()
-					orig_pos.start.get_line().toString().println()
-					var endChar = orig_pos.start.get_column()
-					endChar += n.string.length
-					"    char: ".print()
-					endChar.toString().println()
-		
-					"  level: error".println()
-
-					"  message: ".print()
-					if (new == 0) {
-						"Could not resolve ".print()
-						n.string.println()
-						"  options:".println()
-						for (ix in Range_new(this.scope.scope.keys.length)) {
-							var ListNode item = this.scope.scope.values.get(ix)
-							var name = this.scope.scope.keys.get(ix)
-							if (item.type == nBLOCK) {
-								for (nopt2 in item.children) {
-									opt = nopt2
-									"  - name: ".print()
-									name.println()
-									"    type: ".print()
-									opt.ret_type.raw.println()
-									"    args:".println()
-									for (narg in opt.args.children) {
-										if (narg == opt.args.children.first.payload) next
-										
-										arg = narg
-										"    - name: ".print()
-										arg.string.println()
-										"      type: ".print()
-										arg.ret_type.raw.println()
-									}
-								}
-							} else {
-								var StringNode sitem = item
-								"  - name: ".print()
-								name.println()
-								"    type: ".print()
-								sitem.ret_type.raw.println()
-							}
-						}
-					} else {
-						n.string.print()
-						" is a function".println()
-						"  options:".println()
-						for (nopt in new.children) {
-							var FunctionNode opt = nopt
-							"  - name: ".print()
-							n.string.println()
-							"    type: ".print()
-							opt.ret_type.raw.println()
-							"    args:".println()
-							for (narg in opt.args.children) {
-								if (narg == opt.args.children.first.payload) next
-								
-								var StringNode arg = narg
-								"    - name: ".print()
-								arg.string.println()
-								"      type: ".print()
-								arg.ret_type.raw.println()
-							}
-						}
-					}
-				} else {
-					n = new.clone()
-				}
+				n = this.scope.resolve(n).clone()
 				n.position = orig_pos
 			}
 			if (orig_type.cast == true) n.ret_type = orig_type
@@ -151,40 +77,8 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			rn = binop.rhs
 			orig_type = rn.ret_type
 			var orig_pos = n.position
-			var new = sc.resolve(name.string, n.args)
-			if (new == 0) {
-				"- start:".println()
-				printPos(orig_pos)
-
-				"  end:\n    file: ".print()
-				orig_pos.stream.println()
-				"    line: ".print()
-				orig_pos.start.get_line().toString().println()
-				var endChar = orig_pos.start.get_column()
-				endChar += name.string.length
-				"    char: ".print()
-				endChar.toString().println()
-	
-				"  level: error".println()
-
-				"  message: ".print()
-				if (new == 0) {
-					"Could not resolve ".print()
-					name.string.println()
-				} else {
-					name.string.print()
-					" is a function".println()
-				}
-
-				"  options:".println()
-				for (fname in sc.scope.keys) {
-					"  - ".print()
-					fname.println()
-				}
-			} else {
-				binop.rhs = new
-				rn = new
-			}
+			rn = sc.resolve(name, n.args)
+			binop.rhs = rn
 			if (orig_type.cast == true) rn.ret_type = orig_type
 
 			# Inherit ret_type from rhs
@@ -194,8 +88,8 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			# Resolve function
 			var RetNode rn = n.cfunction
 			var orig_type = rn.ret_type
-			n.cfunction = this.scope.resolve(name.string, n.args)
-			rn = n.cfunction
+			rn = this.scope.resolve(name, n.args)
+			n.cfunction = rn
 			if (orig_type.cast == true) rn.ret_type = orig_type
 		}
 
@@ -272,7 +166,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 		if (n.lhs.type == nIDENTIFIER) {
 			field = n.lhs
 			if (field.ret_type.raw == 1) {
-				n.lhs = this.scope.resolve(field.string)
+				n.lhs = this.scope.resolve(field)
 				field = n.lhs
 
 				sn = n.rhs
