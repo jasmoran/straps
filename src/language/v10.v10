@@ -30,8 +30,8 @@ global(Scope scope)
 
 func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)(Stream input, Stream output, Parser parser, Node root, Visitor v, Scope sc) {
 	# Open input file
-	# input = File_open(in_path)
-	# if (input < 0) { return 1 }
+	input = File_open(in_path)
+	if (input < 0) { return 1 }
 
 	# Read flags
 	var keep = false
@@ -40,7 +40,7 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 		if (flags.length > 1 && flags.get(1) == 'k') keep = true
 	}
 
-	parser = Parser_new(String_fromTerminated(in_path), STDIN)
+	parser = Parser_new(String_fromTerminated(in_path), input)
 	root = parser.parse()
 	sc = Scope_new()
 	scope = sc
