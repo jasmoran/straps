@@ -139,6 +139,8 @@ class LinkedList<?t> (LinkedListNode<?t> first, LinkedListNode<?t> last, Number 
 		this.length--
 	}
 
+	func void remove_node(LinkedListNode<?t> node) this.remove(node)
+
 	func void remove(Number ix)(LinkedListNode<?t> node) {
 		node = this.fetch(ix)
 		this.remove(node)

@@ -10,6 +10,7 @@ include "src/stdlib/Map.v10"
 include "src/stdlib/CircularBuffer.v10"
 include "src/stdlib/Run.v10"
 include "src/stdlib/Range.v10"
+include "src/stdlib/Set.v10"
 
 class void () {}
 class Any (Any deref) {}

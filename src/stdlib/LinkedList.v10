@@ -1,2 +1,4 @@
 define t "Any"
 include "src/stdlib/LinkedList.generic"
+define t "String"
+include "src/stdlib/LinkedList.generic"
