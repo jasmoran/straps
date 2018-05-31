@@ -213,9 +213,12 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
 	}
 
 	func void visit(FunctionNode n)(Number size) {
+		"global ".print(this.stream)
 		if (n.name.equal("main") == 1) {
+			"_start".println(this.stream)
 			"_start".print(this.stream)
 		} else {
+			n.name.println(this.stream)
 			n.name.print(this.stream)
 		}
 		":\npush rbp\nmov rbp, rsp\nsub rsp, ".print(this.stream)

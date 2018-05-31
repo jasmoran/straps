@@ -24,6 +24,62 @@ include "src/language/visitors/PlusMinus.v10"
 
 global(Scope scope)
 
+func void pi(Number i) {
+	loop { if (i <= 0) { break } "  ".print() i-- }
+}
+
+func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Number increment) {
+	pi(increment)
+	"Headerize called with following reqs: ".print()
+	for (req in reqs) {
+		req.print()
+		", ".print()
+	}
+	"\n".print()
+	pi(increment)
+	"Starting processing now:".println()
+
+	for (req in reqs) {
+		# Print name of current requirement
+		pi(increment)
+		req.println()
+
+		# Skip requirement if it has already been dealt with globally
+		if (glob_reqs.contains(req) == true) {
+			pi(increment)
+			"Skipping".println()
+			next
+		}
+
+		# Add this requirement to the glob_reqs
+		glob_reqs.add(req)
+
+		var parser = Parser_new(req, File_open(req))
+		var reqroot = parser.parse()
+
+		# Add stdlib if not required already
+		if (req.equal("src/stdlib/stdlib.v10") == false) parser.reqs.add("src/stdlib/stdlib.v10")
+
+		# Process this file's requirements
+		increment++
+		headerize(glob_reqs, parser.reqs, lfuncs, increment)
+		increment--
+
+		# Visit this file
+		reqroot.accept(Typing_new()) 
+		reqroot.accept(Inherit_new()) 
+		reqroot.accept(Constructor_new()) 
+		reqroot.accept(Method_new()) 
+		reqroot.accept(Definition_new())
+		var fncvis = Functions_new(true)
+		fncvis.lfuncs = lfuncs
+		reqroot.accept(fncvis)
+	}
+
+	pi(increment)
+	"Finished processing".println()
+}
+
 func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)(Stream input, Stream output, Parser parser, Node root, Visitor v, Scope sc) {
 	# Open input file
 	input = File_open(in_path)
@@ -40,6 +96,27 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	root = parser.parse()
 	sc = Scope_new()
 	scope = sc
+
+	# Open output file
+	output = File_create("out.asm")
+	if (output < 0) { return 1 }
+
+	if (String_fromTerminated(in_path).equal("src/stdlib/stdlib.v10") == false) {
+		parser.reqs.add("src/stdlib/stdlib.v10")
+	}
+
+	var pos = Position_new(MetaCharacter_new('?', 0, 0), "MainFunctions")
+	var lfuncs = ListNode_new(nFUNCTIONS, pos)
+	var glob_reqs = Set<String>_new()
+	glob_reqs.add(String_fromTerminated(in_path))
+
+	"section .text".println(output)
+	headerize(glob_reqs, parser.reqs, lfuncs, 0)
+	for (fnc in lfuncs.children) {
+		"extern ".print(output)
+		fnc.to(StringNode).string.println(output)
+		fnc_iter.fetch()
+	}
 
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "GLOBALS_SETUP")
 	sc.set("rax", StringNode_new(nREGISTER, pos, Type_new(), "rax").toNode())
@@ -79,14 +156,11 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	root.accept(v)
 	v = IndexCall_new()
 	root.accept(v)
-	v = Functions_new()
-	root.accept(v)
+	var fncvis = Functions_new(false)
+	fncvis.lfuncs = lfuncs
+	root.accept(fncvis)
 	v = Strings_new()
 	root.accept(v)
-
-	# Open output file
-	output = File_create("out.asm")
-	if (output < 0) { return 1 }
 
 	v = Dump_new(output)
 	root.accept(v)
@@ -95,12 +169,12 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	Run_new(4).add("/usr/bin/nasm").add("-f").add("elf64").add("out.asm").exec()
 
 	# ld -m elf_x86_64 -o out_path out.o
-	Run_new(6).add("/usr/bin/ld").add("-m").add("elf_x86_64")
-						.add("-o").add(String_fromTerminated(out_path)).add("out.o").exec()
+	# Run_new(6).add("/usr/bin/ld").add("-m").add("elf_x86_64")
+	# 					.add("-o").add(String_fromTerminated(out_path)).add("out.o").exec()
 
 	# Clean up
 	if (keep == false) {
 		File_delete("out.asm")
-		File_delete("out.o")
+		# File_delete("out.o")
 	}
 }
