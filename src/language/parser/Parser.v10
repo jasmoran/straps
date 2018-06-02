@@ -110,7 +110,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		this.t.consume(REQUIRE)
 		var pos = this.t.get_pos()
 		this.t.consume(PAREN_OPEN)
-		this.reqs.add(this.t.consume(STRING))
+		this.reqs.add(norm_name(this.t.consume(STRING)))
 		this.t.consume(PAREN_CLOSE)
 	}
 

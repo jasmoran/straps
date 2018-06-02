@@ -28,6 +28,18 @@ func void pi(Number i) {
 	loop { if (i <= 0) { break } "  ".print() i-- }
 }
 
+# Normalises file names
+# e.g. "LinkedList.v10" => "LinkedList"
+#      "LinkedList"     => "LinkedList"
+func String norm_name(String name) {
+	var Number dot_pos = name.length - 4
+	if (name.get(dot_pos) == '.') {
+		name.length -= 4
+	}
+	return name
+}
+
+
 func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Number increment) {
 	pi(increment)
 	"Headerize called with following reqs: ".print()
@@ -36,7 +48,7 @@ func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Nu
 		", ".print()
 	}
 	"\n".print()
-	pi(increment)
+		pi(increment)
 	"Starting processing now:".println()
 
 	for (req in reqs) {
@@ -54,11 +66,12 @@ func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Nu
 		# Add this requirement to the glob_reqs
 		glob_reqs.add(req)
 
-		var parser = Parser_new(req, File_open(req))
+		var src_path = req.clone(4).append(".v10")
+		var parser = Parser_new(req, File_open(src_path))
 		var reqroot = parser.parse()
 
 		# Add stdlib if not required already
-		if (req.equal("src/stdlib/stdlib.v10") == false) parser.reqs.add("src/stdlib/stdlib.v10")
+		if (req.equal("src/stdlib/stdlib") == false) parser.reqs.add("src/stdlib/stdlib")
 
 		# Process this file's requirements
 		increment++
@@ -71,7 +84,7 @@ func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Nu
 		reqroot.accept(Constructor_new()) 
 		reqroot.accept(Method_new()) 
 		reqroot.accept(Definition_new())
-		var fncvis = Functions_new(true)
+		var fncvis = Functions_new()
 		fncvis.lfuncs = lfuncs
 		reqroot.accept(fncvis)
 	}
@@ -80,35 +93,55 @@ func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Nu
 	"Finished processing".println()
 }
 
-func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)(Stream input, Stream output, Parser parser, Node root, Visitor v, Scope sc) {
-	# Open input file
-	input = File_open(in_path)
-	if (input < 0) { return 1 }
+func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags) {
+	load_loop()
 
-	# Read flags
-	var keep = false
-	if (caflags != 0) {
-		var flags = String_fromTerminated(caflags)
-		if (flags.length > 1 && flags.get(1) == 'k') keep = true
+	# # Read flags
+	# var keep = false
+	# if (caflags != 0) {
+	# 	var flags = String_fromTerminated(caflags)
+	# 	if (flags.length > 1 && flags.get(1) == 'k') keep = true
+	# }
+
+	# ld -m elf_x86_64 -o out_path out.o
+	# Run_new(6).add("/usr/bin/ld").add("-m").add("elf_x86_64")
+	# 					.add("-o").add(String_fromTerminated(out_path)).add("out.o").exec()
+
+	# # Clean up
+	# if (keep == false) {
+	# 	File_delete("out.asm")
+	# 	# File_delete("out.o")
+	# }
+
+	var glob_reqs = build(norm_name(String_fromTerminated(src_path)))
+	for (req in glob_reqs) {
+		if (req == glob_reqs.first.payload) next
+		build(req)
 	}
+}
 
-	parser = Parser_new(String_fromTerminated(in_path), input)
-	root = parser.parse()
-	sc = Scope_new()
+func Set<String> build(String name) {
+	# Open input file
+	var src_path = name.clone(4).append(".v10")
+	var input = File_open(src_path)
+	if (input < 0) { return 0 }
+
+	var sc = Scope_new()
 	scope = sc
+	var parser = Parser_new(src_path, input)
+	var root = parser.parse()
 
 	# Open output file
-	output = File_create("out.asm")
-	if (output < 0) { return 1 }
+	var asm_path = name.clone(4).append(".asm")
+	var output = File_create(asm_path)
+	if (output < 0) { return 0 }
 
-	if (String_fromTerminated(in_path).equal("src/stdlib/stdlib.v10") == false) {
-		parser.reqs.add("src/stdlib/stdlib.v10")
-	}
+	if (src_path.equal("src/stdlib/stdlib") == false) parser.reqs.add("src/stdlib/stdlib")
 
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "MainFunctions")
 	var lfuncs = ListNode_new(nFUNCTIONS, pos)
 	var glob_reqs = Set<String>_new()
-	glob_reqs.add(String_fromTerminated(in_path))
+	glob_reqs.add(name)
 
 	"section .text".println(output)
 	headerize(glob_reqs, parser.reqs, lfuncs, 0)
@@ -130,9 +163,7 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	sc.set("r12", StringNode_new(nREGISTER, pos, Type_new(), "r12").toNode())
 	sc.set("r13", StringNode_new(nREGISTER, pos, Type_new(), "r13").toNode())
 
-	load_loop()
-
-	v = PlusMinus_new()
+	var Visitor v = PlusMinus_new()
 	root.accept(v)
 	v = Casting_new()
 	root.accept(v)
@@ -156,7 +187,7 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	root.accept(v)
 	v = IndexCall_new()
 	root.accept(v)
-	var fncvis = Functions_new(false)
+	var fncvis = Functions_new()
 	fncvis.lfuncs = lfuncs
 	root.accept(fncvis)
 	v = Strings_new()
@@ -166,15 +197,8 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	root.accept(v)
 
 	# nasm -f elf64 out.asm
-	Run_new(4).add("/usr/bin/nasm").add("-f").add("elf64").add("out.asm").exec()
+	var obj_path = name.clone(2).append(".o")
+	Run_new(6).add("/usr/bin/nasm").add("-f").add("elf64").add(asm_path).add("-o").add(obj_path).exec()
 
-	# ld -m elf_x86_64 -o out_path out.o
-	# Run_new(6).add("/usr/bin/ld").add("-m").add("elf_x86_64")
-	# 					.add("-o").add(String_fromTerminated(out_path)).add("out.o").exec()
-
-	# Clean up
-	if (keep == false) {
-		File_delete("out.asm")
-		# File_delete("out.o")
-	}
+	return glob_reqs
 }
