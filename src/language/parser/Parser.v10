@@ -299,7 +299,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 			tk = this.t.peek()
 			var pos = this.t.get_pos()
 			if (tk == PAREN_OPEN) {
-				var LinkedList<StringNode> arglist = this.expression_list()
+				var LinkedList<RetNode> arglist = this.expression_list()
 				node = CallNode_new(pos, node, arglist)
 			} else if (tk == SQUARE_OPEN) {
 				this.t.consume(SQUARE_OPEN)
