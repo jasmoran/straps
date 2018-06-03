@@ -21,6 +21,7 @@ include "src/language/visitors/ForLoop.v10"
 include "src/language/visitors/TypeCheck.v10"
 include "src/language/visitors/Casting.v10"
 include "src/language/visitors/PlusMinus.v10"
+include "src/language/visitors/Externals.v10"
 
 global(Scope scope)
 
@@ -40,7 +41,7 @@ func String norm_name(String name) {
 }
 
 
-func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Number increment) {
+func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Number increment, LinkedList<String> externals) {
 	pi(increment)
 	"Headerize called with following reqs: ".print()
 	for (req in reqs) {
@@ -75,10 +76,11 @@ func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Nu
 
 		# Process this file's requirements
 		increment++
-		headerize(glob_reqs, parser.reqs, lfuncs, increment)
+		headerize(glob_reqs, parser.reqs, lfuncs, increment, externals)
 		increment--
 
 		# Visit this file
+		reqroot.accept(Externals_new(externals))
 		reqroot.accept(Typing_new()) 
 		reqroot.accept(Inherit_new()) 
 		reqroot.accept(Constructor_new()) 
@@ -143,12 +145,17 @@ func Set<String> build(String name) {
 	var glob_reqs = Set<String>_new()
 	glob_reqs.add(name)
 
+	var externals = LinkedList<String>_new()
 	"section .text".println(output)
-	headerize(glob_reqs, parser.reqs, lfuncs, 0)
+	headerize(glob_reqs, parser.reqs, lfuncs, 0, externals)
 	for (fnc in lfuncs.children) {
 		"extern ".print(output)
 		fnc.to(StringNode).string.println(output)
 		fnc_iter.fetch()
+	}
+	for (extern in externals) {
+		"extern ".print(output)
+		extern.println(output)
 	}
 
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "GLOBALS_SETUP")
