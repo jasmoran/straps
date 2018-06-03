@@ -71,7 +71,7 @@ func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Nu
 		var reqroot = parser.parse()
 
 		# Add stdlib if not required already
-		if (req.equal("src/stdlib/stdlib") == false) parser.reqs.add("src/stdlib/stdlib")
+		# if (req.equal("src/stdlib/stdlib") == false) parser.reqs.add("src/stdlib/stdlib")
 
 		# Process this file's requirements
 		increment++
@@ -136,7 +136,7 @@ func Set<String> build(String name) {
 	var output = File_create(asm_path)
 	if (output < 0) { return 0 }
 
-	if (src_path.equal("src/stdlib/stdlib") == false) parser.reqs.add("src/stdlib/stdlib")
+	# if (name.equal("src/stdlib/stdlib") == false) parser.reqs.add("src/stdlib/stdlib")
 
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "MainFunctions")
 	var lfuncs = ListNode_new(nFUNCTIONS, pos)
