@@ -105,9 +105,24 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags
 	# 	if (flags.length > 1 && flags.get(1) == 'k') keep = true
 	# }
 
+	var name = norm_name(String_fromTerminated(src_path))
+	var glob_reqs = build(name)
+
+	# Set up linker runner
+	var Number num_args = glob_reqs.length + 5
+	var linker = Run_new(num_args)
+	linker.add("/usr/bin/ld").add("-m").add("elf_x86_64").add("-o").add(String_fromTerminated(out_path))
+
+	for (req in glob_reqs) {
+		if (req == glob_reqs.first.payload) next
+		build(req)
+
+		# Add object to linker args
+		linker.add(req.clone(2).append(".o"))
+	}
+
 	# ld -m elf_x86_64 -o out_path out.o
-	# Run_new(6).add("/usr/bin/ld").add("-m").add("elf_x86_64")
-	# 					.add("-o").add(String_fromTerminated(out_path)).add("out.o").exec()
+	linker.add(name.clone(2).append(".o")).exec()
 
 	# # Clean up
 	# if (keep == false) {
@@ -115,11 +130,7 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags
 	# 	# File_delete("out.o")
 	# }
 
-	var glob_reqs = build(norm_name(String_fromTerminated(src_path)))
-	for (req in glob_reqs) {
-		if (req == glob_reqs.first.payload) next
-		build(req)
-	}
+	return 0
 }
 
 func Set<String> build(String name) {
@@ -190,8 +201,8 @@ func Set<String> build(String name) {
 	root.accept(v)
 	v = Resolving_new()
 	root.accept(v)
-	v = TypeCheck_new()
-	root.accept(v)
+	# v = TypeCheck_new()
+	# root.accept(v)
 	v = IndexCall_new()
 	root.accept(v)
 	var fncvis = Functions_new()
