@@ -265,18 +265,21 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
 				lln = lln.fwrd
 			}
 			"syscall".println(this.stream)
-		} else if (n.type == nGLOBAL) {
-			"section .bss".println(this.stream)
-			lln = n.children.first
-			loop {
-				if (lln == 0) { break }
-				nn = lln.payload
-				nn.accept(this.v)
-				": resq 1".println(this.stream)
-
-				lln = lln.fwrd
-			}
-			"section .text".println(this.stream)
+    } else if (n.type == nGLOBAL) {
+      "section .bss".println(this.stream)
+      lln = n.children.first
+      loop {
+        if (lln == 0) { break }
+        nn = lln.payload
+        "global ".print(this.stream)
+        nn.accept(this.v)
+        "\n".print(this.stream)
+        nn.accept(this.v)
+        ": resq 1".println(this.stream)
+ 
+        lln = lln.fwrd
+      }
+      "section .text".println(this.stream)
 		} else if (n.type == nSTRINGS) {
 			"section .data".println(this.stream)
 			lln = n.children.first
