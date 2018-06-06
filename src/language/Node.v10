@@ -12,7 +12,7 @@ include "src/stdlib/Array.generic"
 
 define t "Node"
 include "src/stdlib/LinkedList.generic"
-define t "StringNode"
+define t "RetNode"
 include "src/stdlib/LinkedList.generic"
 define t "FunctionNode"
 include "src/stdlib/LinkedList.generic"
@@ -52,15 +52,15 @@ class virtual RetNode < Node (Type ret_type) {}
 class virtual OpNode < RetNode (Token op) {}
 
 func CallNode CallNode_new(Position pos, Node cfunction) {
-	var args = LinkedList<StringNode>_new()
+	var args = LinkedList<RetNode>_new()
 	return CallNode_new(pos, cfunction, args)
 }
 
-func CallNode CallNode_new(Position pos, Node cfunction, LinkedList<StringNode> args) {
+func CallNode CallNode_new(Position pos, Node cfunction, LinkedList<RetNode> args) {
 	return CallNode_new(nCALL, pos, Type_new(), cfunction, args)
 }
 
-class virtual CallNode < RetNode (Node cfunction, LinkedList<StringNode> args) {
+class virtual CallNode < RetNode (Node cfunction, LinkedList<RetNode> args) {
 	func void accept(Visitor v)() {
 		v.visit(this)
 	}

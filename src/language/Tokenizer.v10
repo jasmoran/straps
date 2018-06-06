@@ -6,7 +6,7 @@ enum Token {
 	COMMENT CURLY_OPEN CURLY_CLOSE EQUAL NOT_EQUAL GREATER GREATER_EQ LESS LESS_EQ CHARACTER
 	INCLUDE NOT INCREMENT DECREMENT ADD SUB SHIFTL SHIFTR ASSIGN PLUS
 	MINUS SQUARE_OPEN SQUARE_CLOSE ENUM CLASS DOT GLOBAL ASTERISK FWD_SLASH AND
-	OR NEW_LINE EOF PUSH POP VAR VIRTUAL IN
+	OR NEW_LINE EOF PUSH POP VAR VIRTUAL IN REQUIRE
 }
 
 class Token(void type){
@@ -281,6 +281,7 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 			c = this.first_char.get_character()
 			if (c == 0) {
 				if (this.rs_old == 0) {
+					File_close(this.rs.stream)
 					return EOF
 				} else {
 					this.rs = this.rs_old
@@ -322,6 +323,7 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 		if (this.match("nasm") == true) { return NASM }
 		if (this.match("next") == true) { return NEXT }
 		if (this.match("return") == true) { return RETURN }
+		if (this.match("require") == true) { return REQUIRE }
 		if (this.match("switch") == true) { return SWITCH }
 		if (this.match("sys") == true) { return SYS }
 		if (this.match("var") == true) { return VAR }

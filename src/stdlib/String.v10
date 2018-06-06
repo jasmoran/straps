@@ -1,5 +1,36 @@
 class CharArr(void data) {}
 
+func StrIterator StrIterator_new(String str) {
+	return StrIterator_new(str, Range_new(str.length))
+}
+
+class StrIterator (String str, Range range) {
+	func Character fetch() {
+		return this.str.get(this.range.fetch())
+	}
+
+	func Boolean finished() {
+		return this.range.finished()
+	}
+
+	func StrIterator reverse() {
+		this.range.reverse()
+		return this
+	}
+
+	func void set(Character value) {
+		var ix = this.range.curr
+		if (this.range.back == true) {
+			ix++
+		} else {
+			ix--
+		}
+		this.str.set(ix, value)
+	}
+
+	func StrIterator iter() return this
+}
+
 enum String {
 	NullString
 }
@@ -248,5 +279,16 @@ class String (Number length, Number size, CharArr data) {
 		rax += this.length
 		nasm("mov BYTE[rax], 0")
 		return c
+	}
+
+	func StrIterator iter() {
+		return StrIterator_new(this)
+	}
+
+	func Boolean contains(Character c) {
+		for (char in this) {
+			if (char == c) return true
+		}
+		return false
 	}
 }

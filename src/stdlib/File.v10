@@ -2,9 +2,7 @@ func Stream File_open(CharArr path)(Stream file) {
 	sys(2, path, 0, 511)
 	file = rax
 	if (file < 0) {
-		"Could not open file: \"".print(STDERR)
-		sys(1, STDERR, path, 64)
-		"\"\n".print(STDERR)
+		error("Could not open file: \"", String_fromTerminated(path), "\"")
 	}
 	return file
 }
@@ -13,11 +11,13 @@ func Stream File_create(CharArr path)(Stream file) {
 	sys(85, path, 511)
 	file = rax
 	if (file < 0) {
-		"Could not create file: \"".print(STDERR)
-		sys(1, STDERR, path, 16)
-		"\"\n".print(STDERR)
+		error("Could not create file: \"", String_fromTerminated(path), "\"")
 	}
 	return file
+}
+
+func void File_close(Stream stream) {
+	sys(3, stream)
 }
 
 func void File_delete(CharArr path)() {

@@ -17,7 +17,7 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 		size << 3
 
 		# Create allocate call + assign and append to block
-		var rando = LinkedList<StringNode>_new()
+		var rando = LinkedList<RetNode>_new()
 		rando.append(
 			StringNode_new(nNUMBER, pos, Type_new("Number"), size.toString())
 		)

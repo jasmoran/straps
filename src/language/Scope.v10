@@ -25,7 +25,7 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 		this.scope.set(name, capsule.toNode())
 	}
 
-	func FunctionNode resolve(String name, LinkedList<StringNode> args) {
+	func FunctionNode resolve(String name, LinkedList<RetNode> args) {
 		var ListNode lnoptions = this.resolve(name)
     var LinkedList<FunctionNode> options = lnoptions.children
 
@@ -35,12 +35,13 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 
     # Loop through each possible match
     for (option in options) {
-      var LinkedList<StringNode> optargs = option.args.children
+      var LinkedList<RetNode> optargs = option.args.children
 			if (optargs.length != args.length) next
 
+			# Nothing to compare if there are no arguments
 			if (args.length == 0) {
-        best = rank
         best_match = option
+				break
       }
 
       var rank = 0

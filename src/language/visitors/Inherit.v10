@@ -40,8 +40,12 @@ class virtual Inherit < Visitor (Visitor v) {
 				loop {
 					if (lln == 0) { break }
 					var StringNode sn = lln.payload
-					this.remove_duplicates(n.fields.children, sn)
-					n.fields.children.prepend(lln.payload)
+
+					# Don't inherit vtable
+					if (sn.string.equal("vt") == false) {
+						this.remove_duplicates(n.fields.children, sn)
+						n.fields.children.prepend(lln.payload)
+					}
 
 					lln = lln.back
 				}

@@ -22,7 +22,8 @@ class virtual Casting < Visitor (Visitor v) {
 		if (n.args.length != 1) error("Cast must be passed a single type")
 
 		var RetNode rn = binop.lhs
-		rn.ret_type = Type_new(n.args.get(0).string, true)
+		var StringNode sn = n.args.get(0)
+		rn.ret_type = Type_new(sn.string, true)
 
 		return binop.lhs
 	}

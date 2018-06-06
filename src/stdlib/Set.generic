@@ -1,0 +1,29 @@
+func Set<?t> Set<?t>_new() {
+	return LinkedList<?t>_new()
+}
+
+class Set<?t> < LinkedList<?t> () {
+	func LinkedListNode<?t> get_node(?t value) {
+		var lln = this.first
+		loop {
+			if (lln == 0) return 0
+			if (lln.payload.equal(value) == true) return lln
+			lln = lln.fwrd
+		}
+	}
+
+	func Boolean contains(?t value) {
+		if (this.get_node(value) == 0) return false
+		return true
+	}
+
+	func void add(?t value) {
+		if (this.get_node(value) == 0) this.append(value)
+	}
+
+	func void remove(?t value) {
+		var lln = this.get_node(value)
+		# Inherited method lookup doesn't properly support overloads
+		if (lln != 0) this.remove_node(lln)
+	}
+}

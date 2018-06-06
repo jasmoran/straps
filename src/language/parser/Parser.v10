@@ -2,7 +2,7 @@ include "src/language/Node.v10"
 include "src/language/Tokenizer.v10"
 
 func Parser Parser_new(String stream_name, Stream input)() {
-	return Parser_new(stream_name, Tokenizer_new(stream_name, input))
+	return Parser_new(stream_name, Tokenizer_new(stream_name, input), Set<String>_new())
 }
 
 func Node Parser_parse(String stream_name, Stream input)(Parser p) {
@@ -10,7 +10,7 @@ func Node Parser_parse(String stream_name, Stream input)(Parser p) {
 	return p.parse()
 }
 
-class Parser(String name, Tokenizer t) {
+class Parser(String name, Tokenizer t, Set<String> reqs) {
 	func Node nt_class()(String name, ListNode fields, ListNode block) {
 		this.t.consume(CLASS)
 
@@ -94,6 +94,7 @@ class Parser(String name, Tokenizer t) {
 		path = this.t.consume(STRING)
 		parser = Parser_new(path, File_open(path))
 		parser.t.macros = this.t.macros
+		parser.reqs = this.reqs
 		return parser.parse()
 	}
 
@@ -104,6 +105,14 @@ class Parser(String name, Tokenizer t) {
 		node = StringNode_new(nNASM, pos, Type_new("void"), this.t.consume(STRING))
 		this.t.consume(PAREN_CLOSE)
 		return node
+	}
+
+	func void nt_require() {
+		this.t.consume(REQUIRE)
+		var pos = this.t.get_pos()
+		this.t.consume(PAREN_OPEN)
+		this.reqs.add(norm_name(this.t.consume(STRING)))
+		this.t.consume(PAREN_CLOSE)
 	}
 
 
@@ -291,7 +300,7 @@ class Parser(String name, Tokenizer t) {
 			tk = this.t.peek()
 			var pos = this.t.get_pos()
 			if (tk == PAREN_OPEN) {
-				var LinkedList<StringNode> arglist = this.expression_list()
+				var LinkedList<RetNode> arglist = this.expression_list()
 				node = CallNode_new(pos, node, arglist)
 			} else if (tk == SQUARE_OPEN) {
 				this.t.consume(SQUARE_OPEN)
@@ -405,6 +414,11 @@ class Parser(String name, Tokenizer t) {
 			this.t.consume(RETURN)
 			var pos = this.t.get_pos()
 			return ReturnNode_new(pos, this.expression())
+		}
+
+		if (tk == REQUIRE) {
+			this.nt_require()
+			return this.value()
 		}
 
 		if (tk == STRING) {
