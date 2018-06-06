@@ -94,6 +94,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		path = this.t.consume(STRING)
 		parser = Parser_new(path, File_open(path))
 		parser.t.macros = this.t.macros
+		parser.reqs = this.reqs
 		return parser.parse()
 	}
 
