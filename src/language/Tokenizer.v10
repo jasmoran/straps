@@ -281,6 +281,7 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 			c = this.first_char.get_character()
 			if (c == 0) {
 				if (this.rs_old == 0) {
+					File_close(this.rs.stream)
 					return EOF
 				} else {
 					this.rs = this.rs_old
