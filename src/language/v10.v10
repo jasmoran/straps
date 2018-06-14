@@ -83,10 +83,10 @@ func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Nu
 
 		# Visit this file
 		reqroot.accept(Externals_new(externals))
-		reqroot.accept(Typing_new()) 
-		reqroot.accept(Inherit_new()) 
-		reqroot.accept(Constructor_new()) 
-		reqroot.accept(Method_new()) 
+		reqroot.accept(Typing_new())
+		reqroot.accept(Inherit_new())
+		reqroot.accept(Constructor_new())
+		reqroot.accept(Method_new())
 		reqroot.accept(Definition_new())
 		var fncvis = Functions_new()
 		fncvis.lfuncs = lfuncs
@@ -187,8 +187,6 @@ func Set<String> build(String name) {
 	root.accept(v)
 	v = Statics_new()
 	root.accept(v)
-	v = StaticNew_new()
-	root.accept(v)
 	v = Casting_new()
 	root.accept(v)
 	v = ForLoop_new()
@@ -198,6 +196,8 @@ func Set<String> build(String name) {
 	v = Typing_new()
 	root.accept(v)
 	v = Inherit_new()
+	root.accept(v)
+	v = StaticNew_new()
 	root.accept(v)
 	v = Constructor_new()
 	root.accept(v)
