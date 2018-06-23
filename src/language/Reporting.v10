@@ -74,3 +74,55 @@ func void printScopeOptions(Map<String_Node> sc) {
 	}
 	"]".println()
 }
+
+func void printUndefinedFunction(StringNode name, LinkedList<StringNode> args, Scope sc) {
+	var ListNode options = sc.search(name.string)
+	printStringLocation(name)
+
+	"  level: error".println()
+
+	"  message: ".print()
+	if (options > 0 && options.type == nBLOCK) {
+		"Given arguments don't match a defined function. Got ".print()
+		for (arg in args) {
+			arg.ret_type.basicString().print()
+			" ".print()
+		}
+		"\n".print()
+
+		"  options: [".print()
+		printFuncs(name.string, options)
+		"]".println()
+	} else {
+		if (options == 0) {
+			"Could not resolve ".print()
+			name.string.println()
+		} else {
+			# options.type != nBLOCK
+			name.string.print()
+			" is not a function".println()
+		}
+
+		printScopeOptions(sc.scope)
+	}
+}
+
+func void printUndefinedIdentifier(StringNode name, Scope sc) {
+	var ListNode res = sc.search(name.string)
+	printStringLocation(name)
+
+	"  level: error".println()
+
+	"  message: ".print()
+	if (res <= 0) {
+		"Could not resolve ".print()
+		name.string.println()
+		printScopeOptions(sc.scope)
+	} else {
+		name.string.print()
+		" is a function".println()
+		"  options: [".print()
+		printFuncs(name.string, res)
+		"]".println()
+	}
+}
