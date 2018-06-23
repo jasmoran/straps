@@ -69,8 +69,10 @@ class virtual TypeCheck < Visitor (Visitor v, Type fret_type) {
 	}
 
 	func void visit(FunctionNode n) {
+		var prev_fret = this.fret_type
 		this.fret_type = n.ret_type
 		n.accept_children(this.v)
+		this.fret_type = prev_fret
 		return 0
 	}
 }
