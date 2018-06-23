@@ -40,9 +40,9 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 		return s.get(name)
 	}
 
-	func FunctionNode resolve(StringNode name, LinkedList<StringNode> args) {
+	func Option<FunctionNode> resolve(StringNode name, LinkedList<StringNode> args) {
 		var ListNode lnoptions = this.search(name.string)
-		
+
 		if (lnoptions > 0 && lnoptions.type == nBLOCK) {
 			var LinkedList<FunctionNode> options = lnoptions.children
 
@@ -87,68 +87,22 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 			}
 
 			# Check we found a match
-			if (best_match != 0) return best_match.clone()
-		}
-
-		printStringLocation(name)
-
-		"  level: error".println()
-
-		"  message: ".print()
-		if (lnoptions > 0 && lnoptions.type == nBLOCK) {
-			"Given arguments don't match a defined function. Got ".print()
-			for (arg in args) {
-				arg.ret_type.basicString().print()
-				" ".print()
-			}
-			"\n".print()
-			
-			"  options: [".print()
-			printFuncs(name.string, lnoptions)
-			"]".println()
-		} else {
-			if (lnoptions == 0) {
-				"Could not resolve ".print()
-				name.string.println()
-			} else {
-				# lnoptions.type != nBLOCK
-				name.string.print()
-				" is not a function".println()
-			}
-			
-			printScopeOptions(this.scope)
+			if (best_match != 0) return Some(best_match.clone())
 		}
 
 		# error("Could not resolve function ", name, " args don't match")
-		return name.clone()
+		return None<FunctionNode>
 	}
 
-	func Node resolve(StringNode name) {
+	func Option<Node> resolve(StringNode name) {
 		var ListNode res = this.search(name.string)
 
 		# Can't clone here because Inferring process needs to modify the
 		# existing identifier in the scope not a clone.
-		if (res > 0 && res.type != nBLOCK) return res
-
-		printStringLocation(name)
-
-		"  level: error".println()
-
-		"  message: ".print()
-		if (res <= 0) {
-			"Could not resolve ".print()
-			name.string.println()
-			printScopeOptions(this.scope)
-		} else {
-			name.string.print()
-			" is a function".println()
-			"  options: [".print()
-			printFuncs(name.string, res)
-			"]".println()
-		}
+		if (res > 0 && res.type != nBLOCK) return Some(res)
 
 		# Just use unresolved identifier
-		return name
+		return None<Node>
 	}
 
 	func void print()(Number index, Visitor printer) {
