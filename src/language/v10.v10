@@ -24,7 +24,6 @@ include "src/language/visitors/Casting.v10"
 include "src/language/visitors/PlusMinus.v10"
 include "src/language/visitors/Statics.v10"
 include "src/language/visitors/StaticNew.v10"
-include "src/language/visitors/Completions.v10" 
 
 global(Scope scope)
 
@@ -93,9 +92,6 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	v = Functions_new()
 	root.accept(v)
 	v = Strings_new()
-	root.accept(v)
-	"functions:".println()
-	v = Completions_new()
 	root.accept(v)
 
 	return 0
