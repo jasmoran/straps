@@ -1,0 +1,32 @@
+enum Option<?t> { None<?t> }
+
+func Option<?t> Some(?t value) {
+  return value
+}
+
+class Option<?t>() {
+  func Boolean is_some() {
+    if (this == None<?t>) return false
+    return true
+  }
+
+  func Boolean is_none() {
+    if (this == None<?t>) return true
+    return false
+  }
+
+  func ?t expect(String message) {
+    if (this == None<?t>) error(message)
+    return this
+  }
+
+  func ?t unwrap() {
+    if (this == None<?t>) error("Attempted to unwrap an empty Option<?t>")
+    return this
+  }
+
+  func ?t unwrap_or(?t default) {
+    if (this == None<?t>) return default
+    return this
+  }
+}

@@ -3,6 +3,7 @@ include "src/language/parser/Parser.v10"
 include "src/language/Scope.v10"
 include "src/language/Type.v10"
 include "src/language/Position.v10"
+include "src/language/Reporting.v10"
 
 include "src/language/visitors/Visitor.v10"
 include "src/language/visitors/Printer.v10"
@@ -100,15 +101,19 @@ func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Nu
 func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags) {
 	load_loop()
 
-	# # Read flags
-	# var keep = false
-	# if (caflags != 0) {
-	# 	var flags = String_fromTerminated(caflags)
-	# 	if (flags.length > 1 && flags.get(1) == 'k') keep = true
-	# }
+	# Read flags
+	var keep = false
+	var report = false
+	if (caflags != 0) {
+		var flags = String_fromTerminated(caflags)
+		if (flags.length > 1 && flags.get(1) == 'k') keep = true
+		if (flags.length > 2 && flags.get(2) == 'r') report = true
+	}
+
+	var reporting = Reporting_new(report, STDOUT)
 
 	var name = norm_name(String_fromTerminated(src_path))
-	var glob_reqs = build(name)
+	var glob_reqs = build(name, reporting)
 
 	# Set up linker runner
 	var Number num_args = glob_reqs.length + 5
@@ -117,7 +122,7 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags
 
 	for (req in glob_reqs) {
 		if (req == glob_reqs.first.payload) next
-		build(req)
+		build(req, reporting)
 
 		# Add object to linker args
 		linker.add(req.clone(2).append(".o"))
@@ -135,7 +140,7 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags
 	return 0
 }
 
-func Set<String> build(String name) {
+func Set<String> build(String name, Reporting reporting) {
 	# Open input file
 	var src_path = name.clone(4).append(".v10")
 	var input = File_open(src_path)
@@ -205,10 +210,13 @@ func Set<String> build(String name) {
 	root.accept(v)
 	v = Definition_new()
 	root.accept(v)
-	v = Resolving_new()
+	v = Resolving_new(reporting)
 	root.accept(v)
-	# v = TypeCheck_new()
-	# root.accept(v)
+	v = TypeCheck_new(reporting)
+	root.accept(v)
+
+	if (report == true) return 0
+
 	v = IndexCall_new()
 	root.accept(v)
 	var fncvis = Functions_new()

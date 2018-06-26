@@ -308,7 +308,12 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 				this.t.consume(SQUARE_CLOSE)
 			} else if (tk == DOT) {
 				this.t.consume(DOT)
-				node = BinaryOperationNode_new(pos, DOT, node, this.value())
+				if (this.t.peek() == IDENTIFIER) {
+					var rhs = this.nt_identifier()
+				} else {
+					rhs = StringNode_new(nIDENTIFIER, pos, Type_new(), "_MISSING")
+				}
+				node = BinaryOperationNode_new(pos, DOT, node, rhs)
 			} else if (tk == INCREMENT) {
 				this.t.consume(INCREMENT)
 				node = UnaryOperationNode_new(pos, INCREMENT, node, false)

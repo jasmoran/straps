@@ -1,17 +1,27 @@
-func Resolving Resolving_new()(Scope sc) {
+func Resolving Resolving_new(Reporting report)(Scope sc) {
 	sc = scope
 	var Visitor v = 0
-	var res = Resolving_new(v, sc, true)
+	var res = Resolving_new(v, sc, true, report)
 	res.v = res
 	return res
 }
 
-class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_idents) {
+class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_idents, Reporting report) {
 	func void visit(StringNode n)(Node replacement) {
 		var orig_type = n.ret_type
 		orig_type.resolve(this.scope)
 		if (n.type == nIDENTIFIER) {
-			if (this.resolve_idents == true) n = this.scope.resolve(n.string)
+			if (this.resolve_idents == true) {
+				var orig_pos = n.position
+				var opt = this.scope.resolve(n)
+				if (opt.is_some() == true) {
+					n = opt.unwrap()
+				} else {
+					this.report.printUndefinedIdentifier(n, this.scope)
+				}
+				n = n.clone()
+				n.position = orig_pos
+			}
 			if (orig_type.cast == true) n.ret_type = orig_type
 		}
 		return n
@@ -72,8 +82,15 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			# Resolve function
 			rn = binop.rhs
 			orig_type = rn.ret_type
-			binop.rhs = sc.resolve(name.string, n.args)
-			rn = binop.rhs
+			var orig_pos = n.position
+			var opt = sc.resolve(name, n.args)
+			if (opt.is_some() == true) {
+				rn = opt.unwrap()
+			} else {
+				this.report.printUndefinedFunction(name, n.args, sc)
+				rn = name.clone()
+			}
+			binop.rhs = rn
 			if (orig_type.cast == true) rn.ret_type = orig_type
 
 			# Inherit ret_type from rhs
@@ -83,8 +100,14 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			# Resolve function
 			var RetNode rn = n.cfunction
 			var orig_type = rn.ret_type
-			n.cfunction = this.scope.resolve(name.string, n.args)
-			rn = n.cfunction
+			var opt = this.scope.resolve(name, n.args)
+			if (opt.is_some() == true) {
+				rn = opt.unwrap()
+			} else {
+				this.report.printUndefinedFunction(name, n.args, this.scope)
+				rn = name.clone()
+			}
+			n.cfunction = rn
 			if (orig_type.cast == true) rn.ret_type = orig_type
 		}
 
@@ -161,7 +184,13 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 		if (n.lhs.type == nIDENTIFIER) {
 			field = n.lhs
 			if (field.ret_type.raw == 1) {
-				n.lhs = this.scope.resolve(field.string)
+				var opt = this.scope.resolve(field)
+				if (opt.is_some() == true) {
+					n.lhs = opt.unwrap()
+				} else {
+					this.report.printUndefinedIdentifier(field, this.scope)
+					n.lhs = field
+				}
 				field = n.lhs
 
 				sn = n.rhs

@@ -43,9 +43,10 @@ class Type (String raw, ClassNode res, Boolean cast) {
 		sc = scope
 		this.res = sc.get(this.raw)
 		if (this.res > 0) return 0
-		this.res = 0
+		this.raw = "Any"
+		this.res = sc.get(this.raw)
 
-		error("Could not resolve type: ", this.raw)
+		# error("Could not resolve type: ", this.raw)
 	}
 
 	func Scope getScope()() {
@@ -58,6 +59,18 @@ class Type (String raw, ClassNode res, Boolean cast) {
 	func void print(Stream s)() {
 		this.toString().print(s)
 	}
+
+	func String basicString() {
+	if (this.raw == 0) {
+		return "Unknown"
+	} else if (this.raw == 1) {
+		return "ToBeInferred"
+	} else if (this.res == 0) {
+		return this.raw
+	} else {
+		return this.res.name
+	}
+}
 
 	# Check if this type has poss_child as a child (or equal)
 	# and therefore if poss_child vars can be assigned to this type

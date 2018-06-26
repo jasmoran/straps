@@ -33,6 +33,9 @@ class NodeType() {
 	}
 }
 
+define t "Node"
+include "src/stdlib/Option.generic"
+
 class virtual Node(NodeType type, Position position) {
 	func void accept(Visitor v)() {
 		v.visit(this)
@@ -196,6 +199,8 @@ class virtual ClassNode < RetNode (String name, ListNode fields,
 }
 
 
+define t "FunctionNode"
+include "src/stdlib/Option.generic"
 
 func FunctionNode FunctionNode_new(Position pos, Type ret_type, String name, ListNode args, ListNode vrbls, ListNode block)(Scope sc) {
 	sc = scope

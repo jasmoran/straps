@@ -1,43 +1,28 @@
-func TypeCheck TypeCheck_new() {
+func TypeCheck TypeCheck_new(Reporting report) {
 	var Visitor v = 0
-	var tc = TypeCheck_new(v, Type_new())
+	var tc = TypeCheck_new(v, Type_new(), report)
 	tc.v = tc
 	return tc
 }
 
-
-class virtual TypeCheck < Visitor (Visitor v, Type fret_type) {
+class virtual TypeCheck < Visitor (Visitor v, Type fret_type, Reporting report) {
 	func void visit(BinaryOperationNode n) {
 		var RetNode lhs = n.lhs
 		var RetNode rhs = n.rhs
 
-		if (n.op == ASSIGN) {
+		if (
+			n.op == ASSIGN ||
+			n.op == EQUAL ||
+			n.op == NOT_EQUAL ||
+			n.op == GREATER ||
+			n.op == GREATER_EQ ||
+			n.op == LESS ||
+			n.op == LESS_EQ
+		) {
 			lhs.ret_type.resolve(scope)
 
 			if (lhs.ret_type.has_child(rhs.ret_type) == false) {
-				"Warning: ".print(STDERR)
-				rhs.ret_type.print(STDERR)
-				" is not assignable to ".print(STDERR)
-				lhs.ret_type.print(STDERR)
-				" at ".print(STDERR)
-				n.position.toString().println(STDERR)
-			}
-		} else if (n.op == EQUAL ||
-							 n.op == NOT_EQUAL ||
-							 n.op == GREATER ||
-							 n.op == GREATER_EQ ||
-							 n.op == LESS ||
-							 n.op == LESS_EQ)
-		{
-			lhs.ret_type.resolve(scope)
-
-			if (lhs.ret_type.has_child(rhs.ret_type) == false) {
-				"Warning: ".print(STDERR)
-				rhs.ret_type.print(STDERR)
-				" is not comparible to ".print(STDERR)
-				lhs.ret_type.print(STDERR)
-				" at ".print(STDERR)
-				n.position.toString().println(STDERR)
+				this.report.printNotMatch(lhs, rhs)
 			}
 		}
 
@@ -48,12 +33,7 @@ class virtual TypeCheck < Visitor (Visitor v, Type fret_type) {
 	func void visit(ReturnNode n) {
 		var RetNode rn = n.expr
 		if (this.fret_type.has_child(rn.ret_type) == false) {
-			"Warning: Return type ".print(STDERR)
-			rn.ret_type.print(STDERR)
-			" does not match type ".print(STDERR)
-			this.fret_type.print(STDERR)
-			" of function at ".print(STDERR)
-			n.position.toString().println(STDERR)
+			this.report.printUnreturnable(n, this.fret_type)
 		}
 
 		n.accept_children(this.v)
@@ -61,8 +41,10 @@ class virtual TypeCheck < Visitor (Visitor v, Type fret_type) {
 	}
 
 	func void visit(FunctionNode n) {
+		var prev_fret = this.fret_type
 		this.fret_type = n.ret_type
 		n.accept_children(this.v)
+		this.fret_type = prev_fret
 		return 0
 	}
 }
