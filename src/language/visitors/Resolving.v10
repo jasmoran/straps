@@ -1,12 +1,12 @@
-func Resolving Resolving_new()(Scope sc) {
+func Resolving Resolving_new(Reporting report)(Scope sc) {
 	sc = scope
 	var Visitor v = 0
-	var res = Resolving_new(v, sc, true)
+	var res = Resolving_new(v, sc, true, report)
 	res.v = res
 	return res
 }
 
-class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_idents) {
+class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_idents, Reporting report) {
 	func void visit(StringNode n)(Node replacement) {
 		var orig_type = n.ret_type
 		orig_type.resolve(this.scope)
@@ -17,7 +17,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 				if (opt.is_some() == true) {
 					n = opt.unwrap()
 				} else {
-					printUndefinedIdentifier(n, this.scope)
+					this.report.printUndefinedIdentifier(n, this.scope)
 				}
 				n = n.clone()
 				n.position = orig_pos
@@ -87,7 +87,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			if (opt.is_some() == true) {
 				rn = opt.unwrap()
 			} else {
-				printUndefinedFunction(name, n.args, sc)
+				this.report.printUndefinedFunction(name, n.args, sc)
 				rn = name.clone()
 			}
 			binop.rhs = rn
@@ -104,7 +104,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			if (opt.is_some() == true) {
 				rn = opt.unwrap()
 			} else {
-				printUndefinedFunction(name, n.args, this.scope)
+				this.report.printUndefinedFunction(name, n.args, this.scope)
 				rn = name.clone()
 			}
 			n.cfunction = rn
@@ -188,7 +188,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 				if (opt.is_some() == true) {
 					n.lhs = opt.unwrap()
 				} else {
-					printUndefinedIdentifier(field, this.scope)
+					this.report.printUndefinedIdentifier(field, this.scope)
 					n.lhs = field
 				}
 				field = n.lhs

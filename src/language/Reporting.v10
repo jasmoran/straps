@@ -1,132 +1,138 @@
-func void printPos(Position pos, Number offset) {
-	var mc = pos.start
-	"{\"line\":".print()
-	mc.get_line().toString().print()
-	",\"character\":".print()
-	var endChar = mc.get_column()
-	endChar += offset
-	endChar.toString().print()
-	"}".print()
-}
-
-func void printRange(Position start, Position end, Number offset) {
-	"- {\"file\":\"".print()
-	start.stream.print()
-	"\",\"start\":".print(STDOUT)
-	printPos(start, 0)
-	",\"end\":".print(STDOUT)
-	printPos(end, offset)
-}
-
-func void printVar(String name, StringNode sn) {
-	if (sn.ret_type.raw < 2) return 0
-	"{\"name\":\"".print()
-	name.print()
-	"\",\"type\":\"".print()
-	sn.ret_type.basicString().print()
-	"\"},".print()
-}
-
-func void printFunc(String name, FunctionNode fn) {
-	"{\"name\":\"".print()
-	name.print()
-	"\",\"type\":\"".print()
-	fn.ret_type.basicString().print()
-	"\",\"args\":[".print()
-
-	for (narg in fn.args.children) {
-		var StringNode arg = narg
-		# Skip 'this' arg
-		if (arg.string.equal("this") == true) next
-		printVar(arg.string, arg)
+class Reporting(Boolean enabled, Stream st) {
+	func void printPos(Position pos, Number offset) {
+		var mc = pos.start
+		"{\"line\":".print(this.st)
+		mc.get_line().toString().print(this.st)
+		",\"character\":".print(this.st)
+		var endChar = mc.get_column()
+		endChar += offset
+		endChar.toString().print(this.st)
+		"}".print(this.st)
 	}
 
-	"]}".print()
-}
-
-func void printFuncs(String name, ListNode fns) {
-	for (nfn in fns.children) {
-		var FunctionNode fn = nfn
-		printFunc(name, fn)
-		",".print()
+	func void printRange(Position start, Position end, Number offset) {
+		"- {\"file\":\"".print(this.st)
+		start.stream.print(this.st)
+		"\",\"start\":".print(this.st)
+		this.printPos(start, 0)
+		",\"end\":".print(this.st)
+		this.printPos(end, offset)
 	}
-}
 
-func void printScopeOptions(Map<String_Node> sc) {
-	"\"options\":[".print()
-	for (pair in sc) {
-		var ListNode value = pair.value
-		if (value.type == nBLOCK) {
-			printFuncs(pair.key, value)
+	func void printVar(String name, StringNode sn) {
+		if (sn.ret_type.raw < 2) return 0
+		"{\"name\":\"".print(this.st)
+		name.print(this.st)
+		"\",\"type\":\"".print(this.st)
+		sn.ret_type.basicString().print(this.st)
+		"\"},".print(this.st)
+	}
+
+	func void printFunc(String name, FunctionNode fn) {
+		"{\"name\":\"".print(this.st)
+		name.print(this.st)
+		"\",\"type\":\"".print(this.st)
+		fn.ret_type.basicString().print(this.st)
+		"\",\"args\":[".print(this.st)
+
+		for (narg in fn.args.children) {
+			var StringNode arg = narg
+			# Skip 'this' arg
+			if (arg.string.equal("this") == true) next
+			this.printVar(arg.string, arg)
+		}
+
+		"]}".print(this.st)
+	}
+
+	func void printFuncs(String name, ListNode fns) {
+		for (nfn in fns.children) {
+			var FunctionNode fn = nfn
+			this.printFunc(name, fn)
+			",".print(this.st)
+		}
+	}
+
+	func void printScopeOptions(Map<String_Node> sc) {
+		"\"options\":[".print(this.st)
+		for (pair in sc) {
+			var ListNode value = pair.value
+			if (value.type == nBLOCK) {
+				this.printFuncs(pair.key, value)
+			} else {
+				this.printVar(pair.key, value.to(StringNode))
+			}
+		}
+		"]".print(this.st)
+	}
+
+	func void printNotMatch(RetNode lhs, RetNode rhs) {
+		if (this.enabled == false) return 0
+		this.printRange(lhs.position, rhs.position, 0)
+		",\"level\":\"warning\",\"message\":\"".print(this.st)
+		rhs.ret_type.print(this.st)
+		" does not match ".print(this.st)
+		lhs.ret_type.print(this.st)
+		"\"}".println(this.st)
+	}
+
+	func void printUnreturnable(ReturnNode n, Type fret_type) {
+		if (this.enabled == false) return 0
+		var RetNode rn = n.expr
+		this.printRange(n.position, rn.position, 0)
+		",\"level\":\"warning\",\"message\":\"".print(this.st)
+		rn.ret_type.print(this.st)
+		" does not match return type ".print(this.st)
+		fret_type.print(this.st)
+		" of function\"}".println(this.st)
+	}
+
+	func void printUndefinedFunction(StringNode name, LinkedList<StringNode> args, Scope sc) {
+		if (this.enabled == false) return 0
+		var ListNode options = sc.search(name.string)
+		this.printRange(name.position, name.position, name.string.length)
+		",\"level\":\"error\",\"message\":\"".print(this.st)
+		if (options > 0 && options.type == nBLOCK) {
+			"Given arguments don't match a defined function. Got ".print(this.st)
+			for (arg in args) {
+				arg.ret_type.basicString().print(this.st)
+				" ".print(this.st)
+			}
+			"\",\"options\":[".print(this.st)
+			this.printFuncs(name.string, options)
+			"]".print(this.st)
 		} else {
-			printVar(pair.key, value.to(StringNode))
+			if (options == 0) {
+				"Could not resolve ".print(this.st)
+				name.string.print(this.st)
+			} else {
+				# options.type != nBLOCK
+				name.string.print(this.st)
+				" is not a function".print(this.st)
+			}
+			"\",".print(this.st)
+			this.printScopeOptions(sc.scope)
 		}
+		"}".println(this.st)
 	}
-	"]".print()
-}
 
-func void printNotMatch(RetNode lhs, RetNode rhs) {
-	printRange(lhs.position, rhs.position, 0)
-	",\"level\":\"warning\",\"message\":\"".print()
-	rhs.ret_type.print(STDOUT)
-	" does not match ".print()
-	lhs.ret_type.print(STDOUT)
-	"\"}".println()
-}
-
-func void printUnreturnable(ReturnNode n, Type fret_type) {
-	var RetNode rn = n.expr
-	printRange(n.position, rn.position, 0)
-	",\"level\":\"warning\",\"message\":\"".print()
-	rn.ret_type.print(STDOUT)
-	" does not match return type ".print()
-	fret_type.print(STDOUT)
-	" of function\"}".println()
-}
-
-func void printUndefinedFunction(StringNode name, LinkedList<StringNode> args, Scope sc) {
-	var ListNode options = sc.search(name.string)
-	printRange(name.position, name.position, name.string.length)
-	",\"level\":\"error\",\"message\":\"".print()
-	if (options > 0 && options.type == nBLOCK) {
-		"Given arguments don't match a defined function. Got ".print()
-		for (arg in args) {
-			arg.ret_type.basicString().print()
-			" ".print()
-		}
-		"\",\"options\":[".print()
-		printFuncs(name.string, options)
-		"]".print()
-	} else {
-		if (options == 0) {
-			"Could not resolve ".print()
-			name.string.print()
+	func void printUndefinedIdentifier(StringNode name, Scope sc) {
+		if (this.enabled == false) return 0
+		var ListNode res = sc.search(name.string)
+		this.printRange(name.position, name.position, name.string.length)
+		",\"level\":\"error\",\"message\":\"".print(this.st)
+		if (res <= 0) {
+			"Could not resolve ".print(this.st)
+			name.string.print(this.st)
+			"\",".print(this.st)
+			this.printScopeOptions(sc.scope)
 		} else {
-			# options.type != nBLOCK
-			name.string.print()
-			" is not a function".print()
+			name.string.print(this.st)
+			" is a function".print(this.st)
+			"\".\"options\":[".print(this.st)
+			this.printFuncs(name.string, res)
+			"]".print(this.st)
 		}
-		"\",".print()
-		printScopeOptions(sc.scope)
+		"}".println(this.st)
 	}
-	"}".println()
-}
-
-func void printUndefinedIdentifier(StringNode name, Scope sc) {
-	var ListNode res = sc.search(name.string)
-	printRange(name.position, name.position, name.string.length)
-	",\"level\":\"error\",\"message\":\"".print()
-	if (res <= 0) {
-		"Could not resolve ".print()
-		name.string.print()
-		"\",".print()
-		printScopeOptions(sc.scope)
-	} else {
-		name.string.print()
-		" is a function".print()
-		"\".\"options\":[".print()
-		printFuncs(name.string, res)
-		"]".print()
-	}
-	"}".println()
 }

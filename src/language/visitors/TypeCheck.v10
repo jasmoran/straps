@@ -1,11 +1,11 @@
-func TypeCheck TypeCheck_new() {
+func TypeCheck TypeCheck_new(Reporting report) {
 	var Visitor v = 0
-	var tc = TypeCheck_new(v, Type_new())
+	var tc = TypeCheck_new(v, Type_new(), report)
 	tc.v = tc
 	return tc
 }
 
-class virtual TypeCheck < Visitor (Visitor v, Type fret_type) {
+class virtual TypeCheck < Visitor (Visitor v, Type fret_type, Reporting report) {
 	func void visit(BinaryOperationNode n) {
 		var RetNode lhs = n.lhs
 		var RetNode rhs = n.rhs
@@ -22,7 +22,7 @@ class virtual TypeCheck < Visitor (Visitor v, Type fret_type) {
 			lhs.ret_type.resolve(scope)
 
 			if (lhs.ret_type.has_child(rhs.ret_type) == false) {
-				printNotMatch(lhs, rhs)
+				this.report.printNotMatch(lhs, rhs)
 			}
 		}
 
@@ -33,7 +33,7 @@ class virtual TypeCheck < Visitor (Visitor v, Type fret_type) {
 	func void visit(ReturnNode n) {
 		var RetNode rn = n.expr
 		if (this.fret_type.has_child(rn.ret_type) == false) {
-			printUnreturnable(n, this.fret_type)
+			this.report.printUnreturnable(n, this.fret_type)
 		}
 
 		n.accept_children(this.v)

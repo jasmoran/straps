@@ -34,9 +34,11 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 
 	# Read flags
 	var keep = false
+	var report = false
 	if (caflags != 0) {
 		var flags = String_fromTerminated(caflags)
 		if (flags.length > 1 && flags.get(1) == 'k') keep = true
+		if (flags.length > 2 && flags.get(2) == 'r') report = true
 	}
 
 	parser = Parser_new(String_fromTerminated(in_path), input)
@@ -55,6 +57,8 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	sc.set("rdi", StringNode_new(nREGISTER, pos, Type_new(), "rdi").toNode())
 	sc.set("r12", StringNode_new(nREGISTER, pos, Type_new(), "r12").toNode())
 	sc.set("r13", StringNode_new(nREGISTER, pos, Type_new(), "r13").toNode())
+
+	var reporting = Reporting_new(report, STDOUT)
 
 	load_loop()
 
@@ -80,13 +84,13 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	root.accept(v)
 	v = Definition_new()
 	root.accept(v)
-	v = Resolving_new()
+	v = Resolving_new(reporting)
+	root.accept(v)
+	v = TypeCheck_new(reporting)
 	root.accept(v)
 
-	return 0
+	if (report == true) return 0
 
-	v = TypeCheck_new()
-	root.accept(v)
 	v = IndexCall_new()
 	root.accept(v)
 	v = Functions_new()
