@@ -10,39 +10,19 @@ class virtual TypeCheck < Visitor (Visitor v, Type fret_type) {
 		var RetNode lhs = n.lhs
 		var RetNode rhs = n.rhs
 
-		if (n.op == ASSIGN) {
+		if (
+			n.op == ASSIGN ||
+			n.op == EQUAL ||
+			n.op == NOT_EQUAL ||
+			n.op == GREATER ||
+			n.op == GREATER_EQ ||
+			n.op == LESS ||
+			n.op == LESS_EQ
+		) {
 			lhs.ret_type.resolve(scope)
 
 			if (lhs.ret_type.has_child(rhs.ret_type) == false) {
-				printPos(lhs.position, rhs.position)
-				"  level: warning".println(STDOUT)
-				"  message: \"".print(STDOUT)
-				lhs.position.note.print(STDOUT)
-				" : ".print(STDOUT)
-				rhs.ret_type.print(STDOUT)
-				" is not assignable to ".print(STDOUT)
-				lhs.ret_type.print(STDOUT)
-				"\"\n".print(STDOUT)
-			}
-		} else if (n.op == EQUAL ||
-							 n.op == NOT_EQUAL ||
-							 n.op == GREATER ||
-							 n.op == GREATER_EQ ||
-							 n.op == LESS ||
-							 n.op == LESS_EQ)
-		{
-			lhs.ret_type.resolve(scope)
-
-			if (lhs.ret_type.has_child(rhs.ret_type) == false) {
-				printPos(lhs.position, rhs.position)
-				"  level: warning".println()
-				"  message: \"".print(STDOUT)
-				lhs.position.note.print(STDOUT)
-				" : ".print(STDOUT)
-				rhs.ret_type.print(STDOUT)
-				" is not comparible to ".print(STDOUT)
-				lhs.ret_type.print(STDOUT)
-				"\"\n".print(STDOUT)
+				printNotMatch(lhs, rhs)
 			}
 		}
 
@@ -53,15 +33,7 @@ class virtual TypeCheck < Visitor (Visitor v, Type fret_type) {
 	func void visit(ReturnNode n) {
 		var RetNode rn = n.expr
 		if (this.fret_type.has_child(rn.ret_type) == false) {
-			printPos(n.position, rn.position)
-			"  level: warning".println()
-			"  message: \"Return type ".print(STDOUT)
-			rn.ret_type.print(STDOUT)
-			" does not match type ".print(STDOUT)
-			this.fret_type.print(STDOUT)
-			" of function : ".print(STDOUT)
-			n.position.note.print(STDOUT)
-			"\"\n".print(STDOUT)
+			printUnreturnable(n, this.fret_type)
 		}
 
 		n.accept_children(this.v)

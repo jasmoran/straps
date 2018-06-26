@@ -80,11 +80,11 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	root.accept(v)
 	v = Definition_new()
 	root.accept(v)
-	"issues:".println()
 	v = Resolving_new()
 	root.accept(v)
-	# v = Printer_new()
-	# root.accept(v)
+
+	return 0
+
 	v = TypeCheck_new()
 	root.accept(v)
 	v = IndexCall_new()
@@ -94,7 +94,6 @@ func void main(CharArr comp, CharArr in_path, CharArr out_path, CharArr caflags)
 	v = Strings_new()
 	root.accept(v)
 
-	return 0
 
 	# Open output file
 	output = File_create("out.asm")
