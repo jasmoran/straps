@@ -1,5 +1,17 @@
-include "src/language/Node.v10"
-include "src/language/Tokenizer.v10"
+require("src/stdlib/stdlib")
+require("src/language/Node")
+require("src/language/Tokenizer")
+
+# Normalises file names
+# e.g. "LinkedList.v10" => "LinkedList"
+#      "LinkedList"     => "LinkedList"
+func String norm_name(String name) {
+	var Number dot_pos = name.length - 4
+	if (name.get(dot_pos) == '.') {
+		name.length -= 4
+	}
+	return name
+}
 
 func Parser Parser_new(String stream_name, Stream input)() {
 	return Parser_new(stream_name, Tokenizer_new(stream_name, input), Set<String>_new())

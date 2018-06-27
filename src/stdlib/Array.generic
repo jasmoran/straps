@@ -1,3 +1,5 @@
+require("src/stdlib/stdlib")
+
 func ArrIterator<?t> ArrIterator<?t>_new(Array<?t> arr) {
 	return ArrIterator<?t>_new(arr, 0, false)
 }

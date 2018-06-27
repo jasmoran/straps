@@ -1,3 +1,6 @@
+require("src/stdlib/stdlib")
+require("src/language/Node")
+
 func IndexCall IndexCall_new()(LinkedList<Node> pl, LinkedListNode<Node> plln) {
 	pl = 0
 	plln = 0

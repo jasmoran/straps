@@ -1,3 +1,6 @@
+require("src/stdlib/stdlib")
+require("src/language/Node")
+
 func Casting Casting_new() {
 	var Visitor v = 0
 	var c = Casting_new(v)

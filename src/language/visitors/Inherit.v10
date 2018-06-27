@@ -1,3 +1,6 @@
+require("src/stdlib/stdlib")
+require("src/language/Node")
+
 func Inherit Inherit_new() {
 	var Visitor v = 0
 	var inh = Inherit_new(v)

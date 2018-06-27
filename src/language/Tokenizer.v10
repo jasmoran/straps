@@ -1,4 +1,6 @@
-include "src/language/ReversibleStream.v10"
+require("src/stdlib/stdlib")
+require("src/language/Node")
+require("src/language/ReversibleStream")
 
 enum Token {
 	NONE BREAK CASE ELSE FOR FUNC IF LOOP NASM NEXT

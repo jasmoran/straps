@@ -1,3 +1,6 @@
+require("src/stdlib/stdlib")
+require("src/language/visitors/Visitor")
+
 class virtual Externals < Visitor (LinkedList<String> externals) {
 	func void visit(ListNode n) {
 		if (n.type == nGLOBAL) {

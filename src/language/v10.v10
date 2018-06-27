@@ -1,44 +1,32 @@
-include "src/stdlib/stdlib.v10"
-include "src/language/parser/Parser.v10"
-include "src/language/Scope.v10"
-include "src/language/Type.v10"
-include "src/language/Position.v10"
-include "src/language/Reporting.v10"
+require("src/stdlib/stdlib")
+require("src/language/parser/Parser")
+require("src/language/Scope")
+require("src/language/Type")
+require("src/language/Position")
+require("src/language/Reporting")
 
-include "src/language/visitors/Visitor.v10"
-include "src/language/visitors/Printer.v10"
-include "src/language/visitors/Constructor.v10"
-include "src/language/visitors/Typing.v10"
-include "src/language/visitors/Method.v10"
-include "src/language/visitors/Definition.v10"
-include "src/language/visitors/Resolving.v10"
-include "src/language/visitors/IndexCall.v10"
-include "src/language/visitors/Functions.v10"
-include "src/language/visitors/Strings.v10"
-include "src/language/visitors/Dump.v10"
-include "src/language/visitors/Variables.v10"
-include "src/language/visitors/Inherit.v10"
-include "src/language/visitors/ForLoop.v10"
-include "src/language/visitors/TypeCheck.v10"
-include "src/language/visitors/Casting.v10"
-include "src/language/visitors/PlusMinus.v10"
-include "src/language/visitors/Statics.v10"
-include "src/language/visitors/StaticNew.v10"
-include "src/language/visitors/Externals.v10"
+require("src/language/visitors/Visitor")
+require("src/language/visitors/Printer")
+require("src/language/visitors/Constructor")
+require("src/language/visitors/Typing")
+require("src/language/visitors/Method")
+require("src/language/visitors/Definition")
+require("src/language/visitors/Resolving")
+require("src/language/visitors/IndexCall")
+require("src/language/visitors/Functions")
+require("src/language/visitors/Strings")
+require("src/language/visitors/Dump")
+require("src/language/visitors/Variables")
+require("src/language/visitors/Inherit")
+require("src/language/visitors/ForLoop")
+require("src/language/visitors/TypeCheck")
+require("src/language/visitors/Casting")
+require("src/language/visitors/PlusMinus")
+require("src/language/visitors/Statics")
+require("src/language/visitors/StaticNew")
+require("src/language/visitors/Externals")
 
-global(Scope scope)
-
-# Normalises file names
-# e.g. "LinkedList.v10" => "LinkedList"
-#      "LinkedList"     => "LinkedList"
-func String norm_name(String name) {
-	var Number dot_pos = name.length - 4
-	if (name.get(dot_pos) == '.') {
-		name.length -= 4
-	}
-	return name
-}
-
+require("src/language/ScopeGlobal")
 
 func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, LinkedList<String> externals) {
 	for (req in reqs) {

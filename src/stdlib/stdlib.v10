@@ -1,15 +1,15 @@
-include "src/stdlib/Boolean.v10"
-include "src/stdlib/Memory.v10"
-include "src/stdlib/Number.v10"
-include "src/stdlib/Stream.v10"
-include "src/stdlib/String.v10"
-include "src/stdlib/File.v10"
-include "src/stdlib/Array.v10"
+require("src/stdlib/Boolean")
+require("src/stdlib/Memory")
+require("src/stdlib/Number")
+require("src/stdlib/Stream")
+require("src/stdlib/String")
+require("src/stdlib/File")
+require("src/stdlib/Array")
+require("src/stdlib/Map")
+require("src/stdlib/CircularBuffer")
+require("src/stdlib/Run")
+require("src/stdlib/Range")
 include "src/stdlib/LinkedList.v10"
-include "src/stdlib/Map.v10"
-include "src/stdlib/CircularBuffer.v10"
-include "src/stdlib/Run.v10"
-include "src/stdlib/Range.v10"
 include "src/stdlib/Set.v10"
 
 class void () {}

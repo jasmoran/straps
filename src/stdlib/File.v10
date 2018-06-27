@@ -1,3 +1,5 @@
+require("src/stdlib/stdlib")
+
 func Stream File_open(CharArr path)(Stream file) {
 	sys(2, path, 0, 511)
 	file = rax

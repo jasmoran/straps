@@ -1,3 +1,6 @@
+require("src/stdlib/stdlib")
+require("src/language/Node")
+
 func Variables Variables_new()(FunctionNode fn) {
 	fn = 0
 	var Visitor v = 0

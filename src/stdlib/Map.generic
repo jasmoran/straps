@@ -1,3 +1,5 @@
+require("src/stdlib/stdlib")
+
 func MapIterator<?k_?v> MapIterator<?k_?v>_new(Map<?k_?v> map) {
 	return MapIterator<?k_?v>_new(map, 0, false)
 }
@@ -46,7 +48,7 @@ class MapIterator<?k_?v> (Map<?k_?v> map, Number curr, Boolean back) {
 	func MapIterator<?k_?v> iter() return this
 }
 
-class Pair<?k_?v> (?k key, ?v value) {} 
+class Pair<?k_?v> (?k key, ?v value) {}
 
 
 func Map<?k_?v> Map<?k_?v>_new(Number size)() {

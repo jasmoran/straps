@@ -1,4 +1,5 @@
-include "src/language/MetaCharacter.v10"
+require("src/stdlib/stdlib")
+require("src/language/MetaCharacter")
 
 define t "MetaCharacter"
 include "src/stdlib/CircularBuffer.generic"

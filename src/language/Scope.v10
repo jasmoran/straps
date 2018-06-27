@@ -1,3 +1,8 @@
+require("src/stdlib/stdlib")
+require("src/language/Position")
+require("src/language/Node")
+require("src/language/ScopeGlobal")
+
 func Scope Scope_new()(Scope sc) {
 	sc = 0
 	return Scope_new("GLOBAL", sc)
@@ -107,12 +112,12 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 
 	func void print()(Number index, Visitor printer) {
 		index = 0
-		printer = Printer_new(1, STDOUT, 1)
+		# printer = Printer_new(1, STDOUT, 1)
 		loop {
 			if (this.scope.keys.length == index) break
 			this.scope.keys.get(index).print()
 			": <<".println()
-			this.scope.values.get(index).accept(printer)
+			# this.scope.values.get(index).accept(printer)
 			">>".println()
 			index++
 		}

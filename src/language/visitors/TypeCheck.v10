@@ -1,3 +1,7 @@
+require("src/stdlib/stdlib")
+require("src/language/Node")
+require("src/language/Reporting")
+
 func TypeCheck TypeCheck_new(Reporting report) {
 	var Visitor v = 0
 	var tc = TypeCheck_new(v, Type_new(), report)

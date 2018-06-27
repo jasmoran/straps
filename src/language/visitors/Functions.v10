@@ -1,3 +1,6 @@
+require("src/stdlib/stdlib")
+require("src/language/Node")
+
 func Functions Functions_new()() {
 	var Visitor v = 0
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "Functions")
