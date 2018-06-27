@@ -28,10 +28,6 @@ include "src/language/visitors/Externals.v10"
 
 global(Scope scope)
 
-func void pi(Number i) {
-	loop { if (i <= 0) { break } "  ".print() i-- }
-}
-
 # Normalises file names
 # e.g. "LinkedList.v10" => "LinkedList"
 #      "LinkedList"     => "LinkedList"
@@ -44,26 +40,10 @@ func String norm_name(String name) {
 }
 
 
-func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Number increment, LinkedList<String> externals) {
-	pi(increment)
-	"Headerize called with following reqs: ".print()
+func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, LinkedList<String> externals) {
 	for (req in reqs) {
-		req.print()
-		", ".print()
-	}
-	"\n".print()
-		pi(increment)
-	"Starting processing now:".println()
-
-	for (req in reqs) {
-		# Print name of current requirement
-		pi(increment)
-		req.println()
-
 		# Skip requirement if it has already been dealt with globally
 		if (glob_reqs.contains(req) == true) {
-			pi(increment)
-			"Skipping".println()
 			next
 		}
 
@@ -78,9 +58,7 @@ func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Nu
 		# if (req.equal("src/stdlib/stdlib") == false) parser.reqs.add("src/stdlib/stdlib")
 
 		# Process this file's requirements
-		increment++
-		headerize(glob_reqs, parser.reqs, lfuncs, increment, externals)
-		increment--
+		headerize(glob_reqs, parser.reqs, lfuncs, externals)
 
 		# Visit this file
 		reqroot.accept(Externals_new(externals))
@@ -93,9 +71,6 @@ func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Nu
 		fncvis.lfuncs = lfuncs
 		reqroot.accept(fncvis)
 	}
-
-	pi(increment)
-	"Finished processing".println()
 }
 
 func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags) {
@@ -167,7 +142,7 @@ func Set<String> build(String name, Reporting reporting) {
 
 	var externals = LinkedList<String>_new()
 	"section .text".println(output)
-	headerize(glob_reqs, parser.reqs, lfuncs, 0, externals)
+	headerize(glob_reqs, parser.reqs, lfuncs, externals)
 	for (fnc in lfuncs.children) {
 		"extern ".print(output)
 		fnc.to(StringNode).string.println(output)
