@@ -465,6 +465,6 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 
 		# TODO: add WHILE
 
-		error("Unknown value expression! (Token: ", tk.toString(), ")\n")
+		error("Unknown value expression ", tk.toString(), " at ", this.t.get_pos().toString())
 	}
 }

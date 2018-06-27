@@ -49,10 +49,10 @@ class Type (String raw, ClassNode res, Boolean cast) {
 		# error("Could not resolve type: ", this.raw)
 	}
 
-	func Scope getScope()() {
-		if (this.raw == 0) error("Attempted to fetch scope of Unknown type")
-		if (this.raw == 1) error("Attempted to fetch scope of ToBeInferred type")
-		if (this.res == 0) error("Attempted to fetch scope of unresolved type ", this.toString())
+	func Scope getScope(Position pos) {
+		if (this.raw == 0) error("Attempted to fetch scope of Unknown type at ", pos.toString())
+		if (this.raw == 1) error("Attempted to fetch scope of ToBeInferred type at ", pos.toString())
+		if (this.res == 0) error("Attempted to fetch scope of unresolved type ", this.toString(), " at ", pos.toString())
 		return this.res.scope
 	}
 

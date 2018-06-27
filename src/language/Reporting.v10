@@ -87,8 +87,7 @@ class Reporting(Boolean enabled, Stream st) {
 		" of function\"}".println(this.st)
 	}
 
-	func void printUndefinedFunction(StringNode name, LinkedList<StringNode> args, Scope sc) {
-		if (this.enabled == false) return 0
+	func void printUndefinedFunction(StringNode name, LinkedList<RetNode> args, Scope sc) {
 		var ListNode options = sc.search(name.string)
 		this.printRange(name.position, name.position, name.string.length)
 		",\"level\":\"error\",\"message\":\"".print(this.st)
@@ -114,10 +113,10 @@ class Reporting(Boolean enabled, Stream st) {
 			this.printScopeOptions(sc.scope)
 		}
 		"}".println(this.st)
+		if (this.enabled == false) error()
 	}
 
 	func void printUndefinedIdentifier(StringNode name, Scope sc) {
-		if (this.enabled == false) return 0
 		var ListNode res = sc.search(name.string)
 		this.printRange(name.position, name.position, name.string.length)
 		",\"level\":\"error\",\"message\":\"".print(this.st)
@@ -134,5 +133,6 @@ class Reporting(Boolean enabled, Stream st) {
 			"]".print(this.st)
 		}
 		"}".println(this.st)
+		if (this.enabled == false) error()
 	}
 }

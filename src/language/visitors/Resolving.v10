@@ -76,7 +76,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 
 			# Set sc to that of the first items type
 			rn.ret_type.resolve(this.scope)
-			var sc = rn.ret_type.getScope()
+			var sc = rn.ret_type.getScope(rn.position)
 			if (sc == 0) sc = this.scope
 
 			# Resolve function
@@ -159,7 +159,7 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			# Set scope to that of the first items type
 			sn = n.lhs
 			sn.ret_type.resolve(this.scope)
-			this.scope = sn.ret_type.getScope()
+			this.scope = sn.ret_type.getScope(sn.position)
 			if (this.scope == 0) this.scope = prev_scope
 
 			# Resolve second item
