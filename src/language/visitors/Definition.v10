@@ -20,7 +20,7 @@ class virtual Definition < Visitor (Visitor v) {
 			# Store field offset in class scope
 			n.scope.set(
 				field.string,
-				StringNode_new(nINDEX, field.position.clone("Definition"), field.ret_type, ix.toString()).toNode()
+				StringNode_new(nINDEX, field.position.clone("Definition"), field.ret_type, field.string).toNode()
 			)
 
 			ix += 8
@@ -67,7 +67,7 @@ class virtual Definition < Visitor (Visitor v) {
 			# Store value in function scope
 			n.scope.set(
 				field.string,
-				this.new_variable(ix, field)
+				field
 			)
 
 			ix += 8
@@ -92,7 +92,7 @@ class virtual Definition < Visitor (Visitor v) {
 			# Store value in function scope
 			n.scope.set(
 				field.string,
-				this.new_variable(ix, field)
+				field
 			)
 
 			lln = lln.fwrd

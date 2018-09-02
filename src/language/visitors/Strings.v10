@@ -16,10 +16,10 @@ class virtual Strings < Visitor (Visitor v, Number counter, ListNode strings, Bo
 	}
 
 	func void visit(StringNode n)() {
-		if (n.type == nSTRING) this.addString(n)
-		if (n.type == nIDENTIFIER) {
-			if (this.do_idents == true) this.addString(n)
-		}
+		# if (n.type == nSTRING) this.addString(n)
+		# if (n.type == nIDENTIFIER) {
+		# 	if (this.do_idents == true) this.addString(n)
+		# }
 
 		return 0
 	}
@@ -39,9 +39,9 @@ class virtual Strings < Visitor (Visitor v, Number counter, ListNode strings, Bo
 	}
 
 	func void visit(EnumNode n)() {
-		this.do_idents = true
-		n.accept_children(this.v)
-		this.do_idents = false
+		# this.do_idents = true
+		# n.accept_children(this.v)
+		# this.do_idents = false
 		return 0
 	}
 }
