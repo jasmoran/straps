@@ -179,6 +179,16 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			return n
 		}
 
+		# Handle arithmetic
+		if (n.op == ASTERISK || n.op == FWD_SLASH || n.op == PLUS || n.op == MINUS) {
+			n.accept_children(this)
+
+			var RetNode rn = n.lhs
+			n.ret_type = rn.ret_type
+
+			return Some(n)
+		}
+
 		# Infer types
 		if (n.op == ASSIGN)
 		if (n.lhs.type == nIDENTIFIER) {
