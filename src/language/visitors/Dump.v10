@@ -181,9 +181,9 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
 
 	func void visit(StringNode n)() {
 		if (n.type == nCHARACTER) {
-			"'".print(this.stream)
+			"\`".print(this.stream)
 			n.string.print(this.stream)
-			"'".print(this.stream)
+			"\`".print(this.stream)
 		} else if (n.type == nNASM) {
 			n.string.println(this.stream)
 		} else {
@@ -205,7 +205,7 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
 		"Static:\nresq ".print(this.stream)
 		n.klass.fields.children.length.toString().println(this.stream)
 		"section .text".println(this.stream)
-		
+
 		if (n.klass.vtable == 0) return 0
 		"section .data\n_vtable_".print(this.stream)
 		n.klass.name.print(this.stream)
@@ -289,7 +289,7 @@ class virtual Dump < Visitor (Visitor v, Array<String> binops, Array<String> sca
         "\n".print(this.stream)
         nn.accept(this.v)
         ": resq 1".println(this.stream)
- 
+
         lln = lln.fwrd
       }
       "section .text".println(this.stream)
