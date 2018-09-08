@@ -20,7 +20,6 @@ class Reporting(Boolean enabled, Stream st) {
 	}
 
 	func void printVar(String name, StringNode sn) {
-		if (sn.ret_type.raw < 2) return 0
 		"{\"name\":\"".print(this.st)
 		name.print(this.st)
 		"\",\"type\":\"".print(this.st)
@@ -36,7 +35,8 @@ class Reporting(Boolean enabled, Stream st) {
 		"\",\"args\":[".print(this.st)
 
 		for (narg in fn.args.children) {
-			var StringNode arg = narg
+			if (narg.type != nIDENTIFIER) error("Non identifier in function arguments")
+			var arg = narg.to(StringNode)
 			# Skip 'this' arg
 			if (arg.string.equal("this") == true) next
 			this.printVar(arg.string, arg)
@@ -46,9 +46,9 @@ class Reporting(Boolean enabled, Stream st) {
 	}
 
 	func void printFuncs(String name, ListNode fns) {
-		for (nfn in fns.children) {
-			var FunctionNode fn = nfn
-			this.printFunc(name, fn)
+		for (fn in fns.children) {
+			if (fn.type != nFUNCTION) error("List item is not a FunctionNode")
+			this.printFunc(name, fn.to(FunctionNode))
 			",".print(this.st)
 		}
 	}
@@ -56,7 +56,7 @@ class Reporting(Boolean enabled, Stream st) {
 	func void printScopeOptions(Map<String_Node> sc) {
 		"\"options\":[".print(this.st)
 		for (pair in sc) {
-			var ListNode value = pair.value
+			var value = pair.value.to(ListNode)
 			if (value.type == nBLOCK) {
 				this.printFuncs(pair.key, value)
 			} else {
@@ -67,7 +67,7 @@ class Reporting(Boolean enabled, Stream st) {
 	}
 
 	func void printNotMatch(RetNode lhs, RetNode rhs) {
-		if (this.enabled == false) return 0
+		if (this.enabled == false) return Void
 		this.printRange(lhs.position, rhs.position, 0)
 		",\"level\":\"warning\",\"message\":\"".print(this.st)
 		rhs.ret_type.print(this.st)
@@ -77,8 +77,8 @@ class Reporting(Boolean enabled, Stream st) {
 	}
 
 	func void printUnreturnable(ReturnNode n, Type fret_type) {
-		if (this.enabled == false) return 0
-		var RetNode rn = n.expr
+		if (this.enabled == false) return Void
+		var rn = n.expr.to(RetNode)
 		this.printRange(n.position, rn.position, 0)
 		",\"level\":\"warning\",\"message\":\"".print(this.st)
 		rn.ret_type.print(this.st)
@@ -88,51 +88,82 @@ class Reporting(Boolean enabled, Stream st) {
 	}
 
 	func void printUndefinedFunction(StringNode name, LinkedList<RetNode> args, Scope sc) {
-		var ListNode options = sc.search(name.string)
+		var res = sc.search(name.string)
+
 		this.printRange(name.position, name.position, name.string.length)
 		",\"level\":\"error\",\"message\":\"".print(this.st)
-		if (options > 0 && options.type == nBLOCK) {
+
+		if (res.is_some() == true) {
+			"Could not resolve ".print(this.st)
+			name.string.print(this.st)
+			"\",".print(this.st)
+			this.printScopeOptions(sc.scope)
+
+		} else if (res.unwrap().type == nBLOCK) {
 			"Given arguments don't match a defined function. Got ".print(this.st)
 			for (arg in args) {
 				arg.ret_type.basicString().print(this.st)
 				" ".print(this.st)
 			}
 			"\",\"options\":[".print(this.st)
+			var options = res.unwrap().to(ListNode)
 			this.printFuncs(name.string, options)
 			"]".print(this.st)
+
 		} else {
-			if (options == 0) {
-				"Could not resolve ".print(this.st)
-				name.string.print(this.st)
-			} else {
-				# options.type != nBLOCK
-				name.string.print(this.st)
-				" is not a function".print(this.st)
-			}
-			"\",".print(this.st)
+			name.string.print(this.st)
+			" is not a function\",".print(this.st)
 			this.printScopeOptions(sc.scope)
 		}
+
 		"}".println(this.st)
 		if (this.enabled == false) error()
 	}
 
 	func void printUndefinedIdentifier(StringNode name, Scope sc) {
-		var ListNode res = sc.search(name.string)
+		var res = sc.search(name.string)
+
 		this.printRange(name.position, name.position, name.string.length)
 		",\"level\":\"error\",\"message\":\"".print(this.st)
-		if (res <= 0) {
+
+		if (res.is_none() == true) {
 			"Could not resolve ".print(this.st)
 			name.string.print(this.st)
 			"\",".print(this.st)
 			this.printScopeOptions(sc.scope)
+
 		} else {
 			name.string.print(this.st)
 			" is a function".print(this.st)
 			"\".\"options\":[".print(this.st)
-			this.printFuncs(name.string, res)
+			var options = res.unwrap().to(ListNode)
+			this.printFuncs(name.string, options)
 			"]".print(this.st)
 		}
+
 		"}".println(this.st)
 		if (this.enabled == false) error()
+	}
+
+	func void printInvalidType(Position start, Position end, Type type) {
+		if (this.enabled == false) return Void
+		this.printRange(start, end, 0)
+		",\"level\":\"error\",\"message\":\"Attempted to fetch scope but type is ".print(this.st)
+		type.print(this.st)
+		"\"}".println(this.st)
+	}
+
+	func void printNonVirtualChild(ClassNode cn) {
+		if (this.enabled == false) return Void
+		this.printRange(cn.position, cn.position, cn.name.length)
+		",\"level\":\"error\",\"message\":\"Children of ".print(this.st)
+		cn.parent.unwrap().print(this.st)
+		" must be virtual\"}".println(this.st)
+	}
+
+	func void printNoReturn(FunctionNode fn) {
+		if (this.enabled == false) return Void
+		this.printRange(fn.position, fn.position, 4)
+		",\"level\":\"error\",\"message\":\"Non-void function has no return value\"}".println(this.st)
 	}
 }

@@ -1,70 +1,70 @@
 class virtual Visitor() {
-	func void visit(Node n)() {
-		return 0
+	func Option<Node> visit(Node n)() {
+		return None<Node>
 	}
 
-	func void visit(BinaryOperationNode n)() {
+	func Option<Node> visit(BinaryOperationNode n)() {
 		n.accept_children(this)
-		return 0
+		return None<Node>
 	}
 
-	func void visit(UnaryOperationNode n)() {
+	func Option<Node> visit(UnaryOperationNode n)() {
 		n.accept_children(this)
-		return 0
+		return None<Node>
 	}
 
-	func void visit(StringNode n)() {
+	func Option<Node> visit(StringNode n)() {
 		n.accept_children(this)
-		return 0
+		return None<Node>
 	}
 
-	func void visit(StaticClassNode n)() {
+	func Option<Node> visit(StaticClassNode n)() {
 		n.accept_children(this)
-		return 0
+		return None<Node>
 	}
 
-	func void visit(ClassNode n)() {
+	func Option<Node> visit(ClassNode n)() {
 		n.accept_children(this)
-		return 0
+		return None<Node>
 	}
 
-	func void visit(FunctionNode n)() {
+	func Option<Node> visit(FunctionNode n)() {
 		n.accept_children(this)
-		return 0
+		return None<Node>
 	}
 
-	func void visit(ListNode n)() {
+	func Option<ListNode> visit(ListNode n)() {
 		n.accept_children(this)
-		return 0
+		return None<ListNode>
 	}
 
-	func void visit(IfNode n)() {
+	func Option<Node> visit(IfNode n)() {
 		n.accept_children(this)
-		return 0
+		return None<Node>
 	}
 
-	func void visit(LoopNode n)() {
+	func Option<Node> visit(LoopNode n)() {
 		n.accept_children(this)
-		return 0
+		return None<Node>
 	}
 
-	func void visit(ReturnNode n)() {
+	func Option<Node> visit(ReturnNode n)() {
 		n.accept_children(this)
-		return 0
+		return None<Node>
 	}
 
-	func void visit(EnumNode n)() {
+	func Option<Node> visit(EnumNode n)() {
 		n.accept_children(this)
-		return 0
+		return None<Node>
 	}
 
-	func void visit(ForNode n)() {
+	func Option<Node> visit(ForNode n)() {
 		n.accept_children(this)
-		return 0
+		return None<Node>
 	}
 
-	func void visit(CallNode n)() {
+	func Option<Node> visit(CallNode n)() {
 		n.accept_children(this)
-		return 0
+		return None<Node>
 	}
 }

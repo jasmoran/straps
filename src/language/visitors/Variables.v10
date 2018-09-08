@@ -1,24 +1,20 @@
 func Variables Variables_new()(FunctionNode fn) {
-	fn = 0
-	var Visitor v = 0
-	var vs = Variables_new(v, fn)
-	vs.v = vs
-	return vs
+	return Variables_new(None<FunctionNode>)
 }
 
-class virtual Variables < Visitor (Visitor v, FunctionNode containing_fun) {
-	func void visit(FunctionNode n)(FunctionNode old_cf) {
-		old_cf = this.containing_fun
-		this.containing_fun = n
-		n.accept_children(this.v)
+class virtual Variables < Visitor (Option<FunctionNode> containing_fun) {
+	func Option<Node> visit(FunctionNode n) {
+		var old_cf = this.containing_fun
+		this.containing_fun = Some(n)
+		n.accept_children(this)
 		this.containing_fun = old_cf
-		return 0
+		return None<Node>
 	}
 
-	func void visit(UnaryOperationNode n)(BinaryOperationNode binop) {
-		if (n.op != VAR) return 0
-		binop = n.expr
-		this.containing_fun.vrbls.append(binop.lhs)
-		return binop
+	func Option<Node> visit(UnaryOperationNode n) {
+		if (n.op != VAR) return None<Node>
+		var binop = n.expr.to(BinaryOperationNode)
+		this.containing_fun.expect("var declared outside of any function").vrbls.append(binop.lhs)
+		return Some(binop)
 	}
 }

@@ -1,19 +1,14 @@
-func Constructor Constructor_new()(ListNode ln, Node n) {
-	ln = 0
-	n = 0
-	var Visitor v = 0
-	var cnst = Constructor_new(v, ln, ln, n)
-	cnst.v = cnst
-	return cnst
+func Constructor Constructor_new() {
+	return Constructor_new(None<ListNode>)
 }
 
-class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Node new_obj) {
-	func void visit(ClassNode n)(Number size) {
+class virtual Constructor < Visitor (Option<ListNode> pb) {
+	func Option<Node> visit(ClassNode n)(Number size) {
 		var pos = n.position.clone("Constructor")
-		this.new_obj = StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "obj")
+		var new_obj = StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "obj")
 
 		size = n.fields.children.length
-		if (n.vtable != 0) size++
+		if (n.vtable.is_some() == true) size++
 		size << 3
 
 		# Create allocate call + assign and append to block
@@ -21,26 +16,37 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 		rando.append(
 			StringNode_new(nNUMBER, pos, Type_new("Number"), size.toString())
 		)
-		this.block = ListNode_new(nBLOCK, pos).append(
+
+		var block = ListNode_new(nBLOCK, pos).append(
 			BinaryOperationNode_new(
 				pos,
 				ASSIGN,
-				this.new_obj,
+				new_obj,
 				CallNode_new(
 					pos,
-					StringNode_new(nIDENTIFIER, pos, Type_new(n.name, true), "allocate").toNode(),
+					StringNode_new(nIDENTIFIER, pos, Type_new(n.name, CAST), "allocate"),
 					rando
-				).toNode()
-			 ).toNode()
+				)
+			)
 		)
 
 		# Loop through fields
-		n.fields.accept_children(this.v)
+		for (field in n.fields.children) {
+			# Assign passed values to this field and append to block
+			block.append(
+				BinaryOperationNode_new(
+					pos,
+					ASSIGN,
+					BinaryOperationNode_new(pos, DOT, new_obj, field),
+					field
+				)
+			)
+		}
 
 		var ListNode args = ListNode_new(nLIST, pos, n.fields.children.shallow_clone())
 
 		# Add vtable
-		if (n.vtable != 0) {
+		if (n.vtable.is_some() == true) {
 			# Add vtable to fields
 			var Node vt_ident = StringNode_new(nIDENTIFIER, pos, Type_new("void"), "vt")
 			n.fields.prepend(vt_ident)
@@ -48,65 +54,44 @@ class virtual Constructor < Visitor (Visitor v, ListNode pb, ListNode block, Nod
 			var tabname = "_vtable_".clone(n.name.length).append(n.name)
 
 			# Assign vtable
-			this.block.append(
+			block.append(
 				BinaryOperationNode_new(
 					pos,
 					ASSIGN,
-					BinaryOperationNode_new(Type_new("void", true), pos, DOT, this.new_obj, vt_ident).toNode(),
-					StringNode_new(nNASM, pos, Type_new("void", true), tabname).toNode()
-				).toNode()
+					BinaryOperationNode_new(Type_new("void", CAST), pos, DOT, new_obj, vt_ident),
+					StringNode_new(nNASM, pos, Type_new("void", CAST), tabname)
+				)
 			)
 		}
 
 		# Create return node and append to block
-		this.block.append(
-			ReturnNode_new(pos, this.new_obj).toNode()
+		block.append(
+			ReturnNode_new(pos, new_obj)
 		)
 
 		# Create _new function and append to parent block
-		this.pb.append(
+		this.pb.expect("Class defined outside of block").append(
 			FunctionNode_new(
 				pos,
 				Type_new(n.name),
 				n.name.clone(4).append("_new"),
 				args,
-				ListNode_new(nLIST, pos).append(this.new_obj),
-				this.block
-			).toNode()
+				ListNode_new(nLIST, pos).append(new_obj),
+				block
+			)
 		)
 
-		# Clear out block (acts as flag for StringNode method)
-		this.block = 0
-
-  	return 0
+		return None<Node>
 	}
 
-	func void visit(ListNode n)(ListNode old_pb) {
-		old_pb = this.pb
-		if (n.type == nBLOCK)
-			this.pb = n
+	func Option<ListNode> visit(ListNode n) {
+		var old_pb = this.pb
+		if (n.type == nBLOCK) this.pb = Some(n)
 
-		n.accept_children(this.v)
+		n.accept_children(this)
 
 		this.pb = old_pb
 
-  	return 0
-	}
-
-	func void visit(StringNode n)() {
-		if (this.block != 0) {
-			# Assign passed values to this field and append to block
-			var pos = n.position.clone("Constructor")
-			this.block.append(
-				BinaryOperationNode_new(
-					pos,
-					ASSIGN,
-					BinaryOperationNode_new(pos, DOT, this.new_obj, n.toNode()).toNode(),
-					n.toNode()
-				).toNode()
-			)
-		}
-
-  	return 0
+		return None<ListNode>
 	}
 }

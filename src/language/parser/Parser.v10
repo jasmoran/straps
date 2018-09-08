@@ -16,24 +16,24 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 
 		var pos = this.t.get_pos()
 
-		var Map<String_FunctionNode> vtable = 0
+		var vtable = None<Map<String_FunctionNode>>
 		if (this.t.peek() == VIRTUAL) {
 			this.t.consume(VIRTUAL)
-			vtable = Map<String_FunctionNode>_new(32)
+			vtable = Some(Map<String_FunctionNode>_new(32))
 		}
 
 		name = this.t.consume(IDENTIFIER)
 
-		var String parent = 0
+		var parent = None<Type>
 		if (this.t.peek() == LESS) {
 			this.t.consume(LESS)
-			parent = this.t.consume(IDENTIFIER)
+			var parent = Some(Type_new(this.t.consume(IDENTIFIER)))
 		}
 
 		fields = this.typed_list(nLIST)
 		block = this.block(nBLOCK)
 
-		return ClassNode_new(pos, name, fields, block, vtable, Type_new(parent))
+		return ClassNode_new(pos, name, fields, block, vtable, parent)
 	}
 
 	func Node nt_enum()(String name, ListNode values) {
@@ -83,7 +83,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		this.skip_newlines()
 		if (this.t.peek() == ELSE) {
 			this.t.consume(ELSE)
-			node.block_else = this.block(nBLOCK)
+			node.block_else = Some(this.block(nBLOCK))
 		}
 
 		return node
@@ -125,8 +125,8 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		l = ListNode_new(nBLOCK, pos)
 
 		loop {
-			var expr = this.expression()
-			if (expr == EOF) { break }
+			var expr = this.statement()
+			if (expr.type == nNONE) { break }
 			l.children.append(expr)
 		}
 
@@ -146,13 +146,13 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 			loop {
 				if (this.t.peek() == CURLY_CLOSE) { break }
 				if (this.t.peek() == EOF) { break }
-				l.children.append(this.expression())
+				l.children.append(this.statement())
 				this.skip_newlines()
 			}
 
 			this.t.consume(CURLY_CLOSE)
 		} else {
-			l.children.append(this.expression())
+			l.children.append(this.statement())
 		}
 
 		return l
@@ -170,7 +170,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 			vrbl = this.t.consume(IDENTIFIER)
 			var n = StringNode_new(nIDENTIFIER, pos, Type_new(type), vrbl)
 
-			l.append(n.toNode())
+			l.append(n)
 
 			if (this.t.peek() != COMMA) { break }
 
@@ -182,9 +182,9 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		return l
 	}
 
-	func LinkedList<Node> expression_list() {
+	func LinkedList<RetNode> expression_list() {
 		this.t.consume(PAREN_OPEN)
-		var l = LinkedList<Node>_new()
+		var l = LinkedList<RetNode>_new()
 
 		loop {
 			if (this.t.peek() == PAREN_CLOSE) { break }
@@ -209,10 +209,10 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		}
 	}
 
-	func Node expression()(Node node, Token tk) {
-		node = this.logic_expr()
+	func RetNode expression() {
+		var node = this.logic_expr()
 		loop {
-			tk = this.t.peek()
+			var tk = this.t.peek()
 			if (tk != ASSIGN)
 			if (tk != ADD)
 			if (tk != SUB)
@@ -225,10 +225,10 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		return node
 	}
 
-	func Node logic_expr()(Node node, Token tk) {
-		node = this.comp_expr()
+	func RetNode logic_expr() {
+		var node = this.comp_expr()
 		loop {
-			tk = this.t.peek()
+			var tk = this.t.peek()
 			if (tk != AND)
 			if (tk != OR) break
 			this.t.consume(tk)
@@ -238,10 +238,10 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		return node
 	}
 
-	func Node comp_expr()(Node node, Token tk) {
-		node = this.add_expr()
+	func RetNode comp_expr() {
+		var node = this.add_expr()
 		loop {
-			tk = this.t.peek()
+			var tk = this.t.peek()
 			if (tk != EQUAL)
 			if (tk != NOT_EQUAL)
 			if (tk != GREATER)
@@ -255,11 +255,11 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		return node
 	}
 
-	func Node add_expr()(Node node, Token tk) {
-		node = this.mult_expr()
+	func RetNode add_expr() {
+		var node = this.mult_expr()
 
 		loop {
-			tk = this.t.peek()
+			var tk = this.t.peek()
 			if (tk != PLUS)
 			if (tk != MINUS) break
 			this.t.consume(tk)
@@ -269,10 +269,10 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		return node
 	}
 
-	func Node mult_expr()(Node node, Token tk) {
-		node = this.snd_expr()
+	func RetNode mult_expr() {
+		var node = this.snd_expr()
 		loop {
-			tk = this.t.peek()
+			var tk = this.t.peek()
 			if (tk != ASTERISK)
 			if (tk != FWD_SLASH) break
 			this.t.consume(tk)
@@ -282,8 +282,8 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		return node
 	}
 
-	func Node snd_expr()(Node node, Token tk) {
-		tk = this.t.peek()
+	func RetNode snd_expr() {
+		var tk = this.t.peek()
 		if (tk != PLUS)
 		if (tk != MINUS)
 		if (tk != NOT)
@@ -294,10 +294,10 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		return UnaryOperationNode_new(pos, tk, this.snd_expr(), true)
 	}
 
-	func Node top_expr()(Node node, Token tk) {
-		node = this.value()
+	func RetNode top_expr() {
+		var node = this.value()
 		loop {
-			tk = this.t.peek()
+			var tk = this.t.peek()
 			var pos = this.t.get_pos()
 			if (tk == PAREN_OPEN) {
 				var LinkedList<RetNode> arglist = this.expression_list()
@@ -325,31 +325,17 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		return node
 	}
 
-	func Node value()(Token tk, Node node, String raw_type, Type type, String vrbl) {
+	func Node statement() {
 		this.skip_newlines()
 
-		tk = this.t.peek()
+		var tk = this.t.peek()
 
-		# Bracketed expression
-		if (tk == PAREN_OPEN) {
-			this.t.consume(PAREN_OPEN)
-			node = this.expression()
-			this.t.consume(PAREN_CLOSE)
-			return node
-		}
-
-		if (tk == EOF) return EOF
+		if (tk == EOF) return Node_new(nNONE, this.t.get_pos())
 
 		if (tk == BREAK) {
 			this.t.consume(BREAK)
 			var pos = this.t.get_pos()
 			return Node_new(nBREAK, pos)
-		}
-
-		if (tk == CHARACTER) {
-			var chr = this.t.consume(CHARACTER)
-			var pos = this.t.get_pos()
-			return StringNode_new(nCHARACTER, pos, Type_new("Character"), chr)
 		}
 
 		if (tk == CLASS) {
@@ -381,10 +367,6 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 			return this.typed_list(nGLOBAL)
 		}
 
-		if (tk == IDENTIFIER) {
-			return this.nt_identifier()
-		}
-
 		if (tk == IF) {
 			return this.nt_if()
 		}
@@ -409,12 +391,6 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 			return Node_new(nNEXT, pos)
 		}
 
-		if (tk == NUMBER) {
-			var num = this.t.consume(NUMBER)
-			var pos = this.t.get_pos()
-			return StringNode_new(nNUMBER, pos, Type_new("Number"), num)
-		}
-
 		if (tk == RETURN) {
 			this.t.consume(RETURN)
 			var pos = this.t.get_pos()
@@ -423,7 +399,72 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 
 		if (tk == REQUIRE) {
 			this.nt_require()
-			return this.value()
+			return this.statement()
+		}
+
+		# TODO: add SWITCH/CASE
+
+		if (tk == SYS) {
+			this.t.consume(SYS)
+			var retnode_to_node = this.expression_list().to(LinkedList<Node>)
+			return ListNode_new(nSYS, this.t.get_pos(), retnode_to_node)
+		}
+
+		if (tk == VAR) {
+			this.t.consume(VAR)
+			var vr_pos = this.t.get_pos()
+			var raw_type = this.t.consume(IDENTIFIER)
+			var ident_pos = this.t.get_pos()
+			if (this.t.peek() == IDENTIFIER) {
+				# Explicit
+				var vrbl = this.t.consume(IDENTIFIER)
+				var type = Type_new(raw_type)
+			} else {
+				# Inferring
+				vrbl = raw_type
+				type = Type_new(INFER)
+			}
+			this.t.consume(ASSIGN)
+			var ass_pos = this.t.get_pos()
+
+			return UnaryOperationNode_new(vr_pos, type, VAR,
+				BinaryOperationNode_new(Type_new(), ass_pos, ASSIGN,
+					StringNode_new(nIDENTIFIER, ident_pos, type, vrbl),
+						this.expression()), true)
+		}
+
+		# TODO: add WHILE
+
+		return this.expression()
+	}
+
+	func RetNode value() {
+		this.skip_newlines()
+
+		var tk = this.t.peek()
+
+		# Bracketed expression
+		if (tk == PAREN_OPEN) {
+			this.t.consume(PAREN_OPEN)
+			var node = this.expression()
+			this.t.consume(PAREN_CLOSE)
+			return node
+		}
+
+		if (tk == CHARACTER) {
+			var chr = this.t.consume(CHARACTER)
+			var pos = this.t.get_pos()
+			return StringNode_new(nCHARACTER, pos, Type_new("Character"), chr)
+		}
+
+		if (tk == IDENTIFIER) {
+			return this.nt_identifier()
+		}
+
+		if (tk == NUMBER) {
+			var num = this.t.consume(NUMBER)
+			var pos = this.t.get_pos()
+			return StringNode_new(nNUMBER, pos, Type_new("Number"), num)
 		}
 
 		if (tk == STRING) {
@@ -432,39 +473,8 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 			return StringNode_new(nSTRING, pos, Type_new("String"), str)
 		}
 
-		# TODO: add SWITCH/CASE
+		error("Unknown expression ", tk.toString(), " at ", this.t.get_pos().toString())
 
-		if (tk == SYS) {
-			this.t.consume(SYS)
-			return ListNode_new(nSYS, this.t.get_pos(), this.expression_list())
-		}
-
-		if (tk == VAR) {
-			this.t.consume(VAR)
-			var vr_pos = this.t.get_pos()
-			raw_type = this.t.consume(IDENTIFIER)
-			var ident_pos = this.t.get_pos()
-			if (this.t.peek() == IDENTIFIER) {
-				# Explicit
-				vrbl = this.t.consume(IDENTIFIER)
-				type = Type_new(raw_type)
-			} else {
-				# Inferring
-				vrbl = raw_type
-				type = Type_new()
-				type.raw = 1
-			}
-			this.t.consume(ASSIGN)
-			var ass_pos = this.t.get_pos()
-
-			return UnaryOperationNode_new(vr_pos, type, VAR,
-				BinaryOperationNode_new(Type_new(), ass_pos, ASSIGN,
-					StringNode_new(nIDENTIFIER, ident_pos, type, vrbl).toNode(),
-						this.expression()).toNode(), true)
-		}
-
-		# TODO: add WHILE
-
-		error("Unknown value expression ", tk.toString(), " at ", this.t.get_pos().toString())
+		return RetNode_new(nNONE, pos, Type_new())
 	}
 }

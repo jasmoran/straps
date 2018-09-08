@@ -1,57 +1,40 @@
-func Inherit Inherit_new() {
-	var Visitor v = 0
-	var inh = Inherit_new(v)
-	inh.v = inh
-	return inh
-}
-
-
-class virtual Inherit < Visitor (Visitor v) {
+class virtual Inherit < Visitor (Reporting report) {
 	func void remove_duplicates(LinkedList<Node> list, StringNode field) {
-		var lln = list.first
-		loop {
-			if (lln == 0) { break }
-			var StringNode sn = lln.payload
+		for (sn in list) {
+			if (sn.type != nIDENTIFIER) error()
 
 			# Check for matches
-			if (sn.string.equal(field.string) == true) {
-				list.remove(lln)
+			if (sn.to(StringNode).string.equal(field.string) == true) {
+				list.remove(sn_iter.curr)
 			}
-
-			lln = lln.fwrd
 		}
-		return 0
 	}
 
-	func void visit(ClassNode n)() {
-		if (n.parent.raw != 0) {
-			# Resolve parent type
-			n.parent.resolve(scope)
+	func Option<Node> visit(ClassNode n)() {
+		if (n.parent.is_none() == true) return None<Node>
+		var parent = n.parent.unwrap()
 
-			if (n.parent.res > 0) {
-				var par_flds = n.parent.res.fields
-				var lln = par_flds.children.last
+		# Resolve parent type
+		parent.resolve(scope)
 
-				if (n.parent.res.vtable != 0) {
-					if (n.vtable == 0)
-						error("Virtual parent ", n.parent.res.name, " has non virtual child ", n.name)
-				}
+		if (parent.res.is_some() == true) {
+			if (parent.res.unwrap().vtable.is_some() == true)
+			if (n.vtable.is_none() == true) {
+				this.report.printNonVirtualChild(n)
+			}
 
-				loop {
-					if (lln == 0) { break }
-					var StringNode sn = lln.payload
+			for (node in parent.res.unwrap().fields.children.iter().reverse()) {
+				if (node.type != nIDENTIFIER) error()
+				var sn = node.to(StringNode)
 
-					# Don't inherit vtable
-					if (sn.string.equal("vt") == false) {
-						this.remove_duplicates(n.fields.children, sn)
-						n.fields.children.prepend(lln.payload)
-					}
-
-					lln = lln.back
+				# Don't inherit vtable
+				if (sn.string.equal("vt") == false) {
+					this.remove_duplicates(n.fields.children, sn)
+					n.fields.children.prepend(sn)
 				}
 			}
 		}
 
-  	return 0
+		return None<Node>
 	}
 }

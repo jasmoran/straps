@@ -13,6 +13,8 @@ include "src/stdlib/Range.v10"
 include "src/stdlib/Set.v10"
 
 class void () {}
+enum void { Void }
+
 class Any (Any deref) {}
 class Function () {}
 
@@ -75,4 +77,18 @@ func void backtrace()(Array<Any> flist, Array<String> fnamelist, Any addr, Numbe
 
 		curr_rbp = curr_rbp.deref
 	}
+}
+
+func Number and(Number a, Number b) {
+	rax = a
+	rbx = b
+	nasm("and rax, rbx")
+	return rax.to(Number)
+}
+
+func Number or(Number a, Number b) {
+	rax = a
+	rbx = b
+	nasm("or rax, rbx")
+	return rax.to(Number)
 }

@@ -1,3 +1,6 @@
+define t "CharArr"
+include "src/stdlib/Option.generic"
+
 class CharArr(void data) {}
 
 func StrIterator StrIterator_new(String str) {
@@ -142,7 +145,7 @@ class String (Number length, Number size, CharArr data) {
 	}
 
 	func void print(Stream out)() {
-		if (this == NullString) { return this }
+		if (this == NullString) { return Void }
 		sys(1, out, this.data, this.length)
 	}
 

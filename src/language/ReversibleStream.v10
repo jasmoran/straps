@@ -11,17 +11,19 @@ func ReversibleStream ReversibleStream_new(Stream stream, Number size)() {
 func ReversibleStream ReversibleStream_new(String input)(Character nulchar, Number len, ReversibleStream rs) {
 	load_loop()
 	input.print(LOOPIN)
-	nulchar = 0
-	nulchar.toString().print(LOOPIN)
+	'\0'.toString().print(LOOPIN)
 	len = input.length
 	len++
 	rs = ReversibleStream_new(LOOPOUT, len)
 	loop {
-		if (rs.get().get_character() == 0) break
+		if (rs.get().get_character() == '\0') break
 	}
 	rs.rewind()
 	return rs
 }
+
+define t "ReversibleStream"
+include "src/stdlib/Option.generic"
 
 class ReversibleStream (Stream stream, CircularBuffer<MetaCharacter> buffer, Number nxt_pos, Number col, Number line) {
 	func MetaCharacter get()(Character chr, MetaCharacter mc) {
@@ -32,7 +34,7 @@ class ReversibleStream (Stream stream, CircularBuffer<MetaCharacter> buffer, Num
 			mc = MetaCharacter_new(chr, this.col, this.line)
 
 			# Handle new lines
-			if (chr == 10) {
+			if (chr == '\n') {
 				this.line++
 				this.col = 0
 			}

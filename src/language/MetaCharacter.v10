@@ -1,40 +1,32 @@
-func MetaCharacter MetaCharacter_new(Character chr, Number col, Number line)() {
-	rax = line
+# |     16 bits     | 8 bits | 8 bits |
+# |      line       |  col   |  char  |
 
+func MetaCharacter MetaCharacter_new(Character chr, Number col, Number line) {
 	# Set column
-	rax << 8
-	rbx = col
-	nasm("and rbx, 0xFF")
-	nasm("or rax, rbx")
+	line << 8
+	line = or(line, and(col, 255))
 
 	# Set Character
-	rax << 8
-	rbx = chr
-	nasm("and rbx, 0xFF")
-	nasm("or rax, rbx")
+	line << 8
+	line = or(line, and(chr.to(Number), 255))
 
-	return rax
+	return line.to(MetaCharacter)
 }
 
 class MetaCharacter (void data) {
-	func Character get_character()() {
-		rax = this
-		nasm("and rax, 0xFF")
-		return rax
+	func Character get_character() {
+		var char = and(this.to(Number), 255).to(Character)
+		return char
 	}
 
 	func Number get_column()() {
-		rax = this
-		rax >> 8
-		nasm("and rax, 0xFF")
-		return rax
+		this >> 8
+		return and(this.to(Number), 255)
 	}
 
 	func Number get_line()() {
-		rax = this
-		rax >> 16
-		nasm("and rax, 0xFFFF")
-		return rax
+		this >> 16
+		return and(this.to(Number), 65535)
 	}
 
 	func String toString()(String s) {

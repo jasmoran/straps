@@ -17,6 +17,14 @@ include "src/stdlib/LinkedList.generic"
 define t "FunctionNode"
 include "src/stdlib/LinkedList.generic"
 
+define t "Map<String_FunctionNode>"
+include "src/stdlib/Option.generic"
+
+define t "LinkedList<Node>"
+include "src/stdlib/Option.generic"
+define t "LinkedListNode<Node>"
+include "src/stdlib/Option.generic"
+
 enum NodeType {
 	nNONE nNASM nSYS nBLOCK nPAREN_LIST nFUNCTION nRETURN nCOMPARISON nIF
 	nNEXT nLOOP nBREAK nIDENTIFIER nENUM nCOMMENT nCHARACTER nSTRING nNUMBER
@@ -25,10 +33,10 @@ enum NodeType {
 }
 
 class NodeType() {
-	func String toString()(Array<String> a, Number ix) {
+	func String toString() {
 		nasm("mov rax, NodeType")
-		a = rax
-		ix = this
+		var a = rax.to(Array<String>)
+		var ix = this.to(Number)
 		return a.get(ix)
 	}
 }
@@ -37,13 +45,11 @@ define t "Node"
 include "src/stdlib/Option.generic"
 
 class virtual Node(NodeType type, Position position) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
 	}
 
 	func void accept_children(Visitor v)() {}
-
-	func Node toNode()() { return this }
 
 	func Node clone() {
 		return Node_new(this.type, this.position)
@@ -51,8 +57,17 @@ class virtual Node(NodeType type, Position position) {
 }
 
 
-class virtual RetNode < Node (Type ret_type) {}
-class virtual OpNode < RetNode (Token op) {}
+class virtual RetNode < Node (Type ret_type) {
+	func RetNode clone() {
+		return RetNode_new(this.type, this.position, this.ret_type)
+	}
+}
+
+class virtual OpNode < RetNode (Token op) {
+	func OpNode clone() {
+		return OpNode_new(this.type, this.position, this.ret_type, this.op)
+	}
+}
 
 func CallNode CallNode_new(Position pos, Node cfunction) {
 	var args = LinkedList<RetNode>_new()
@@ -64,23 +79,19 @@ func CallNode CallNode_new(Position pos, Node cfunction, LinkedList<RetNode> arg
 }
 
 class virtual CallNode < RetNode (Node cfunction, LinkedList<RetNode> args) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
 	}
 
 	func void accept_args(Visitor v) {
 		for (arg in this.args) {
-			var Node nn = arg
-			var StringNode n = nn.accept(v)
-			if (n != 0) arg_iter.set(n)
+			var nn = arg.accept(v).unwrap_or(arg).to(RetNode)
+			arg_iter.set(nn)
 		}
 	}
 
 	func void accept_children(Visitor v) {
-		var n = this.cfunction
-		n = n.accept(v)
-		if (n != 0) this.cfunction = n
-
+		this.cfunction = this.cfunction.accept(v).unwrap_or(this.cfunction)
 		this.accept_args(v)
 	}
 
@@ -98,17 +109,13 @@ func BinaryOperationNode BinaryOperationNode_new(Type ret_type, Position pos, To
 }
 
 class virtual BinaryOperationNode < OpNode (Node lhs, Node rhs) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
 	}
 
 	func void accept_children(Visitor v)(Node n) {
-		n = this.lhs
-		n = n.accept(v)
-		if (n != 0) this.lhs = n
-		n = this.rhs
-		n = n.accept(v)
-		if (n != 0) this.rhs = n
+		this.lhs = this.lhs.accept(v).unwrap_or(this.lhs)
+		this.rhs = this.rhs.accept(v).unwrap_or(this.rhs)
 	}
 
 	func BinaryOperationNode clone() {
@@ -125,14 +132,12 @@ func UnaryOperationNode UnaryOperationNode_new(Position pos, Type ret_type, Toke
 }
 
 class virtual UnaryOperationNode < OpNode (Node expr, Boolean left) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
 	}
 
 	func void accept_children(Visitor v)(Node n) {
-		n = this.expr
-		n = n.accept(v)
-		if (n != 0) this.expr = n
+		this.expr = this.expr.accept(v).unwrap_or(this.expr)
 	}
 
 	func UnaryOperationNode clone() {
@@ -143,8 +148,8 @@ class virtual UnaryOperationNode < OpNode (Node expr, Boolean left) {
 
 
 class virtual StringNode < RetNode (String string) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
 	}
 
 	func void accept_children(Visitor v)() {}
@@ -155,37 +160,35 @@ class virtual StringNode < RetNode (String string) {
 }
 
 class virtual StaticClassNode < Node (ClassNode klass) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
 	}
 }
 
-func Node ClassNode_new(Position pos, String name, ListNode fields, ListNode block, Map<String_FunctionNode> vtable, Type parent)(Scope sc) {
-	sc = 0
-	sc = Scope_new(name, sc)
+
+define t "ClassNode"
+include "src/stdlib/Option.generic"
+
+func ClassNode ClassNode_new(Position pos, String name, ListNode fields, ListNode block, Option<Map<String_FunctionNode>> vtable, Option<Type> parent)(Scope sc) {
+	sc = Scope_new(name, None<Scope>)
 	var ret_type = Type_new(name.clone(6).append("Static"))
 	return ClassNode_new(nCLASS, pos, ret_type, name, fields, block, sc, vtable, parent)
 }
 
-func Node ClassNode_new(Position pos, String name, ListNode fields, ListNode block) {
-	var Map<String_FunctionNode> vtable = 0
-	var parent = Type_new()
-	return ClassNode_new(pos, name, fields, block, vtable, parent)
+func ClassNode ClassNode_new(Position pos, String name, ListNode fields, ListNode block) {
+	var Option<Map<String_FunctionNode>> vtable = None<Map<String_FunctionNode>>
+	return ClassNode_new(pos, name, fields, block, vtable, None<Type>)
 }
 
 class virtual ClassNode < RetNode (String name, ListNode fields,
-								ListNode block, Scope scope, Map<String_FunctionNode> vtable, Type parent) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+								ListNode block, Scope scope, Option<Map<String_FunctionNode>> vtable, Option<Type> parent) {
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
 	}
 
 	func void accept_children(Visitor v)(Node n) {
-		n = this.fields
-		n = n.accept(v)
-		if (n != 0) this.fields = n
-		n = this.block
-		n = n.accept(v)
-		if (n != 0) this.block = n
+		this.fields = this.fields.accept(v).unwrap_or(this.fields)
+		this.block = this.block.accept(v).unwrap_or(this.block)
 	}
 
 	func ClassNode shallow_clone() {
@@ -209,20 +212,14 @@ func FunctionNode FunctionNode_new(Position pos, Type ret_type, String name, Lis
 }
 
 class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls, ListNode block, Scope scope, String pure) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
 	}
 
 	func void accept_children(Visitor v)(Node n) {
-		n = this.args
-		n = n.accept(v)
-		if (n != 0) this.args = n
-		n = this.vrbls
-		n = n.accept(v)
-		if (n != 0) this.vrbls = n
-		n = this.block
-		n = n.accept(v)
-		if (n != 0) this.block = n
+		this.args = this.args.accept(v).unwrap_or(this.args)
+		this.vrbls = this.vrbls.accept(v).unwrap_or(this.vrbls)
+		this.block = this.block.accept(v).unwrap_or(this.block)
 	}
 
 	func FunctionNode shallow_clone()(FunctionNode fn) {
@@ -237,24 +234,21 @@ class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls
 }
 
 
+define t "ListNode"
+include "src/stdlib/Option.generic"
 
 func ListNode ListNode_new(NodeType type, Position pos)() {
 	return ListNode_new(type, pos, LinkedList<Node>_new())
 }
 
 class virtual ListNode < Node (LinkedList<Node> children) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+	func Option<ListNode> accept(Visitor v)() {
+		return v.visit(this)
 	}
 
 	func void accept_children(Visitor v) {
-		var lln = this.children.first
-		loop {
-			if (lln == 0) { break }
-			var n = lln.payload
-			n = n.accept(v)
-			if (n != 0) lln.payload = n
-			lln = lln.fwrd
+		for (n in this.children) {
+			n_iter.set(n.accept(v).unwrap_or(n))
 		}
 	}
 
@@ -275,27 +269,22 @@ class virtual ListNode < Node (LinkedList<Node> children) {
 
 
 
-func Node IfNode_new(Position pos, Node condition, ListNode block_if)(ListNode l) {
-	l = 0
-	return IfNode_new(nIF, pos, condition, block_if, l)
+func IfNode IfNode_new(Position pos, Node condition, ListNode block_if) {
+	return IfNode_new(nIF, pos, condition, block_if, None<ListNode>)
 }
 
-class virtual IfNode < Node (Node condition, ListNode block_if, ListNode block_else) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+class virtual IfNode < Node (Node condition, ListNode block_if, Option<ListNode> block_else) {
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
 	}
 
 	func void accept_children(Visitor v)(Node n) {
-		n = this.condition
-		n = n.accept(v)
-		if (n != 0) this.condition = n
-		n = this.block_if
-		n = n.accept(v)
-		if (n != 0) this.block_if = n
-		n = this.block_else
-		if (n != 0) {
-			n = n.accept(v)
-			if (n != 0) this.block_else = n
+		this.condition = this.condition.accept(v).unwrap_or(this.condition)
+		this.block_if = this.block_if.accept(v).unwrap_or(this.block_if)
+		if (this.block_else.is_some() == true) {
+			var ListNode els = this.block_else.unwrap()
+			var ListNode res = els.accept(v).unwrap_or(els)
+			this.block_else = Some(res)
 		}
 	}
 
@@ -312,14 +301,12 @@ func Node LoopNode_new(Position pos, ListNode block)() {
 
 # TODO: Make this a subclass of ListNode?
 class virtual LoopNode < Node (ListNode block) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
 	}
 
 	func void accept_children(Visitor v)(Node n) {
-		n = this.block
-		n = n.accept(v)
-		if (n != 0) this.block = n
+		this.block = this.block.accept(v).unwrap_or(this.block)
 	}
 
 	func LoopNode clone() {
@@ -334,14 +321,12 @@ func Node ReturnNode_new(Position pos, Node expr)() {
 }
 
 class virtual ReturnNode < Node (Node expr) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
 	}
 
 	func void accept_children(Visitor v)(Node n) {
-		n = this.expr
-		n = n.accept(v)
-		if (n != 0) this.expr = n
+		this.expr = this.expr.accept(v).unwrap_or(this.expr)
 	}
 
 	func ReturnNode clone() {
@@ -356,14 +341,12 @@ func Node EnumNode_new(Position pos, String name, ListNode values)() {
 }
 
 class virtual EnumNode < Node (String name, ListNode values) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
 	}
 
-	func void accept_children(Visitor v)(Node n) {
-		n = this.values
-		n = n.accept(v)
-		if (n != 0) this.values = n
+	func void accept_children(Visitor v) {
+		this.values = this.values.accept(v).unwrap_or(this.values)
 	}
 
 	func EnumNode clone() {
@@ -378,20 +361,15 @@ func ForNode ForNode_new(Position pos, StringNode item, Node iterable, ListNode 
 }
 
 class virtual ForNode < Node (StringNode item, Node iterable, ListNode block) {
-	func void accept(Visitor v)() {
-		v.visit(this)
+	func Option<Node> accept(Visitor v) {
+		return v.visit(this)
 	}
 
-	func void accept_children(Visitor v)(Node n) {
-		n = this.item
-		n = n.accept(v)
-		if (n != 0) this.item = n
-		n = this.iterable
-		n = n.accept(v)
-		if (n != 0) this.iterable = n
-		n = this.block
-		n = n.accept(v)
-		if (n != 0) this.block = n
+	func void accept_children(Visitor v) {
+		var item = this.item.accept(v).unwrap_or(this.item).to(StringNode)
+		this.item = item
+		this.iterable = this.iterable.accept(v).unwrap_or(this.iterable)
+		this.block = this.block.accept(v).unwrap_or(this.block)
 	}
 
 	func ForNode clone() {

@@ -1,17 +1,8 @@
-func Typing Typing_new()() {
-	var Visitor v = 0
-	var typ = Typing_new(v)
-	typ.v = typ
-	return typ
-}
+class virtual Typing < Visitor () {
+	func Option<Node> visit(ClassNode n)(Scope sc) {
+		scope.set(n.name, n)
+		n.accept_children(this)
 
-class virtual Typing < Visitor (Visitor v) {
-	func void visit(ClassNode n)(Scope sc) {
-		sc = scope
-		if (sc == 0) error("NULL global scope")
-		sc.set(n.name, n.toNode())
-		n.accept_children(this.v)
-
-  	return 0
+  	return None<Node>
 	}
 }

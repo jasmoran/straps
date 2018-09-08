@@ -1,31 +1,28 @@
 func Functions Functions_new()() {
-	var Visitor v = 0
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "Functions")
-	var fun = Functions_new(v, ListNode_new(nFUNCTIONS, pos), true)
-	fun.v = fun
-	return fun
+	return Functions_new(ListNode_new(nFUNCTIONS, pos), true)
 }
 
-class virtual Functions < Visitor (Visitor v, ListNode lfuncs, Boolean root) {
-	func void visit(FunctionNode n)(String name) {
+class virtual Functions < Visitor (ListNode lfuncs, Boolean root) {
+	func Option<Node> visit(FunctionNode n)(String name) {
 		name = n.name
 		if (n.name.equal("main") == true) name = "_start"
 		var pos = n.position.clone("Functions")
-		this.lfuncs.append(StringNode_new(nIDENTIFIER, pos, Type_new(), name).toNode())
-		this.lfuncs.append(StringNode_new(nSTRING, pos, Type_new(), n.name).toNode())
+		this.lfuncs.append(StringNode_new(nIDENTIFIER, pos, Type_new(), name))
+		this.lfuncs.append(StringNode_new(nSTRING, pos, Type_new(), n.name))
 
-		return 0
+		return None<Node>
 	}
 
-	func void visit(ListNode n)() {
+	func Option<ListNode> visit(ListNode n)() {
 		if (n.type == nBLOCK) {
 			if (this.root == true) {
-				n.append(this.lfuncs.toNode())
+				n.append(this.lfuncs)
 				this.root = false
 			}
 		}
 
-		n.accept_children(this.v)
-  	return 0
+		n.accept_children(this)
+  	return None<ListNode>
 	}
 }

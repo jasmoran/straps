@@ -1,14 +1,11 @@
 func TypeCheck TypeCheck_new(Reporting report) {
-	var Visitor v = 0
-	var tc = TypeCheck_new(v, Type_new(), report)
-	tc.v = tc
-	return tc
+	return TypeCheck_new(None<Type>, report)
 }
 
-class virtual TypeCheck < Visitor (Visitor v, Type fret_type, Reporting report) {
-	func void visit(BinaryOperationNode n) {
-		var RetNode lhs = n.lhs
-		var RetNode rhs = n.rhs
+class virtual TypeCheck < Visitor (Option<Type> fret_type, Reporting report) {
+	func Option<Node> visit(BinaryOperationNode n) {
+		var lhs = n.lhs.to(RetNode)
+		var rhs = n.rhs.to(RetNode)
 
 		if (
 			n.op == ASSIGN ||
@@ -26,25 +23,34 @@ class virtual TypeCheck < Visitor (Visitor v, Type fret_type, Reporting report) 
 			}
 		}
 
-		n.accept_children(this.v)
-		return 0
+		n.accept_children(this)
+		return None<Node>
 	}
 
-	func void visit(ReturnNode n) {
-		var RetNode rn = n.expr
-		if (this.fret_type.has_child(rn.ret_type) == false) {
-			this.report.printUnreturnable(n, this.fret_type)
+	func Option<Node> visit(ReturnNode n) {
+		var fret_type = this.fret_type.expect("Return node is not inside a function")
+		if (fret_type.has_child(n.expr.to(RetNode).ret_type) == false) {
+			this.report.printUnreturnable(n, fret_type)
 		}
 
-		n.accept_children(this.v)
-		return 0
+		n.accept_children(this)
+		return None<Node>
 	}
 
-	func void visit(FunctionNode n) {
+	func Option<Node> visit(FunctionNode n) {
+		# Check all returns are of the correcct type
 		var prev_fret = this.fret_type
-		this.fret_type = n.ret_type
-		n.accept_children(this.v)
+		this.fret_type = Some(n.ret_type)
+		n.accept_children(this)
 		this.fret_type = prev_fret
-		return 0
+
+		# Check that non-void functions return a value
+		if (n.ret_type.raw.equal("void") == false)
+		if (n.block.children.last != 0.to(LinkedListNode<Node>))
+		if (n.block.children.last.payload.type != nRETURN) {
+				this.report.printNoReturn(n)
+		}
+
+		return None<Node>
 	}
 }

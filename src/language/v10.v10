@@ -32,15 +32,14 @@ global(Scope scope)
 # e.g. "LinkedList.v10" => "LinkedList"
 #      "LinkedList"     => "LinkedList"
 func String norm_name(String name) {
-	var Number dot_pos = name.length - 4
-	if (name.get(dot_pos) == '.') {
+	if (name.get(name.length - 4) == '.') {
 		name.length -= 4
 	}
 	return name
 }
 
 
-func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, LinkedList<String> externals) {
+func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, LinkedList<String> externals, Reporting reporting) {
 	for (req in reqs) {
 		# Skip requirement if it has already been dealt with globally
 		if (glob_reqs.contains(req) == true) {
@@ -58,12 +57,12 @@ func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Li
 		# if (req.equal("src/stdlib/stdlib") == false) parser.reqs.add("src/stdlib/stdlib")
 
 		# Process this file's requirements
-		headerize(glob_reqs, parser.reqs, lfuncs, externals)
+		headerize(glob_reqs, parser.reqs, lfuncs, externals, reporting)
 
 		# Visit this file
 		reqroot.accept(Externals_new(externals))
 		reqroot.accept(Typing_new())
-		reqroot.accept(Inherit_new())
+		reqroot.accept(Inherit_new(reporting))
 		reqroot.accept(Constructor_new())
 		reqroot.accept(Method_new())
 		reqroot.accept(Definition_new())
@@ -73,14 +72,14 @@ func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, Li
 	}
 }
 
-func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags) {
+func void main(CharArr comp, CharArr src_path, CharArr out_path, Option<CharArr> caflags) {
 	load_loop()
 
 	# Read flags
 	var keep = false
 	var report = false
-	if (caflags != 0) {
-		var flags = String_fromTerminated(caflags)
+	if (caflags.is_some() == true) {
+		var flags = String_fromTerminated(caflags.unwrap())
 		if (flags.length > 1 && flags.get(1) == 'k') keep = true
 		if (flags.length > 2 && flags.get(2) == 'r') report = true
 	}
@@ -90,7 +89,7 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags
 	var name = norm_name(String_fromTerminated(src_path))
 	var glob_reqs = build(name, reporting)
 
-	if (report == true) return 0
+	if (report == true) return Void
 
 	# Set up linker runner
 	var Number num_args = glob_reqs.length + 5
@@ -113,15 +112,12 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags
 	# 	File_delete("out.asm")
 	# 	# File_delete("out.o")
 	# }
-
-	return 0
 }
 
 func Set<String> build(String name, Reporting reporting) {
 	# Open input file
 	var src_path = name.clone(4).append(".v10")
 	var input = File_open(src_path)
-	if (input < 0) { return 0 }
 
 	var sc = Scope_new()
 	scope = sc
@@ -131,7 +127,6 @@ func Set<String> build(String name, Reporting reporting) {
 	# Open output file
 	var asm_path = name.clone(4).append(".asm")
 	var output = File_create(asm_path)
-	if (output < 0) { return 0 }
 
 	# if (name.equal("src/stdlib/stdlib") == false) parser.reqs.add("src/stdlib/stdlib")
 
@@ -142,7 +137,7 @@ func Set<String> build(String name, Reporting reporting) {
 
 	var externals = LinkedList<String>_new()
 	"section .text".println(output)
-	headerize(glob_reqs, parser.reqs, lfuncs, externals)
+	headerize(glob_reqs, parser.reqs, lfuncs, externals, reporting)
 	for (fnc in lfuncs.children) {
 		"extern ".print(output)
 		fnc.to(StringNode).string.println(output)
@@ -154,16 +149,16 @@ func Set<String> build(String name, Reporting reporting) {
 	}
 
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "GLOBALS_SETUP")
-	sc.set("rax", StringNode_new(nREGISTER, pos, Type_new(), "rax").toNode())
-	sc.set("rbx", StringNode_new(nREGISTER, pos, Type_new(), "rbx").toNode())
-	sc.set("rcx", StringNode_new(nREGISTER, pos, Type_new(), "rcx").toNode())
-	sc.set("rdx", StringNode_new(nREGISTER, pos, Type_new(), "rdx").toNode())
-	sc.set("rsp", StringNode_new(nREGISTER, pos, Type_new(), "rsp").toNode())
-	sc.set("rbp", StringNode_new(nREGISTER, pos, Type_new(), "rbp").toNode())
-	sc.set("rsi", StringNode_new(nREGISTER, pos, Type_new(), "rsi").toNode())
-	sc.set("rdi", StringNode_new(nREGISTER, pos, Type_new(), "rdi").toNode())
-	sc.set("r12", StringNode_new(nREGISTER, pos, Type_new(), "r12").toNode())
-	sc.set("r13", StringNode_new(nREGISTER, pos, Type_new(), "r13").toNode())
+	sc.set("rax", StringNode_new(nREGISTER, pos, Type_new(), "rax"))
+	sc.set("rbx", StringNode_new(nREGISTER, pos, Type_new(), "rbx"))
+	sc.set("rcx", StringNode_new(nREGISTER, pos, Type_new(), "rcx"))
+	sc.set("rdx", StringNode_new(nREGISTER, pos, Type_new(), "rdx"))
+	sc.set("rsp", StringNode_new(nREGISTER, pos, Type_new(), "rsp"))
+	sc.set("rbp", StringNode_new(nREGISTER, pos, Type_new(), "rbp"))
+	sc.set("rsi", StringNode_new(nREGISTER, pos, Type_new(), "rsi"))
+	sc.set("rdi", StringNode_new(nREGISTER, pos, Type_new(), "rdi"))
+	sc.set("r12", StringNode_new(nREGISTER, pos, Type_new(), "r12"))
+	sc.set("r13", StringNode_new(nREGISTER, pos, Type_new(), "r13"))
 
 	var Visitor v = PlusMinus_new()
 	root.accept(v)
@@ -177,7 +172,7 @@ func Set<String> build(String name, Reporting reporting) {
 	root.accept(v)
 	v = Typing_new()
 	root.accept(v)
-	v = Inherit_new()
+	v = Inherit_new(reporting)
 	root.accept(v)
 	v = StaticNew_new()
 	root.accept(v)
@@ -192,7 +187,7 @@ func Set<String> build(String name, Reporting reporting) {
 	v = TypeCheck_new(reporting)
 	root.accept(v)
 
-	if (reporting.enabled == true) return 0
+	if (reporting.enabled == true) return glob_reqs
 
 	v = IndexCall_new()
 	root.accept(v)

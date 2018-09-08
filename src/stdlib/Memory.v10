@@ -6,3 +6,10 @@ func void allocate(Number num_bytes)(void addr) {
 
 	return addr
 }
+
+func void memcpy(void source, void destination, Number length) {
+	rsi = source
+	rdi = destination
+	rcx = length
+	nasm("rep movsb")
+}

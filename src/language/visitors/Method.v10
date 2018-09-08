@@ -1,54 +1,53 @@
-func Method Method_new()(ListNode ln, ClassNode cn) {
-	ln = 0
-	cn = 0
-	var Visitor v = 0
-	var meth = Method_new(v, ln, cn)
-	meth.v = meth
-	return meth
+func Method Method_new() {
+	return Method_new(None<ListNode>, None<ClassNode>)
 }
 
-class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
-	func void visit(ClassNode n)() {
-		this.cls = n
+class virtual Method < Visitor (Option<ListNode> pb, Option<ClassNode> cls) {
+	func Option<Node> visit(ClassNode n) {
+		this.cls = Some(n)
 
-		if (n.parent.raw != 0) {
+		if (n.parent.is_some() == true) {
+			var parent = n.parent.unwrap()
+
 			# Resolve parent type
-			n.parent.resolve(scope)
+			parent.resolve(scope)
 
-			# Link scopes
-			n.scope.parent = n.parent.res.scope
+			if (parent.res.is_some() == true) {
+				# Link scopes
+				n.scope.parent = Some(parent.res.unwrap().scope)
 
-			# Inherit vtable
-			if (n.vtable != 0) {
-				var par_vtab = n.parent.res.vtable
-				if (par_vtab != 0) {
-					n.vtable = par_vtab.shallow_clone()
+				# Inherit vtable
+				if (n.vtable.is_some() == true) {
+					var par_vtab = parent.res.unwrap().vtable
+					if (par_vtab.is_some() == true) {
+						n.vtable = Some(par_vtab.unwrap().shallow_clone())
+					}
 				}
 			}
 		}
 
 		# Process each method
-		n.block.accept_children(this.v)
+		n.block.accept_children(this)
 
 		# Remove methods from now class now they have been copied to parent block
 		n.block.children.clear()
-		this.cls = 0
+		this.cls = None<ClassNode>
 
-  	return 0
+  	return None<Node>
 	}
 
-	func void visit(FunctionNode n)(Number length, StringNode arg, FunctionNode clone) {
+	func Option<Node> visit(FunctionNode n)(Number length) {
 		var pure = n.name.clone()
 		n.pure = pure
 
 		# Leave main function alone
-		if (n.name.equal("main") == true) return 0
-		if (n.name.get(0) == '_') return 0
+		if (n.name.equal("main") == true) return None<Node>
+		if (n.name.get(0) == '_') return None<Node>
 
-		if (this.cls != 0) {
+		if (this.cls.is_some() == true) {
 			# Add 'this' to arguments
 			n.args.prepend(
-				StringNode_new(nIDENTIFIER, n.position.clone("Method this"), Type_new(this.cls.name), "this").toNode()
+				StringNode_new(nIDENTIFIER, n.position.clone("Method this"), Type_new(this.cls.unwrap().name), "this")
 			)
 		}
 
@@ -56,64 +55,62 @@ class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
 		var cls_scope_name = String_new(256).append(n.name)
 
 		# Loop through arguments
-		var lln = n.args.children.first
-		loop {
-			if (lln == 0) { break }
-			arg = lln.payload
+		for (arg in n.args.children) {
+			if (arg.type != nIDENTIFIER) error("Non identifier argument to function ", pure)
+			var type = arg.to(StringNode).ret_type.raw
 
 			# Append arguments type to function name
-			n.name.append('_').append(arg.ret_type.raw)
+			n.name.append('_').append(type)
 
-			if (lln != n.args.children.first) {
-				cls_scope_name.append('_').append(arg.ret_type.raw)
+			if (arg != n.args.children.first.payload) {
+				cls_scope_name.append('_').append(type)
 			}
-
-			lln = lln.fwrd
 		}
 
-		if (this.cls != 0) {
-			clone = n.shallow_clone()
+		if (this.cls.is_some() == true) {
+			var cls = this.cls.unwrap()
+			var clone = n.shallow_clone()
 
-			if (this.cls.vtable == 0) {
+			if (cls.vtable.is_none() == true) {
 				# Add method (direct) to scope of class
-				this.cls.scope.set(pure, clone)
+				cls.scope.set(pure, clone)
 			} else {
 				# Add method to vtable of class
-				this.cls.vtable.set(cls_scope_name, n)
+				cls.vtable.unwrap().set(cls_scope_name, n)
 
 				# Find method offset in vtable
-				var offset = this.cls.vtable.get_pos(cls_scope_name)
+				var offset = cls.vtable.unwrap().get_pos(cls_scope_name)
 				offset << 3
 
 				# Add method (via vtable) to scope of class
 				var vtab = n.shallow_clone()
 				vtab.type = nVTAB_ACCESS
 				vtab.name = offset.toString()
-				this.cls.scope.set(pure, vtab)
+				cls.scope.set(pure, vtab)
 			}
 
 			# Save new method name "_CLASS_METHOD"
 			length = n.name.length
 			length += 2
-			n.name = this.cls.name.clone(length).prepend('_').append('_').append(n.name)
+			n.name = cls.name.clone(length).prepend('_').append('_').append(n.name)
 			clone.name = n.name
 
 			# Copy method to parent block
-			this.pb.append(n.toNode())
+			this.pb.expect("Attempted to append method outside of a block").append(n)
 		}
 
-  	return 0
+  	return None<Node>
 	}
 
-	func void visit(ListNode n)(ListNode old_pb) {
-		old_pb = this.pb
+	func Option<ListNode> visit(ListNode n) {
+		var old_pb = this.pb
 		if (n.type == nBLOCK)
-			this.pb = n
+			this.pb = Some(n)
 
-		n.accept_children(this.v)
+		n.accept_children(this)
 
 		this.pb = old_pb
 
-  	return 0
+  	return None<ListNode>
 	}
 }

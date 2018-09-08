@@ -1,47 +1,44 @@
 func Strings Strings_new()() {
-	var Visitor v = 0
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "Strings")
-	var str = Strings_new(v, 0, ListNode_new(nSTRINGS, pos), true, false)
-	str.v = str
-	return str
+	return Strings_new(0, ListNode_new(nSTRINGS, pos), true, false)
 }
 
-class virtual Strings < Visitor (Visitor v, Number counter, ListNode strings, Boolean root, Boolean do_idents) {
+class virtual Strings < Visitor (Number counter, ListNode strings, Boolean root, Boolean do_idents) {
 	func void addString(StringNode n)() {
 		var pos = Position_new(MetaCharacter_new('?', 0, 0), "Strings")
-		this.strings.append(StringNode_new(nSTRING, pos, Type_new(), n.string).toNode())
+		this.strings.append(StringNode_new(nSTRING, pos, Type_new(), n.string))
 		n.string = "string_".clone(4).append(this.counter.toString())
 		n.type = nIDENTIFIER
 		this.counter++
 	}
 
-	func void visit(StringNode n)() {
+	func Option<Node> visit(StringNode n)() {
 		if (n.type == nSTRING) this.addString(n)
 		if (n.type == nIDENTIFIER) {
 			if (this.do_idents == true) this.addString(n)
 		}
 
-		return 0
+		return None<Node>
 	}
 
-	func void visit(ListNode n)() {
+	func Option<ListNode> visit(ListNode n)() {
 		if (n.type == nBLOCK) {
 			if (this.root == true) {
-				n.append(this.strings.toNode())
+				n.append(this.strings)
 				this.root = false
 			}
 		} else if (n.type == nSTRINGS) {
-			return 0
+			return None<ListNode>
 		}
 
-		n.accept_children(this.v)
-  	return 0
+		n.accept_children(this)
+  	return None<ListNode>
 	}
 
-	func void visit(EnumNode n)() {
+	func Option<Node> visit(EnumNode n)() {
 		this.do_idents = true
-		n.accept_children(this.v)
+		n.accept_children(this)
 		this.do_idents = false
-		return 0
+		return None<Node>
 	}
 }

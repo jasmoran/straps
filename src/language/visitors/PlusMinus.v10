@@ -1,22 +1,15 @@
-func PlusMinus PlusMinus_new()() {
-	var Visitor v = 0
-	var pm = PlusMinus_new(v)
-	pm.v = pm
-	return pm
-}
-
-class virtual PlusMinus < Visitor (Visitor v) {
-	func void visit(UnaryOperationNode n) {
+class virtual PlusMinus < Visitor () {
+	func Option<Node> visit(UnaryOperationNode n) {
 		# Get rid of useless unary PLUS
-		if (n.op == PLUS) return n.expr
-		
+		if (n.op == PLUS) return Some(n.expr)
+
 		if (n.op == MINUS && n.expr.type == nNUMBER) {
-			var StringNode num = n.expr
+			var num = n.expr.to(StringNode)
 			num.string = num.string.clone(1).prepend('-')
-			return num
+			return Some(num)
 		}
 
-		n.accept_children(this.v)
-  		return 0
+		n.accept_children(this)
+		return None<Node>
 	}
 }

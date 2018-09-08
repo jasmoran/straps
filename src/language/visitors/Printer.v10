@@ -1,11 +1,3 @@
-func Printer Printer_new(Number indent, Stream s, Number depth, Boolean print_scope)() {
-	depth += indent
-	var Visitor v = 0
-	var pr = Printer_new(v, indent, s, depth, print_scope)
-	pr.v = pr
-	return pr
-}
-
 func Printer Printer_new(Number indent, Stream s, Number depth)() {
 	return Printer_new(indent, s, depth, true)
 }
@@ -18,35 +10,35 @@ func Printer Printer_new()() {
 	return Printer_new(0, STDOUT, 9999)
 }
 
-class virtual Printer < Visitor (Visitor v, Number indent, Stream s, Number depth, Boolean print_scope) {
+class virtual Printer < Visitor (Number indent, Stream s, Number depth, Boolean print_scope) {
 	func void pi()(Number i) {
 		i = this.indent loop { if (i <= 0) { break } "  ".print(this.s) i-- }
 	}
 
-	func void visit(Node n)() {
-		if (this.indent > this.depth) return 0
+	func Option<Node> visit(Node n)() {
+		if (this.indent > this.depth) return None<Node>
 		this.pi()
 		n.type.toString().println(this.s)
 
-  	return 0
+  	return None<Node>
 	}
 
-	func void visit(CallNode n) {
-		if (this.indent > this.depth) return 0
+	func Option<Node> visit(CallNode n) {
+		if (this.indent > this.depth) return None<Node>
 		this.pi()
 		"nCALL(".print(this.s)
 		n.ret_type.print(this.s)
 		")\n".print(this.s)
 
 		this.indent++
-		n.accept_children(this.v)
+		n.accept_children(this)
 		this.indent--
 
-		return 0
+		return None<Node>
 	}
 
-	func void visit(BinaryOperationNode n)() {
-		if (this.indent > this.depth) return 0
+	func Option<Node> visit(BinaryOperationNode n)() {
+		if (this.indent > this.depth) return None<Node>
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
@@ -56,14 +48,14 @@ class virtual Printer < Visitor (Visitor v, Number indent, Stream s, Number dept
 		")\n".print(this.s)
 
 		this.indent++
-		n.accept_children(this.v)
+		n.accept_children(this)
 		this.indent--
 
-  	return 0
+  	return None<Node>
 	}
 
-	func void visit(UnaryOperationNode n)() {
-		if (this.indent > this.depth) return 0
+	func Option<Node> visit(UnaryOperationNode n)() {
+		if (this.indent > this.depth) return None<Node>
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
@@ -79,14 +71,14 @@ class virtual Printer < Visitor (Visitor v, Number indent, Stream s, Number dept
 		")\n".print(this.s)
 
 		this.indent++
-		n.accept_children(this.v)
+		n.accept_children(this)
 		this.indent--
 
-  	return 0
+  	return None<Node>
 	}
 
-	func void visit(StringNode n)() {
-		if (this.indent > this.depth) return 0
+	func Option<Node> visit(StringNode n)() {
+		if (this.indent > this.depth) return None<Node>
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
@@ -95,11 +87,11 @@ class virtual Printer < Visitor (Visitor v, Number indent, Stream s, Number dept
 		n.string.print(this.s)
 		"\")".println(this.s)
 
-  	return 0
+  	return None<Node>
 	}
 
-	func void visit(ClassNode n)() {
-		if (this.indent > this.depth) return 0
+	func Option<Node> visit(ClassNode n)() {
+		if (this.indent > this.depth) return None<Node>
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
@@ -108,14 +100,14 @@ class virtual Printer < Visitor (Visitor v, Number indent, Stream s, Number dept
 		if (this.print_scope == true) n.scope.print()
 
 		this.indent++
-		n.accept_children(this.v)
+		n.accept_children(this)
 		this.indent--
 
-  	return 0
+  	return None<Node>
 	}
 
-	func void visit(FunctionNode n)() {
-		if (this.indent > this.depth) return 0
+	func Option<Node> visit(FunctionNode n)() {
+		if (this.indent > this.depth) return None<Node>
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
@@ -126,62 +118,62 @@ class virtual Printer < Visitor (Visitor v, Number indent, Stream s, Number dept
 		if (this.print_scope == true) n.scope.print()
 
 		this.indent++
-		n.accept_children(this.v)
+		n.accept_children(this)
 		this.indent--
 
-  	return 0
+  	return None<Node>
 	}
 
-	func void visit(ListNode n)() {
-		if (this.indent > this.depth) return 0
+	func Option<ListNode> visit(ListNode n)() {
+		if (this.indent > this.depth) return None<ListNode>
 		this.pi()
 		n.type.toString().println(this.s)
 
 		this.indent++
-		n.accept_children(this.v)
+		n.accept_children(this)
 		this.indent--
 
-  	return 0
+  	return None<ListNode>
 	}
 
-	func void visit(IfNode n)() {
-		if (this.indent > this.depth) return 0
+	func Option<Node> visit(IfNode n)() {
+		if (this.indent > this.depth) return None<Node>
 		this.pi()
 		n.type.toString().println(this.s)
 
 		this.indent++
-		n.accept_children(this.v)
+		n.accept_children(this)
 		this.indent--
 
-  	return 0
+  	return None<Node>
 	}
 
-	func void visit(LoopNode n)() {
-		if (this.indent > this.depth) return 0
+	func Option<Node> visit(LoopNode n)() {
+		if (this.indent > this.depth) return None<Node>
 		this.pi()
 		n.type.toString().println(this.s)
 
 		this.indent++
-		n.accept_children(this.v)
+		n.accept_children(this)
 		this.indent--
 
-  	return 0
+  	return None<Node>
 	}
 
-	func void visit(ReturnNode n)() {
-		if (this.indent > this.depth) return 0
+	func Option<Node> visit(ReturnNode n)() {
+		if (this.indent > this.depth) return None<Node>
 		this.pi()
 		n.type.toString().println(this.s)
 
 		this.indent++
-		n.accept_children(this.v)
+		n.accept_children(this)
 		this.indent--
 
-  	return 0
+  	return None<Node>
 	}
 
-	func void visit(EnumNode n)() {
-		if (this.indent > this.depth) return 0
+	func Option<Node> visit(EnumNode n)() {
+		if (this.indent > this.depth) return None<Node>
 		this.pi()
 		n.type.toString().print(this.s)
 		"(".print(this.s)
@@ -189,9 +181,9 @@ class virtual Printer < Visitor (Visitor v, Number indent, Stream s, Number dept
 		")\n".print(this.s)
 
 		this.indent++
-		n.accept_children(this.v)
+		n.accept_children(this)
 		this.indent--
 
-		return 0
+		return None<Node>
 	}
 }

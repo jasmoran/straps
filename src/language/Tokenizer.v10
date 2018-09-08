@@ -9,21 +9,29 @@ enum Token {
 	OR NEW_LINE EOF PUSH POP VAR VIRTUAL IN REQUIRE
 }
 
-class Token(void type){
-		func String toString()(Array<String> a, Number ix) {
-			nasm("mov rax, Token")
-			a = rax
-			ix = this
-			return a.get(ix)
-		}
+class Token(void type) {
+	func String toString() {
+		nasm("mov rax, Token")
+		var a = rax.to(Array<String>)
+		var ix = this.to(Number)
+		return a.get(ix)
+	}
 }
 
-func Tokenizer Tokenizer_new(String stream_name, Stream s)(ReversibleStream rs_old) {
-	rs_old = 0
-	return Tokenizer_new(stream_name, ReversibleStream_new(s, 1024), NONE, String_new(1024), MetaCharacter_new(' ', 0, 0), rs_old, Map<String_String>_new(256))
+func Tokenizer Tokenizer_new(String stream_name, Stream s) {
+	return Tokenizer_new(stream_name, ReversibleStream_new(s, 1024), NONE, String_new(1024), MetaCharacter_new(' ', 0, 0), None<ReversibleStream>, Map<String_String>_new(256))
 }
 
-class Tokenizer(String stream_name, ReversibleStream rs, Token type, String image, MetaCharacter first_char, ReversibleStream rs_old, Map<String_String> macros) {
+class Tokenizer(
+	String stream_name,
+	ReversibleStream rs,
+	Token type,
+	String image,
+	MetaCharacter first_char,
+	Option<ReversibleStream> rs_old,
+	Map<String_String> macros
+) {
+
 	func Token peek()() {
 		if (this.type == NONE) {
 			this.type = this.load()
@@ -116,12 +124,12 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 			c = this.rs.get().get_character()
 
 			# Break out of macro
-			if (c == 0) {
-				if (this.rs_old == 0) {
+			if (c == '\0') {
+				if (this.rs_old.is_none() == true) {
 					break
 				} else {
-					this.rs = this.rs_old
-					this.rs_old = 0
+					this.rs = this.rs_old.unwrap()
+					this.rs_old = None<ReversibleStream>
 					next
 				}
 			}
@@ -163,10 +171,10 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 			}
 
 			# Use macros
-			if (c == 63) {
+			if (c == '?') {
 				var macro = c.toString().clone(1).append(this.rs.get().get_character())
 				macro = this.macros.get(macro)
-				this.rs_old = this.rs
+				this.rs_old = Some(this.rs)
 				this.rs = ReversibleStream_new(macro)
 				next
 			}
@@ -179,9 +187,8 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 
 		if (this.image.length > 0) {
 			return true
-		} else {
-			return false
 		}
+		return false
 	}
 
 	func Boolean match_string()(Character c, String macro) {
@@ -193,28 +200,27 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 		loop {
 			c = this.rs.get().get_character()
 
-			if (c == 0) {
-				if (this.rs_old == 0) {
+			if (c == '\0') {
+				if (this.rs_old.is_none() == true) {
 					break
 				} else {
-					this.rs = this.rs_old
-					this.rs_old = 0
+					this.rs = this.rs_old.unwrap()
+					this.rs_old = None<ReversibleStream>
 					next
 				}
 			}
 			if (c == '"') { break }
 
 			# Use macros
-			if (c == 63) {
+			if (c == '?') {
 				macro = c.toString().clone(1).append(this.rs.get().get_character())
 				macro = this.macros.get(macro)
-				this.rs_old = this.rs
+				this.rs_old = Some(this.rs)
 				this.rs = ReversibleStream_new(macro)
 				next
 			}
 
-			# 92 = backslash
-			if (rax == 92) {
+			if (c == '\\') {
 				this.image.append(c)
 				c = this.rs.get().get_character()
 			}
@@ -243,8 +249,8 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 		loop {
 			c = this.rs.get().get_character()
 
-			if (rax == 0) { break }
-			if (rax == 10) { break }
+			if (c == '\0') { break }
+			if (c == '\n') { break }
 		}
 
 		this.rs.flush()
@@ -252,7 +258,7 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 	}
 
 	func Boolean match_character()(Character c) {
-		if (this.rs.get().get_character() != 39) {
+		if (this.rs.get().get_character() != '\'') {
 			this.rs.rewind()
 			return false
 		}
@@ -261,11 +267,11 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 		this.image.append(c)
 
 		# Handle backslashes
-		if (c == 92) {
+		if (c == '\\') {
 			this.image.append(this.rs.get().get_character())
 		}
 
-		if (this.rs.get().get_character() != 39) {
+		if (this.rs.get().get_character() != '\'') {
 			this.rs.rewind()
 			return false
 		}
@@ -274,18 +280,18 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 		return true
 	}
 
-	func Token load()(Character c, String macro, Character qmark, Number ix) {
+	func Token load()(Character c, String macro, Number ix) {
 		# Skip whitespace
 		loop {
 			this.first_char = this.rs.get()
 			c = this.first_char.get_character()
-			if (c == 0) {
-				if (this.rs_old == 0) {
+			if (c == '\0') {
+				if (this.rs_old.is_none() == true) {
 					File_close(this.rs.stream)
 					return EOF
 				} else {
-					this.rs = this.rs_old
-					this.rs_old = 0
+					this.rs = this.rs_old.unwrap()
+					this.rs_old = None<ReversibleStream>
 				}
 			}
 			#if (c == 10) return NEW_LINE
@@ -298,8 +304,7 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 		if (this.match("define") == true) {
 			if (this.load() != IDENTIFIER)
 				error("Malformed definition at ", this.rs.get().toString(), " in stream ", this.stream_name)
-			qmark = 63
-			macro = this.image.clone(1).prepend(qmark)
+			macro = this.image.clone(1).prepend('?')
 			this.image.clear()
 			if (this.load() != STRING)
 				error("Malformed definition at ", this.rs.get().toString(), " in stream ", this.stream_name)
@@ -380,7 +385,7 @@ class Tokenizer(String stream_name, ReversibleStream rs, Token type, String imag
 			macro = this.macros.keys.get(ix)
 			if (this.match(macro) == true) {
 				macro = this.macros.values.get(ix)
-				this.rs_old = this.rs
+				this.rs_old = Some(this.rs)
 				this.rs = ReversibleStream_new(macro)
 				return this.load()
 			}

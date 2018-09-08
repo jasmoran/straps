@@ -1,141 +1,113 @@
-func Definition Definition_new()() {
-	var Visitor v = 0
-	var defn = Definition_new(v)
-	defn.v = defn
-	return defn
-}
-
 # Gets all local & global variables, arguments, fields and enum values
 # and adds them to their respective scopes.
 # These "variables" are stored as { name => offset/label }
-class virtual Definition < Visitor (Visitor v) {
-	func void visit(ClassNode n)(Number ix, StringNode field) {
-		ix = 0
+class virtual Definition < Visitor () {
+	func Option<Node> visit(ClassNode n) {
+		var ix = 0
 
-		var lln = n.fields.children.first
-		loop {
-			if (lln == 0) { break }
-			field = lln.payload
+		for (field in n.fields.children) {
+			if (field.type != nIDENTIFIER) error()
 
 			# Store field offset in class scope
 			n.scope.set(
-				field.string,
-				StringNode_new(nINDEX, field.position.clone("Definition"), field.ret_type, ix.toString()).toNode()
+				field.to(StringNode).string,
+				StringNode_new(nINDEX, field.position.clone("Definition"), field.to(StringNode).ret_type, ix.toString())
 			)
 
 			ix += 8
-
-			lln = lln.fwrd
 		}
 
-  	return 0
+		return None<Node>
 	}
 
-	func void visit(EnumNode n)(Number ix, StringNode field, Scope sc, Type type) {
-		ix = 0
+	func Option<Node> visit(EnumNode n) {
+		var ix = 0
 
-		type = Type_new(n.name)
+		var type = Type_new(n.name)
 
-		var lln = n.values.children.first
-		loop {
-			if (lln == 0) { break }
-			field = lln.payload
+		for (field in n.values.children) {
+			if (field.type != nIDENTIFIER) error()
 
 			# Store value in global scope
-			sc = scope
-			sc.set(
-				field.string,
-				StringNode_new(nNUMBER, field.position.clone("Definition"), type, ix.toString()).toNode()
+			scope.set(
+				field.to(StringNode).string,
+				StringNode_new(nNUMBER, field.position.clone("Definition"), type, ix.toString())
 			)
 
 			ix++
-
-			lln = lln.fwrd
 		}
 
-  	return 0
+		return None<Node>
 	}
 
-	func void visit(FunctionNode n)(Number ix, StringNode field, Scope sc) {
+	func Option<Node> visit(FunctionNode n) {
+		var ix = 16
+
 		# Loop through arguments
-		ix = 16
-		var lln = n.args.children.first
-		loop {
-			if (lln == 0) { break }
-			field = lln.payload
+		for (field in n.args.children) {
+			if (field.type != nIDENTIFIER) error()
 
 			# Store value in function scope
 			n.scope.set(
-				field.string,
-				this.new_variable(ix, field)
+				field.to(StringNode).string,
+				this.new_variable(ix, field.to(StringNode))
 			)
 
 			ix += 8
-
-			lln = lln.fwrd
 		}
 
 		# Store cloned FunctionNode in the global scope
-		sc = scope
-		if (n.pure == 0) error("Null pure")
-		sc.set(n.pure, n.shallow_clone())
+		if (n.pure == NullString) error("Null pure")
+		scope.set(n.pure, n.shallow_clone())
 
 		# Loop through variables
 		ix = 0
-		lln = n.vrbls.children.first
-		loop {
-			if (lln == 0) { break }
-			field = lln.payload
+		for (field in n.vrbls.children) {
+			if (field.type != nIDENTIFIER) error()
 
 			ix -= 8
 
 			# Store value in function scope
 			n.scope.set(
-				field.string,
-				this.new_variable(ix, field)
+				field.to(StringNode).string,
+				this.new_variable(ix, field.to(StringNode))
 			)
-
-			lln = lln.fwrd
 		}
 
-  	return 0
+  	return None<Node>
 	}
 
-	func void visit(ListNode n)(StringNode field, Scope sc) {
-		var lln = n.children.first
-		loop {
-			if (lln == 0) { break }
-			field = lln.payload
+	func Option<ListNode> visit(ListNode n) {
+		for (field in n.children) {
 			# TODO: Fix SEGFAULT
 			#var pos = field.position.clone("Definition")
 			var pos = Position_new(MetaCharacter_new('?', 0, 0), "Definition")
 
 			if (n.type == nGLOBAL) {
+				if (field.type != nIDENTIFIER) error()
+
 				# Store global variable in global scope
-				sc = scope
-				sc.set(
-					field.string,
+				scope.set(
+					field.to(StringNode).string,
 					BinaryOperationNode_new(
-						field.ret_type,
+						field.to(StringNode).ret_type,
 						pos,
 						SQUARE_OPEN,
-						field.toNode(),
-						StringNode_new(nNUMBER, pos, Type_new("Number"), "0").toNode()
-					).toNode()
+						field,
+						StringNode_new(nNUMBER, pos, Type_new("Number"), "0")
+					)
 				)
 			} else {
-				field.accept(this.v)
+				field.accept(this)
 
 				# Remove class nodes once they have been visited
 				if (field.type == nCLASS) {
-					n.children.remove(lln)
+					n.children.remove(field_iter.curr)
 				}
 			}
-
-			lln = lln.fwrd
 		}
 
-		return 0
+		return None<ListNode>
 	}
 
 
@@ -147,8 +119,8 @@ class virtual Definition < Visitor (Visitor v) {
 			field.ret_type,
 			pos,
 			SQUARE_OPEN,
-			StringNode_new(nREGISTER, pos, Type_new(), "rbp").toNode(),
-			StringNode_new(nNUMBER, pos, Type_new("Number"), offset.toString()).toNode()
+			StringNode_new(nREGISTER, pos, Type_new(), "rbp"),
+			StringNode_new(nNUMBER, pos, Type_new("Number"), offset.toString())
 		)
 	}
 }

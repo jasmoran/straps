@@ -1,7 +1,7 @@
 func Stream File_open(CharArr path)(Stream file) {
 	sys(2, path, 0, 511)
 	file = rax
-	if (file < 0) {
+	if (file < STDOUT) {
 		error("Could not open file: \"", String_fromTerminated(path), "\"")
 	}
 	return file
@@ -10,7 +10,7 @@ func Stream File_open(CharArr path)(Stream file) {
 func Stream File_create(CharArr path)(Stream file) {
 	sys(85, path, 511)
 	file = rax
-	if (file < 0) {
+	if (file < STDOUT) {
 		error("Could not create file: \"", String_fromTerminated(path), "\"")
 	}
 	return file

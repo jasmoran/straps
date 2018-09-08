@@ -1,73 +1,63 @@
-func ForLoop ForLoop_new() {
-	var Visitor v = 0
-	var Position p = 0
-	var fl = ForLoop_new(v, p)
-	fl.v = fl
-	return fl
-}
+class virtual ForLoop < Visitor () {
 
-
-class virtual ForLoop < Visitor (Visitor v, Position pos) {
-
-	func Node call_method(Node obj, String method) {
+	func Node call_method(Position pos, Node obj, String method) {
 		# Create method call
 		return CallNode_new(
-			this.pos,
-			BinaryOperationNode_new(Type_new(), this.pos, DOT,
+			pos,
+			BinaryOperationNode_new(Type_new(), pos, DOT,
 				obj,
-				StringNode_new(nIDENTIFIER, this.pos, Type_new(), method).toNode()
-			).toNode()
+				StringNode_new(nIDENTIFIER, pos, Type_new(), method)
+			)
 		)
 	}
 
-	func Node assign_method(StringNode vrbl, Node obj, String method) {
+	func Node assign_method(Position pos, StringNode vrbl, Node obj, String method) {
 		# Create method call
-		var Node methcall = this.call_method(obj, method)
+		var Node methcall = this.call_method(pos, obj, method)
 
 		# Assign result of methcall to vrbl
-		var infer = Type_new()
-		infer.raw = 1
+		var infer = Type_new(INFER)
 		vrbl.ret_type = infer
-		var Node assn = BinaryOperationNode_new(Type_new(), this.pos, ASSIGN, vrbl.toNode(), methcall)
+		var Node assn = BinaryOperationNode_new(Type_new(), pos, ASSIGN, vrbl, methcall)
 
 		# Infer type of vrbl
-		return UnaryOperationNode_new(this.pos, infer, VAR, assn, true)
+		return UnaryOperationNode_new(pos, infer, VAR, assn, true)
 	}
 
-	func void visit(ForNode n)() {
+	func Option<Node> visit(ForNode n) {
 		# TODO: Better than this
-		this.pos = n.position.clone("ForNode")
+		var pos = n.position.clone("ForNode")
 
-		n.block.accept(this.v)
+		n.block.accept(this)
 
-		var outer_block = ListNode_new(nBLOCK, this.pos)
+		var outer_block = ListNode_new(nBLOCK, pos)
 
 		# Create iterator variable name
 		var iterstr = n.item.string.clone(5).append("_iter")
-		var iterator = StringNode_new(nIDENTIFIER, this.pos, Type_new(), iterstr)
+		var iterator = StringNode_new(nIDENTIFIER, pos, Type_new(), iterstr)
 
 		# var $iterator$ = $n.iterable$.iter()
-		outer_block.append(this.assign_method(iterator, n.iterable, "iter"))
+		outer_block.append(this.assign_method(pos, iterator, n.iterable, "iter"))
 
 		# Add item access to loop block
-		# var $n.item$ = $iterator$.next()
-		n.block.prepend(this.assign_method(n.item, iterator.toNode(), "fetch"))
+		# var $n.item$ = $iterator$.fetch()
+		n.block.prepend(this.assign_method(pos, n.item, iterator, "fetch"))
 
 		# Create conditional
-		var Node cond = BinaryOperationNode_new(Type_new(), this.pos, EQUAL,
-			this.call_method(iterator.toNode(), "finished"),
-			StringNode_new(nIDENTIFIER, this.pos, Type_new(), "true").toNode()
+		var Node cond = BinaryOperationNode_new(Type_new(), pos, EQUAL,
+			this.call_method(pos, iterator, "finished"),
+			StringNode_new(nIDENTIFIER, pos, Type_new(), "true")
 		)
 
 		# Create break block => { break }
-		var brblock = ListNode_new(nBLOCK, this.pos).append(Node_new(nBREAK, this.pos))
+		var brblock = ListNode_new(nBLOCK, pos).append(Node_new(nBREAK, pos))
 
 		# Add end check to loop block
-		n.block.prepend(IfNode_new(this.pos, cond, brblock))
+		n.block.prepend(IfNode_new(pos, cond, brblock))
 
 		# Create loop => loop { $n.block$ }
-		outer_block.append(LoopNode_new(this.pos, n.block))
+		outer_block.append(LoopNode_new(pos, n.block))
 
-  	return outer_block
+  	return Some(outer_block.to(Node))
 	}
 }

@@ -1,16 +1,23 @@
-func Scope Scope_new()(Scope sc) {
-	sc = 0
-	return Scope_new("GLOBAL", sc)
+define t "Scope"
+include "src/stdlib/Option.generic"
+
+func Scope Scope_new() {
+	return Scope_new("GLOBAL", None<Scope>)
 }
 
-func Scope Scope_new(String name, Scope parent)(Map<String_Node> sc) {
-	sc = Map<String_Node>_new(2048)
-	return Scope_new(name, parent, sc)
+func Scope Scope_new(String name, Scope parent) {
+	return Scope_new(name, Some(parent), Map<String_Node>_new(2048))
 }
 
-class Scope (String name, Scope parent, Map<String_Node> scope) {
-	func Node get(String name)() {
-		return this.scope.get(name)
+func Scope Scope_new(String name, Option<Scope> parent) {
+	return Scope_new(name, parent, Map<String_Node>_new(2048))
+}
+
+class Scope (String name, Option<Scope> parent, Map<String_Node> scope) {
+	func Option<Node> get(String name) {
+		var res = this.scope.get(name)
+		if (res.to(Number) < 1) return None<Node>
+		return Some(res)
 	}
 
 	func void set(String name, Node node) {
@@ -18,89 +25,92 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 	}
 
 	func void set(String name, FunctionNode node) {
-		var ListNode capsule = this.scope.get(name)
-		if (capsule < 1) capsule = ListNode_new(nBLOCK, Position_new(MetaCharacter_new('?', 0, 0), "Scope Capsule"))
-		capsule.append(node.toNode())
+		var capsule = this.get(name)
+											.unwrap_or(ListNode_new(nBLOCK, Position_new(MetaCharacter_new('?', 0, 0), "Scope Capsule")))
 
-		this.scope.set(name, capsule.toNode())
+		if (capsule.type != nBLOCK) error("Attempted to redefine identifier ", name, " with a function")
+		capsule.to(ListNode).append(node)
+
+		this.scope.set(name, capsule)
 	}
 
 	func Option<FunctionNode> resolve(StringNode name, LinkedList<RetNode> args) {
-		var ListNode lnoptions = this.search(name.string)
+		var lnoptions = this.search(name.string)
+		if (lnoptions.is_none() == true || lnoptions.unwrap().type != nBLOCK) return None<FunctionNode>
 
-		if (lnoptions > 0 && lnoptions.type == nBLOCK) {
-			var LinkedList<FunctionNode> options = lnoptions.children
+		var options = lnoptions.unwrap().to(ListNode).children
 
-			# Track the best option, best is the distance => smaller is better
-			var FunctionNode best_match = 0
-			var best = 9999
+		# Track the best option, best is the distance => smaller is better
+		var Option<FunctionNode> best_match = None<FunctionNode>
+		var best = 9999
 
-			# Loop through each possible match
-			for (option in options) {
-				var LinkedList<RetNode> optargs = option.args.children
-				if (optargs.length != args.length) next
+		# Loop through each possible match
+		for (opt in options) {
+			if (opt.type != nFUNCTION && opt.type != nVTAB_ACCESS)
+				error("Found ", opt.type.toString(), " in function scope")
+			var option = opt.to(FunctionNode)
+			var optargs = option.args.children
+			if (optargs.length != args.length) next
 
-				# Nothing to compare if there are no arguments
-				if (args.length == 0) {
-					best_match = option
+			# Nothing to compare if there are no arguments
+			if (args.length == 0) {
+				best_match = Some(option)
+				break
+			}
+
+			var rank = 0
+
+			# Loop through each of the options args
+			for (index in Range_new(args.length)) {
+				var opt_type = optargs.get(index).to(RetNode).ret_type
+				var arg_type = args.get(index).ret_type
+				opt_type.resolve(scope)
+				# Returns the distance from the arg type to the optarg type
+				var match = opt_type.child_rank(arg_type)
+
+				if (match > 0) {
+					rank += match
+				} else {
+					# No match
+					rank = 0
 					break
-				}
-
-				var rank = 0
-
-				# Loop through each of the options args
-				for (index in Range_new(args.length)) {
-					var opt_type = optargs.get(index).ret_type
-					var arg_type = args.get(index).ret_type
-					opt_type.resolve(scope)
-					# Returns the distance from the arg type to the optarg type
-					var match = opt_type.child_rank(arg_type)
-
-					if (match > 0) {
-						rank += match
-					} else {
-						# No match
-						rank = 0
-						break
-					}
-				}
-
-				# Check how this option compares
-				if (rank > 0 && rank < best) {
-					best = rank
-					best_match = option
 				}
 			}
 
-			# Check we found a match
-			if (best_match != 0) return Some(best_match.clone())
+			# Check how this option compares
+			if (rank > 0 && rank < best) {
+				best = rank
+				best_match = Some(option)
+			}
 		}
+
+		# Check we found a match
+		if (best_match.is_some() == true) return Some(best_match.unwrap().clone())
 
 		return None<FunctionNode>
 	}
 
 	func Option<Node> resolve(StringNode name) {
-		var ListNode res = this.search(name.string)
+		var res = this.search(name.string)
 
 		# Can't clone here because Inferring process needs to modify the
 		# existing identifier in the scope not a clone.
-		if (res > 0 && res.type != nBLOCK) return Some(res)
+		if (res.is_some() && res.unwrap().type != nBLOCK) return res
 
 		# Just use unresolved identifier
 		return None<Node>
 	}
 
-	func Node search(String name) {
-		var s = this
-		if (s == 0) error("Attempted to resolve on NULL scope")
+	func Option<Node> search(String name) {
+		var sc = Some(this)
 		loop {
-			if (s == 0) break
-			var res = s.get(name)
-			if (res > 0) return res
-			s = s.parent
+			if (sc.is_none() == true) break
+			var res = sc.unwrap().get(name)
+			if (res.is_some() == true) return res
+			sc = sc.unwrap().parent
 		}
 
-		return res
+		return None<Node>
 	}
 
 	func void print()(Number index, Visitor printer) {

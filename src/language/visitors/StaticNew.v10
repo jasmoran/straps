@@ -1,17 +1,13 @@
 func StaticNew StaticNew_new() {
-  var Visitor v = 0
-  var ListNode ln = 0
-  var cnst = StaticNew_new(v, ln)
-  cnst.v = cnst
-  return cnst
+  return StaticNew_new(None<ListNode>)
 }
 
-class virtual StaticNew < Visitor (Visitor v, ListNode pb) {
-  func void visit(ClassNode n) {
+class virtual StaticNew < Visitor (Option<ListNode> pb) {
+  func Option<Node> visit(ClassNode n) {
     # Find any init methods
     var inits = LinkedList<FunctionNode>_new()
     for (nmeth in n.block.children) {
-      var FunctionNode meth = nmeth
+      var meth = nmeth.to(FunctionNode)
 
       if (meth.name.equal("init") == true) {
         inits.append(meth)
@@ -19,11 +15,11 @@ class virtual StaticNew < Visitor (Visitor v, ListNode pb) {
     }
 
     # Check if any init methods have been defined
-    if (inits.length == 0) return 0
+    if (inits.length == 0) return None<Node>
 
     # Calculate size of allocation
     var size = n.fields.children.length
-    if (n.vtable != 0) size++
+    if (n.vtable.is_some() == true) size++
     size << 3
 
     var pos = n.position.clone("StaticNew")
@@ -37,11 +33,11 @@ class virtual StaticNew < Visitor (Visitor v, ListNode pb) {
       obj,
       CallNode_new(
         pos,
-        StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "allocate").toNode(),
+        StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "allocate"),
         LinkedList<RetNode>_new().append(
           StringNode_new(nNUMBER, pos, Type_new("Number"), size.toString())
         )
-      ).toNode()
+      )
     )
 
     # Create return node
@@ -51,13 +47,13 @@ class virtual StaticNew < Visitor (Visitor v, ListNode pb) {
     var block = ListNode_new(nBLOCK, pos)
 
     for (init in inits) {
-      var LinkedList<RetNode> args = init.args.children.shallow_clone()
+      var args = init.args.children.shallow_clone().to(LinkedList<RetNode>)
 
       # Create init call
       var Node init_call = CallNode_new(
         pos,
         BinaryOperationNode_new(pos, DOT, obj,
-          StringNode_new(nIDENTIFIER, pos, Type_new(), "init").toNode()).toNode(),
+          StringNode_new(nIDENTIFIER, pos, Type_new(), "init")),
         args
       )
 
@@ -66,7 +62,7 @@ class virtual StaticNew < Visitor (Visitor v, ListNode pb) {
                         .append(allocation)
 
       # Assign vtable
-      if (n.vtable != 0) {
+      if (n.vtable.is_some() == true) {
         var Node vt = StringNode_new(nIDENTIFIER, pos, Type_new(), "vt")
         var tabname = "_vtable_".clone(n.name.length).append(n.name)
 
@@ -75,9 +71,9 @@ class virtual StaticNew < Visitor (Visitor v, ListNode pb) {
           BinaryOperationNode_new(
             pos,
             ASSIGN,
-            BinaryOperationNode_new(pos, DOT, obj, vt).toNode(),
-            StringNode_new(nNASM, pos, Type_new(), tabname).toNode()
-          ).toNode()
+            BinaryOperationNode_new(pos, DOT, obj, vt),
+            StringNode_new(nNASM, pos, Type_new(), tabname)
+          )
         )
       }
 
@@ -97,31 +93,30 @@ class virtual StaticNew < Visitor (Visitor v, ListNode pb) {
           new_args,
           ListNode_new(nLIST, pos).append(obj),
           new_block
-        ).toNode()
+        )
       )
     }
 
     # Create and attach static class
     var name = n.name.clone(6).append("Static")
     var static_class = ClassNode_new(pos, name, n.fields.clone(), block)
-    this.pb.prepend(static_class)
+    this.pb.expect("Attempted to attach static class outside of block").prepend(static_class)
 
     # Add static class to scope
-    if (scope == 0) error("NULL global scope")
     scope.set(name, static_class)
 
-    return 0
+    return None<Node>
   }
 
-  func void visit(ListNode n) {
+  func Option<ListNode> visit(ListNode n) {
     var old_pb = this.pb
     if (n.type == nBLOCK)
-      this.pb = n
+      this.pb = Some(n)
 
-    n.accept_children(this.v)
+    n.accept_children(this)
 
     this.pb = old_pb
 
-    return 0
+    return None<ListNode>
   }
 }

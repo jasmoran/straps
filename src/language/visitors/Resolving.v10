@@ -1,56 +1,56 @@
-func Resolving Resolving_new(Reporting report)(Scope sc) {
-	sc = scope
-	var Visitor v = 0
-	var res = Resolving_new(v, sc, true, report)
-	res.v = res
-	return res
+func Resolving Resolving_new(Reporting report) {
+	return Resolving_new(scope, true, report)
 }
 
-class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_idents, Reporting report) {
-	func void visit(StringNode n)(Node replacement) {
-		var orig_type = n.ret_type
-		orig_type.resolve(this.scope)
+class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reporting report) {
+	func Option<Node> visit(StringNode n)(Node replacement) {
+		n.ret_type.resolve(this.scope)
+
 		if (n.type == nIDENTIFIER) {
 			if (this.resolve_idents == true) {
-				var orig_pos = n.position
 				var opt = this.scope.resolve(n)
+
 				if (opt.is_some() == true) {
-					n = opt.unwrap()
+					var new = opt.unwrap().to(RetNode).clone()
+					new.position = n.position
+					if (n.ret_type.strength == CAST) new.ret_type = n.ret_type
+
+					return Some(new)
+
 				} else {
 					this.report.printUndefinedIdentifier(n, this.scope)
 				}
-				n = n.clone()
-				n.position = orig_pos
 			}
-			if (orig_type.cast == true) n.ret_type = orig_type
 		}
-		return n
+
+		return None<Node>
 	}
 
-	func void visit(FunctionNode n)(Scope prev_scope, ListNode block) {
+	func Option<Node> visit(FunctionNode n)(Scope prev_scope, ListNode block) {
 		prev_scope = this.scope
 		this.scope = n.scope
 		n.ret_type.resolve(this.scope)
 
 		# Dont resolve identifiers in vars and args
 		this.resolve_idents = false
-		n.args.accept(this.v)
-		n.vrbls.accept(this.v)
+		n.args.accept(this)
+		n.vrbls.accept(this)
 		this.resolve_idents = true
-		n.block.accept(this.v)
+		n.block.accept(this)
 
 		this.scope = prev_scope
-		return n
+		return None<Node>
 	}
 
-	func void visit(CallNode n) {
+	func Option<Node> visit(CallNode n) {
 		# Function name, default to normal function
-		var StringNode name = n.cfunction
+		var name = n.cfunction.to(StringNode)
 
 		# If a method, function name location is different
-		var BinaryOperationNode binop = n.cfunction
+		var binop = n.cfunction.to(BinaryOperationNode)
 		if (binop.type == nBINARYOP && binop.op == DOT) {
-			name = binop.rhs
+			var bname = binop.rhs.to(StringNode)
+			name = bname
 		}
 
 		if (name.type != nIDENTIFIER) {
@@ -59,46 +59,48 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 		}
 
 		# Resolve arguments
-		n.accept_args(this.v)
+		n.accept_args(this)
 
 		# Resolve function
 		if (binop.type == nBINARYOP && binop.op == DOT) {
 			# Resolve first item
-			var RetNode rn = binop.lhs
-			var orig_type = rn.ret_type
-			binop.lhs = binop.lhs.accept(this.v)
-			rn = binop.lhs
-			if (orig_type.cast == true) rn.ret_type = orig_type
+			var orig_type = binop.lhs.to(RetNode).ret_type
+			binop.lhs = binop.lhs.accept(this).unwrap_or(binop.lhs)
+			var lhs = binop.lhs.to(RetNode)
+			if (orig_type.strength == CAST) lhs.ret_type = orig_type
 
 			# If function is a DOT, add its LHS to arguments (this)
-			var StringNode nn = binop.lhs
+			var nn = binop.lhs.to(StringNode)
 			n.args.prepend(nn)
 
 			# Set sc to that of the first items type
-			rn.ret_type.resolve(this.scope)
-			var sc = rn.ret_type.getScope(rn.position)
-			if (sc == 0) sc = this.scope
+			lhs.ret_type.resolve(this.scope)
+			var opt_sc = lhs.ret_type.getScope(lhs.position)
+			var sc = opt_sc.unwrap_or(this.scope)
+			if (opt_sc.is_none() == true) {
+				this.report.printInvalidType(binop.lhs.position, binop.rhs.position, lhs.ret_type)
+				return Some(n)
+			}
 
 			# Resolve function
-			rn = binop.rhs
-			orig_type = rn.ret_type
+			var rhs = binop.rhs.to(RetNode)
+			orig_type = rhs.ret_type
 			var orig_pos = n.position
 			var opt = sc.resolve(name, n.args)
 			if (opt.is_some() == true) {
-				rn = opt.unwrap()
+				rhs = opt.unwrap()
 			} else {
 				this.report.printUndefinedFunction(name, n.args, sc)
-				rn = name.clone()
+				rhs = name.clone()
 			}
-			binop.rhs = rn
-			if (orig_type.cast == true) rn.ret_type = orig_type
+			binop.rhs = rhs
+			if (orig_type.strength == CAST) rhs.ret_type = orig_type
 
 			# Inherit ret_type from rhs
-			rn = binop.rhs
-			binop.ret_type = rn.ret_type
+			binop.ret_type = binop.rhs.to(RetNode).ret_type
 		} else {
 			# Resolve function
-			var RetNode rn = n.cfunction
+			var rn = n.cfunction.to(RetNode)
 			var orig_type = rn.ret_type
 			var opt = this.scope.resolve(name, n.args)
 			if (opt.is_some() == true) {
@@ -108,12 +110,12 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 				rn = name.clone()
 			}
 			n.cfunction = rn
-			if (orig_type.cast == true) rn.ret_type = orig_type
+			if (orig_type.strength == CAST) rn.ret_type = orig_type
 		}
 
 
 		# Fix up dot if it resolved to a function
-		binop = n.cfunction
+		var binop = n.cfunction.to(BinaryOperationNode)
 		if (binop.type == nBINARYOP && binop.op == DOT) {
 			if (binop.rhs.type == nFUNCTION) {
 				n.cfunction = binop.rhs
@@ -123,77 +125,78 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 			if (binop.rhs.type == nVTAB_ACCESS) {
 				# TODO: Use pos from CallNode
 				var pos = Position_new(MetaCharacter_new('?', 0, 0), "Resolving vtab")
-				var FunctionNode vtab_off = binop.rhs
+				var vtab_off = binop.rhs.to(FunctionNode)
 				n.cfunction = BinaryOperationNode_new(
 					vtab_off.ret_type, pos, SQUARE_OPEN,
 					BinaryOperationNode_new(Type_new(), pos, SQUARE_OPEN,
 						binop.lhs,
-						StringNode_new(nNUMBER, pos, Type_new(), "0").toNode()
-					).toNode(),
-					StringNode_new(nNUMBER, pos, Type_new(), vtab_off.name).toNode()
-				).toNode()
+						StringNode_new(nNUMBER, pos, Type_new(), "0")
+					),
+					StringNode_new(nNUMBER, pos, Type_new(), vtab_off.name)
+				)
 			}
 		}
 
 		# Inherit ret_type from function
-		var RetNode rn = n.cfunction
-		n.ret_type = rn.ret_type
+		n.ret_type = n.cfunction.to(RetNode).ret_type
 
-		return n
+		return Some(n)
 	}
 
-	func void visit(BinaryOperationNode n)(Scope prev_scope, StringNode sn,
-																				 StringNode field, Node nn, Number num) {
+	func Option<Node> visit(BinaryOperationNode n)(Scope prev_scope, Node nn, Number num) {
 		# Handle fields
 		if (n.op == DOT) {
 			# Resolve first item
-			sn = n.lhs
+			var sn = n.lhs.to(StringNode)
 			var orig_type = sn.ret_type
-			n.lhs = sn.accept(this.v)
-			sn = n.lhs
-			if (orig_type.cast == true) sn.ret_type = orig_type
+			n.lhs = sn.accept(this).unwrap_or(n.lhs)
+			var sn = n.lhs.to(StringNode)
+			if (orig_type.strength == CAST) sn.ret_type = orig_type
 
 			# Save current scope
 			prev_scope = this.scope
 
 			# Set scope to that of the first items type
-			sn = n.lhs
+			var sn = n.lhs.to(StringNode)
 			sn.ret_type.resolve(this.scope)
-			this.scope = sn.ret_type.getScope(sn.position)
-			if (this.scope == 0) this.scope = prev_scope
+			var opt_sc = sn.ret_type.getScope(sn.position)
+			if (opt_sc.is_none() == true) {
+				this.report.printInvalidType(n.lhs.position, n.rhs.position, sn.ret_type)
+				return Some(n)
+			}
+			this.scope = opt_sc.unwrap()
 
 			# Resolve second item
-			sn = n.rhs
+			var sn = n.rhs.to(StringNode)
 			orig_type = sn.ret_type
-			n.rhs = sn.accept(this.v)
-			sn = n.rhs
-			if (orig_type.cast == true) sn.ret_type = orig_type
+			n.rhs = sn.accept(this).unwrap_or(n.rhs)
+			var sn = n.rhs.to(StringNode)
+			if (orig_type.strength == CAST) sn.ret_type = orig_type
 
 			# Inherit ret_type from rhs
-			sn = n.rhs
+			var sn = n.rhs.to(StringNode)
 			n.ret_type = sn.ret_type
 
 			# Restore scope
 			this.scope = prev_scope
 
-			return n
+			return Some(n)
 		}
 
 		# Handle arithmetic
 		if (n.op == ASTERISK || n.op == FWD_SLASH || n.op == PLUS || n.op == MINUS) {
 			n.accept_children(this)
 
-			var RetNode rn = n.lhs
-			n.ret_type = rn.ret_type
+			var sn = n.lhs.to(StringNode)
+			n.ret_type = sn.ret_type
 
 			return Some(n)
 		}
 
 		# Infer types
-		if (n.op == ASSIGN)
-		if (n.lhs.type == nIDENTIFIER) {
-			field = n.lhs
-			if (field.ret_type.raw == 1) {
+		if (n.op == ASSIGN && n.lhs.type == nIDENTIFIER) {
+			var field = n.lhs.to(StringNode)
+			if (field.ret_type.strength == INFER) {
 				var opt = this.scope.resolve(field)
 				if (opt.is_some() == true) {
 					n.lhs = opt.unwrap()
@@ -201,36 +204,36 @@ class virtual Resolving < Visitor (Visitor v, Scope scope, Boolean resolve_ident
 					this.report.printUndefinedIdentifier(field, this.scope)
 					n.lhs = field
 				}
-				field = n.lhs
+				var field = n.lhs.to(StringNode)
 
-				sn = n.rhs
-				orig_type = sn.ret_type
-				n.rhs = sn.accept(this.v)
-				sn = n.rhs
-				if (orig_type.cast == true) sn.ret_type = orig_type
+				var rn = n.rhs.to(RetNode)
+				orig_type = rn.ret_type
+				n.rhs = rn.accept(this).unwrap_or(n.rhs)
+				var rn = n.rhs.to(RetNode)
+				if (orig_type.strength == CAST) rn.ret_type = orig_type
 
-				field.ret_type = sn.ret_type
+				field.ret_type = rn.ret_type
 
-				return n
+				return Some(n)
 			}
 		}
 
-		n.accept_children(this.v)
+		n.accept_children(this)
 
-		return n
+		return Some(n)
 	}
 
-	func void visit(ListNode n)() {
+	func Option<ListNode> visit(ListNode n)() {
 		if (n.type != nGLOBAL) {
-			n.accept_children(this.v)
+			n.accept_children(this)
 		}
 
-		return n
+		return Some(n)
 	}
 
 	# Must NOT resolve the children of the EnumNode
 	# They are used raw in the Dump visitor to form the name lookup array
-	func void visit(EnumNode n) {
-		return n
+	func Option<Node> visit(EnumNode n) {
+		return Some(n)
 	}
 }

@@ -1,5 +1,5 @@
 class virtual Externals < Visitor (LinkedList<String> externals) {
-	func void visit(ListNode n) {
+	func Option<ListNode> visit(ListNode n) {
 		if (n.type == nGLOBAL) {
 			for (node in n.children) {
 				this.externals.append(node.to(StringNode).string)
@@ -7,6 +7,6 @@ class virtual Externals < Visitor (LinkedList<String> externals) {
 		}
 
 		n.accept_children(this)
-		return 0
+		return None<ListNode>
 	}
 }
