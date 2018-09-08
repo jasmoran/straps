@@ -100,9 +100,7 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 			s = s.parent
 		}
 
-		# Add special GLOBAL scope check
-		s = scope
-		return s.get(name)
+		return res
 	}
 
 	func void print()(Number index, Visitor printer) {

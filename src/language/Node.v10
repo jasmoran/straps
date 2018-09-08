@@ -161,7 +161,7 @@ class virtual StaticClassNode < Node (ClassNode klass) {
 }
 
 func Node ClassNode_new(Position pos, String name, ListNode fields, ListNode block, Map<String_FunctionNode> vtable, Type parent)(Scope sc) {
-	sc = scope
+	sc = 0
 	sc = Scope_new(name, sc)
 	var ret_type = Type_new(name.clone(6).append("Static"))
 	return ClassNode_new(nCLASS, pos, ret_type, name, fields, block, sc, vtable, parent)
