@@ -1,7 +1,7 @@
 enum Option<?t> { None<?t> }
 
 func Option<?t> Some(?t value) {
-  return value
+  return value.to(Option<?t>)
 }
 
 class Option<?t>() {
@@ -17,16 +17,16 @@ class Option<?t>() {
 
   func ?t expect(String message) {
     if (this == None<?t>) error(message)
-    return this
+    return this.to(?t)
   }
 
   func ?t unwrap() {
     if (this == None<?t>) error("Attempted to unwrap an empty Option<?t>")
-    return this
+    return this.to(?t)
   }
 
   func ?t unwrap_or(?t default) {
     if (this == None<?t>) return default
-    return this
+    return this.to(?t)
   }
 }

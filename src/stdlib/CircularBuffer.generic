@@ -1,33 +1,32 @@
-func CircularBuffer<?t> CircularBuffer<?t>_new(Number capacity)() {
-	rax = capacity
+func CircularBuffer<?t> CircularBuffer<?t>_new(Number capacity) {
 	return CircularBuffer<?t>_new(Array<?t>_new(capacity), capacity, 0, 0, 0)
 }
 
 class CircularBuffer<?t> (Array<?t> buffer, Number capacity, Number head, Number tail, Number length) {
-	func void add_check()() {
+	func void add_check() {
 		if (this.length == this.capacity)
 			error("Attempted to add to a full CircularBuffer<?t>")
 	}
 
-	func void remove_check()() {
+	func void remove_check() {
 		if (this.length == 0)
 			error("Attempted to remove from an empty CircularBuffer<?t>")
 	}
 
-	func void peek_check(Number ix)() {
+	func void peek_check(Number ix) {
 		if (ix < 0)
 			error("Peek index too low for CircularBuffer<?t>")
 		if (ix >= this.length)
 			error("Peek index too large for CircularBuffer<?t>")
 	}
 
-	func void clear()() {
+	func void clear() {
 		this.head = 0
 		this.tail = 0
 		this.length = 0
 	}
 
-	func void push_front(?t item)() {
+	func void push_front(?t item) {
 		this.add_check()
 		if (this.head == 0) this.head = this.capacity
 		this.head--
@@ -35,7 +34,7 @@ class CircularBuffer<?t> (Array<?t> buffer, Number capacity, Number head, Number
 		this.length++
 	}
 
-	func void push_back(?t item)() {
+	func void push_back(?t item) {
 		this.add_check()
 		this.buffer.set(this.tail, item)
 		this.tail++
@@ -61,7 +60,7 @@ class CircularBuffer<?t> (Array<?t> buffer, Number capacity, Number head, Number
 		return item
 	}
 
-	func ?t peek(Number ix)() {
+	func ?t peek(Number ix) {
     # Calculate ix within buffer
     if (ix < 0) ix += this.length
 		this.peek_check(ix)
@@ -73,7 +72,7 @@ class CircularBuffer<?t> (Array<?t> buffer, Number capacity, Number head, Number
     return this.buffer.get(ix)
 	}
 
-	func ?t peek()() {
+	func ?t peek() {
     if (this.length == 0)
       error("Attempted peek into an empty CircularBuffer<?t>")
 		return this.buffer.get(this.head)

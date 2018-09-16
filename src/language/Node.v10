@@ -22,8 +22,6 @@ include "src/stdlib/Option.generic"
 
 define t "LinkedList<Node>"
 include "src/stdlib/Option.generic"
-define t "LinkedListNode<Node>"
-include "src/stdlib/Option.generic"
 
 enum NodeType {
 	nNONE nNASM nSYS nBLOCK nPAREN_LIST nFUNCTION nRETURN nCOMPARISON nIF
@@ -56,6 +54,8 @@ class virtual Node(NodeType type, Position position) {
 	}
 }
 
+define t "RetNode"
+include "src/stdlib/Option.generic"
 
 class virtual RetNode < Node (Type ret_type) {
 	func RetNode clone() {

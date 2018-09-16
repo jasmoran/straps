@@ -15,6 +15,6 @@ class virtual Variables < Visitor (Option<FunctionNode> containing_fun) {
 		if (n.op != VAR) return None<Node>
 		var binop = n.expr.to(BinaryOperationNode)
 		this.containing_fun.expect("var declared outside of any function").vrbls.append(binop.lhs)
-		return Some(binop)
+		return Some(binop.to(Node))
 	}
 }

@@ -1,34 +1,36 @@
 func LLIterator<?t> LLIterator<?t>_new(LinkedList<?t> list) {
- 	var LinkedListNode<?t> curr = 1
-	return LLIterator<?t>_new(list, curr, false)
+	return LLIterator<?t>_new(list, None<LinkedListNode<?t>>, false)
 }
 
-class LLIterator<?t> (LinkedList<?t> list, LinkedListNode<?t> curr, Boolean back) {
+class LLIterator<?t> (LinkedList<?t> list, Option<LinkedListNode<?t>> curr, Boolean back) {
 	func ?t fetch() {
+		if (this.finished() == true) error("Fetched from finished LinkedList<?t> iterator")
+
 		if (this.back == true) {
-			if (this.curr == 1) {
-				this.curr = this.list.last
+			if (this.curr.is_some() == true) {
+				this.curr = this.curr.unwrap().back
 			} else {
-				this.curr = this.curr.back
+				this.curr = this.list.last
 			}
 		} else {
-			if (this.curr == 1) {
-				this.curr = this.list.first
+			if (this.curr.is_some() == true) {
+				this.curr = this.curr.unwrap().fwrd
 			} else {
-				this.curr = this.curr.fwrd
+				this.curr = this.list.first
 			}
 		}
-    if (this.curr == 0) return 0
-		return this.curr.payload
+		return this.curr.expect("Fetched from finished LinkedList<?t> iterator").payload
 	}
 
 	func Boolean finished() {
-    if (this.curr == 0 || this.list.length < 1) return true
-		if (this.curr == 1) return false
+		if (this.list.length < 1) return true
+		if (this.list.first.is_none() == true) error("Non-empty LinkedList<?t> has no first element")
+		if (this.list.last.is_none() == true) error("Non-empty LinkedList<?t> has no last element")
+		if (this.curr.is_none() == true) return false
 		if (this.back == true) {
-			if (this.curr.back == 0) return true
+			return this.curr.unwrap().back.is_none()
 		} else {
-			if (this.curr.fwrd == 0) return true
+			return this.curr.unwrap().fwrd.is_none()
 		}
 		return false
 	}
@@ -43,45 +45,43 @@ class LLIterator<?t> (LinkedList<?t> list, LinkedListNode<?t> curr, Boolean back
 	}
 
 	func void set(?t value) {
-		if (this.curr == 0) return 0
-		this.curr.payload = value
+		if (this.curr.is_some() == true) this.curr.unwrap().payload = value
 	}
 
 	func LLIterator<?t> iter() return this
 }
 
-func LinkedList<?t> LinkedList<?t>_new()(LinkedListNode<?t> n) {
-	n = 0
-	return LinkedList<?t>_new(n, n, 0)
+func LinkedList<?t> LinkedList<?t>_new() {
+	return LinkedList<?t>_new(None<LinkedListNode<?t>>, None<LinkedListNode<?t>>, 0)
 }
 
-func LinkedListNode<?t> LinkedListNode<?t>_new(?t payload)(LinkedListNode<?t> n) {
-	n = 0
-	return LinkedListNode<?t>_new(n, n, payload)
+func LinkedListNode<?t> LinkedListNode<?t>_new(?t payload) {
+	return LinkedListNode<?t>_new(None<LinkedListNode<?t>>, None<LinkedListNode<?t>>, payload)
 }
 
-class LinkedListNode<?t> (LinkedListNode<?t> fwrd, LinkedListNode<?t> back, ?t payload) {}
+class LinkedListNode<?t> (Option<LinkedListNode<?t>> fwrd, Option<LinkedListNode<?t>> back, ?t payload) {}
 
-class LinkedList<?t> (LinkedListNode<?t> first, LinkedListNode<?t> last, Number length) {
-	func ?t get(Number ix)() {
-		return this.fetch(ix).payload
+class LinkedList<?t> (Option<LinkedListNode<?t>> first, Option<LinkedListNode<?t>> last, Number length) {
+	func Option<?t> get(Number ix)() {
+		var fetch = this.fetch(ix)
+		if (fetch.is_none() == true) return None<?t>
+		return Some(fetch.unwrap().payload)
 	}
 
 	func void set(Number ix, ?t payload)() {
-		this.fetch(ix).payload = payload
+		this.fetch(ix).expect("Index out of range").payload = payload
 	}
 
-	func LinkedList<?t> append(?t payload)(LinkedListNode<?t> node) {
-		node = LinkedListNode<?t>_new(payload)
+	func LinkedList<?t> append(?t payload) {
+		var node = Some(LinkedListNode<?t>_new(None<LinkedListNode<?t>>, this.last, payload))
 
-		node.back = this.last
-		if (this.last != 0) {
-			this.last.fwrd = node
+		if (this.last.is_some() == true) {
+			this.last.unwrap().fwrd = node
 		}
 		this.last = node
 
 		# Set first if empty
-		if (this.first == 0) {
+		if (this.first.is_none() == true) {
 			this.first = node
 		}
 
@@ -95,46 +95,49 @@ class LinkedList<?t> (LinkedListNode<?t> first, LinkedListNode<?t> last, Number 
 		return this
 	}
 
-	func LinkedList<?t> insert_before(LinkedListNode<?t> anchor, ?t payload)(LinkedListNode<?t> node) {
-		node = LinkedListNode<?t>_new(payload)
+	func LinkedList<?t> insert_before(Option<LinkedListNode<?t>> anchor, ?t payload) {
+		var node = LinkedListNode<?t>_new(payload)
+		var optnode = Some(node)
 
-		if (anchor != 0) {
+		if (anchor.is_some() == true) {
+			var anc = anchor.unwrap()
+
 			# Set up node
 			node.fwrd = anchor
-			node.back = anchor.back
+			node.back = anc.back
 
 			# Update anchor.back
-			if (anchor.back != 0) {
-				anchor.back.fwrd = node
+			if (anc.back.is_some() == true) {
+				anc.back.unwrap().fwrd = optnode
 			}
 
 			# Update anchor
-			anchor.back = node
+			anc.back = optnode
 		}
 
 		# Update list
 		if (this.first == anchor) {
-			this.first = node
+			this.first = optnode
 		}
-		if (this.last == 0) {
-			this.last = node
+		if (this.last.is_none() == true) {
+			this.last = optnode
 		}
 		this.length++
 
 		return this
 	}
 
-	func void remove(LinkedListNode<?t> node)() {
-		if (node.fwrd == 0) {
-			this.last = node.back
+	func void remove(LinkedListNode<?t> node) {
+		if (node.fwrd.is_some() == true) {
+			node.fwrd.unwrap().back = node.back
 		} else {
-			node.fwrd.back = node.back
+			this.last = node.back
 		}
 
-		if (node.back == 0) {
-			this.first = node.fwrd
+		if (node.back.is_some() == true) {
+			node.back.unwrap().fwrd = node.fwrd
 		} else {
-			node.back.fwrd = node.fwrd
+			this.first = node.fwrd
 		}
 
 		this.length--
@@ -142,83 +145,34 @@ class LinkedList<?t> (LinkedListNode<?t> first, LinkedListNode<?t> last, Number 
 
 	func void remove_node(LinkedListNode<?t> node) this.remove(node)
 
-	func void remove(Number ix)(LinkedListNode<?t> node) {
-		node = this.fetch(ix)
-		this.remove(node)
+	func void remove(Number ix) {
+		var node = this.fetch(ix)
+		if (node.is_some() == true) this.remove(node.unwrap())
 	}
 
 	func void remove_last()() {
-		this.remove(this.last)
+		if (this.last.is_some() == true) this.remove(this.last.unwrap())
 	}
 
-	func LinkedListNode<?t> fetch(Number ix)(LinkedListNode<?t> node) {
-		node = this.first
-		loop {
-			if (node == 0) {
-				node = this.first
-			}
-
-			if (ix == 0) {
-				return node
-			}
-
-			node = node.fwrd
+	func Option<LinkedListNode<?t>> fetch(Number ix) {
+		if (ix >= this.length) return None<LinkedListNode<?t>>
+		for (node in this) {
+			if (ix == 0) return node_iter.curr
 			ix--
 		}
-	}
-
-	func LinkedListNode<?t> fetch_by_data(?t data)(LinkedListNode<?t> node) {
-		node = this.first
-		loop {
-			# Return -1 if node not found
-			if (node == 0) {
-				nasm("mov rax, -1")
-				return rax
-			}
-
-			# Compare data
-			if (node.payload == data) {
-				return node
-			}
-
-			node = node.fwrd
-		}
+		return None<LinkedListNode<?t>>
 	}
 
 	func void clear()() {
-		this.first = 0
-		this.last = 0
+		this.first = None<LinkedListNode<?t>>
+		this.last = None<LinkedListNode<?t>>
 		this.length = 0
-	}
-
-	func void print(Stream stream, String sep)(LinkedListNode<?t> node, String str_cast) {
-		# Prints all list elements
-		# WARNING: Assumes that all elements are strings
-
-		node = this.first
-		if (node != 0) {
-			loop {
-				str_cast = node.payload
-				str_cast.print(stream)
-
-				node = node.fwrd
-
-				if (node == 0) {
-					break
-				}
-
-				sep.print(stream)
-			}
-		}
 	}
 
 	func LinkedList<?t> shallow_clone() {
 		var clone = LinkedList<?t>_new()
-		var lln = this.first
-		loop {
-		  if (lln == 0) break
-		  clone.append(lln.payload)
-		  lln = lln.fwrd
+		for (item in this) {
+		  clone.append(item)
 		}
 		return clone
 	}
@@ -227,3 +181,6 @@ class LinkedList<?t> (LinkedListNode<?t> first, LinkedListNode<?t> last, Number 
 		return LLIterator<?t>_new(this)
 	}
 }
+
+define t "LinkedListNode<?t>"
+include "src/stdlib/Option.generic"

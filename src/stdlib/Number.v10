@@ -40,7 +40,7 @@ class Number (void data) {
 		if (this < 0) {
 			str.append('-')
 		} else {
-			if (plus == 1) {
+			if (plus == true) {
 				str.append('+')
 			}
 		}
@@ -49,7 +49,7 @@ class Number (void data) {
 			nasm("pop rax")
 			rax += '0'
 
-			chr = rax
+			chr = rax.to(Character)
 			str.append(chr)
 
 			digit_count--

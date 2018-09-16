@@ -12,11 +12,11 @@ class Run (Array<CharArr> args) {
 	func void exec()(CharArr command, Number pid) {
     # Fork process
 		sys(57)
-		pid = rax
+		pid = rax.to(Number)
 
 		if (pid == 0) {
       # Child process
-			var CharArr NullCharArr = 0
+			var NullCharArr = 0.to(CharArr)
 			this.args.append(NullCharArr)
 			command = this.args.get(0)
 			# Exec command

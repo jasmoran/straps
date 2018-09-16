@@ -172,8 +172,8 @@ class Tokenizer(
 
 			# Use macros
 			if (c == '?') {
-				var macro = c.toString().clone(1).append(this.rs.get().get_character())
-				macro = this.macros.get(macro)
+				var macro_name = c.toString().clone(1).append(this.rs.get().get_character())
+				var macro = this.macros.get(macro_name).unwrap_or("Used undefined macro")
 				this.rs_old = Some(this.rs)
 				this.rs = ReversibleStream_new(macro)
 				next
@@ -191,14 +191,14 @@ class Tokenizer(
 		return false
 	}
 
-	func Boolean match_string()(Character c, String macro) {
+	func Boolean match_string() {
 		if (this.rs.get().get_character() != '"') {
 			this.rs.rewind()
 			return false
 		}
 
 		loop {
-			c = this.rs.get().get_character()
+			var c = this.rs.get().get_character()
 
 			if (c == '\0') {
 				if (this.rs_old.is_none() == true) {
@@ -213,8 +213,8 @@ class Tokenizer(
 
 			# Use macros
 			if (c == '?') {
-				macro = c.toString().clone(1).append(this.rs.get().get_character())
-				macro = this.macros.get(macro)
+				var macro_name = c.toString().clone(1).append(this.rs.get().get_character())
+				var macro = this.macros.get(macro_name).unwrap_or("Used undefined macro")
 				this.rs_old = Some(this.rs)
 				this.rs = ReversibleStream_new(macro)
 				next

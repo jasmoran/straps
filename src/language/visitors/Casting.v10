@@ -20,6 +20,6 @@ class virtual Casting < Visitor () {
 		var replacement = binop.lhs.to(RetNode)
 		replacement.ret_type = Type_new(n.args.get(0).to(StringNode).string, CAST)
 
-		return Some(replacement)
+		return Some(replacement.to(Node))
 	}
 }

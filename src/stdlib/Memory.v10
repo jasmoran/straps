@@ -1,6 +1,6 @@
-func void allocate(Number num_bytes)(void addr) {
+func void allocate(Number num_bytes) {
 	sys(12, 0)
-	addr = rax
+	var addr = rax.to(void)
 	num_bytes += rax
 	sys(12, num_bytes)
 

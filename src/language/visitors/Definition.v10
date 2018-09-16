@@ -78,6 +78,8 @@ class virtual Definition < Visitor () {
 	}
 
 	func Option<ListNode> visit(ListNode n) {
+		var new_list = LinkedList<Node>_new()
+
 		for (field in n.children) {
 			# TODO: Fix SEGFAULT
 			#var pos = field.position.clone("Definition")
@@ -101,11 +103,14 @@ class virtual Definition < Visitor () {
 				field.accept(this)
 
 				# Remove class nodes once they have been visited
-				if (field.type == nCLASS) {
-					n.children.remove(field_iter.curr)
+				if (field.type != nCLASS) {
+					new_list.append(field)
+					#$#
+					# n.children.remove(field_iter.curr.unwrap())
 				}
 			}
 		}
+		if (n.type != nGLOBAL) n.children = new_list
 
 		return None<ListNode>
 	}

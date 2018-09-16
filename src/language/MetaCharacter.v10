@@ -13,6 +13,9 @@ func MetaCharacter MetaCharacter_new(Character chr, Number col, Number line) {
 	return line.to(MetaCharacter)
 }
 
+define t "MetaCharacter"
+include "src/stdlib/Option.generic"
+
 class MetaCharacter (void data) {
 	func Character get_character() {
 		var char = and(this.to(Number), 255).to(Character)

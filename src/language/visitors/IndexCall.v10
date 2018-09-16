@@ -17,7 +17,7 @@ class virtual IndexCall < Visitor (
 
 	func void prepend(Node child) {
 		this.parent_list.expect("Attempted to prepend when not enclosed by a block")
-		                .insert_before(this.parent_lln.unwrap(), child)
+		                .insert_before(this.parent_lln, child)
 	}
 
 	func Option<Node> visit(CallNode n) {
@@ -43,7 +43,8 @@ class virtual IndexCall < Visitor (
 		this.prepend(n)
 
 		# Replace with rax
-		return Some(StringNode_new(nREGISTER, this.pos, Type_new(), "rax"))
+		var reg = StringNode_new(nREGISTER, this.pos, Type_new(), "rax").to(Node)
+		return Some(reg)
 	}
 
 	func Option<Node> visit(BinaryOperationNode n)(ListNode args) {
@@ -164,7 +165,7 @@ class virtual IndexCall < Visitor (
 
 			for (nn in n.children) {
 				var prev_lln = this.parent_lln
-				this.parent_lln = Some(nn_iter.curr)
+				this.parent_lln = nn_iter.curr
 
 				var new_nn = nn.accept(this).unwrap_or(nn)
 				nn_iter.set(new_nn)
@@ -172,7 +173,7 @@ class virtual IndexCall < Visitor (
 				this.parent_lln = prev_lln
 
 				# Guard against function return rax being placed directly in a block
-				if (new_nn.type == nREGISTER) n.children.remove(nn_iter.curr)
+				if (new_nn.type == nREGISTER) n.children.remove(nn_iter.curr.unwrap())
 			}
 
 			this.parent_list = prev_list

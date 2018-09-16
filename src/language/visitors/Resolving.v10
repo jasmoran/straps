@@ -15,7 +15,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 					new.position = n.position
 					if (n.ret_type.strength == CAST) new.ret_type = n.ret_type
 
-					return Some(new)
+					return Some(new.to(Node))
 
 				} else {
 					this.report.printUndefinedIdentifier(n, this.scope)
@@ -79,7 +79,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 			var sc = opt_sc.unwrap_or(this.scope)
 			if (opt_sc.is_none() == true) {
 				this.report.printInvalidType(binop.lhs.position, binop.rhs.position, lhs.ret_type)
-				return Some(n)
+				return Some(n.to(Node))
 			}
 
 			# Resolve function
@@ -140,7 +140,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 		# Inherit ret_type from function
 		n.ret_type = n.cfunction.to(RetNode).ret_type
 
-		return Some(n)
+		return Some(n.to(Node))
 	}
 
 	func Option<Node> visit(BinaryOperationNode n)(Scope prev_scope, Node nn, Number num) {
@@ -162,7 +162,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 			var opt_sc = sn.ret_type.getScope(sn.position)
 			if (opt_sc.is_none() == true) {
 				this.report.printInvalidType(n.lhs.position, n.rhs.position, sn.ret_type)
-				return Some(n)
+				return Some(n.to(Node))
 			}
 			this.scope = opt_sc.unwrap()
 
@@ -180,7 +180,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 			# Restore scope
 			this.scope = prev_scope
 
-			return Some(n)
+			return Some(n.to(Node))
 		}
 
 		# Handle arithmetic
@@ -190,7 +190,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 			var sn = n.lhs.to(StringNode)
 			n.ret_type = sn.ret_type
 
-			return Some(n)
+			return Some(n.to(Node))
 		}
 
 		# Infer types
@@ -214,13 +214,13 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 
 				field.ret_type = rn.ret_type
 
-				return Some(n)
+				return Some(n.to(Node))
 			}
 		}
 
 		n.accept_children(this)
 
-		return Some(n)
+		return Some(n.to(Node))
 	}
 
 	func Option<ListNode> visit(ListNode n)() {

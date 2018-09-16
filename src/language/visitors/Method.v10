@@ -62,7 +62,7 @@ class virtual Method < Visitor (Option<ListNode> pb, Option<ClassNode> cls) {
 			# Append arguments type to function name
 			n.name.append('_').append(type)
 
-			if (arg != n.args.children.first.payload) {
+			if (arg != n.args.children.first.unwrap().payload) {
 				cls_scope_name.append('_').append(type)
 			}
 		}

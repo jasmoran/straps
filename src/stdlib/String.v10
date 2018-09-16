@@ -38,8 +38,8 @@ enum String {
 	NullString
 }
 
-func String String_new(Number size)(CharArr data) {
-	data = allocate(size)
+func String String_new(Number size) {
+	var data = allocate(size).to(CharArr)
 	return String_new(0, size, data)
 }
 
@@ -80,6 +80,9 @@ class Character (void data) {
 	}
 }
 
+define t "String"
+include "src/stdlib/Option.generic"
+
 class String (Number length, Number size, CharArr data) {
 	func Character get(Number ix)() {
 		rax = this.data
@@ -88,7 +91,7 @@ class String (Number length, Number size, CharArr data) {
 		nasm("mov bl, BYTE[rax]
 		")
 
-		return rbx
+		return rbx.to(Character)
 	}
 
 	func void set(Number ix, Character character)() {
@@ -220,7 +223,7 @@ class String (Number length, Number size, CharArr data) {
 			r12--
 		}
 
-		return rax
+		return rax.to(Number)
 	}
 
 	func Boolean equal(String other)() {
@@ -256,7 +259,7 @@ class String (Number length, Number size, CharArr data) {
 			if (ix >= this.length) { break }
 
 			# Backslash
-			if (this.get(ix) == 92) {
+			if (this.get(ix) == '\\') {
 				# Skip next character
 				ix++
 				escaped++
@@ -267,13 +270,12 @@ class String (Number length, Number size, CharArr data) {
 
 		rax = this.length
 		rax -= escaped
-		return rax
+		return rax.to(Number)
 	}
 
-	func CharArr toTerminated()(Number len, CharArr c) {
-		len = this.length
-		len++
-		c = allocate(len)
+	func CharArr toTerminated() {
+		var len = this.length + 1
+		var c = allocate(len).to(CharArr)
 		rsi = this.data
 		rdi = c
 		rcx = this.length

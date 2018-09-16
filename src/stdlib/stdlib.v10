@@ -15,6 +15,8 @@ include "src/stdlib/Set.v10"
 class void () {}
 enum void { Void }
 
+define t "Any"
+include "src/stdlib/Option.generic"
 class Any (Any deref) {}
 class Function () {}
 
@@ -25,11 +27,11 @@ func void exit()() exit(0)
 
 func void error(String s1, String s2, String s3, String s4, String s5)() {
 	"Error: ".print(STDERR)
-	if(s1 > 0) s1.print(STDERR)
-	if(s2 > 0) s2.print(STDERR)
-	if(s3 > 0) s3.print(STDERR)
-	if(s4 > 0) s4.print(STDERR)
-	if(s5 > 0) s5.println(STDERR)
+	if(s1 > NullString) s1.print(STDERR)
+	if(s2 > NullString) s2.print(STDERR)
+	if(s3 > NullString) s3.print(STDERR)
+	if(s4 > NullString) s4.print(STDERR)
+	if(s5 > NullString) s5.println(STDERR)
 	backtrace()
 	exit(1)
 }
@@ -39,37 +41,35 @@ func void error(String s1, String s2)() error(NullString, NullString, NullString
 func void error(String s1)() error(NullString, NullString, NullString, NullString, s1)
 func void error()() error(NullString, NullString, NullString, NullString, NullString)
 
-func void backtrace()(Array<Any> flist, Array<String> fnamelist, Any addr, Number index, String fname, Any curr_rbp) {
+func void backtrace() {
 	# Get list of function pointers
 	nasm("mov rax, _FUNCTIONLIST")
-	flist = rax
+	var flist = rax.to(Array<Any>)
 
 	# Get list of function names
 	nasm("mov rax, _FUNCTIONNAMELIST")
-	fnamelist = rax
+	var fnamelist = rax.to(Array<String>)
 
-	curr_rbp = rbp
+	var curr_rbp = rbp.to(Any)
 
 	loop {
 		# Get address of current function
-		addr = curr_rbp
-		addr += 8
-		addr = addr.deref
+		var addr = (curr_rbp + 8).deref
 
-		if (addr < 1000) break
+		if (addr < 1000.to(Any)) break
 
-		index = flist.length
+		var index = flist.length
 		loop {
 			index--
 			# Detect end of array
 			if (index < 0) {
 				"Unknown Function".println(STDERR)
-				return false
+				return Void
 			}
 
 			# Detect match
 			if (flist.get(index) < addr) {
-				fname = fnamelist.get(index)
+				var fname = fnamelist.get(index)
 				fname.println()
 				break
 			}

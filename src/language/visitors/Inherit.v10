@@ -5,7 +5,7 @@ class virtual Inherit < Visitor (Reporting report) {
 
 			# Check for matches
 			if (sn.to(StringNode).string.equal(field.string) == true) {
-				list.remove(sn_iter.curr)
+				list.remove(sn_iter.curr.unwrap())
 			}
 		}
 	}

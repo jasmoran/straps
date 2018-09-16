@@ -4,8 +4,8 @@ func ArrIterator<?t> ArrIterator<?t>_new(Array<?t> arr) {
 
 class ArrIterator<?t> (Array<?t> arr, Number curr, Boolean back) {
 	func ?t fetch() {
-		if (this.curr < 0) return 0
-		if (this.curr >= this.arr.length) return 0
+		if (this.curr < 0) error("Fetched from finished Array<?t> iterator")
+		if (this.curr >= this.arr.length) error("Fetched from finished Array<?t> iterator")
 		var payload = this.arr.get(this.curr)
 		if (this.back == true) {
 			this.curr--
@@ -53,18 +53,19 @@ func Array<?t> Array<?t>_new(Number size)(Number byte_size) {
 }
 
 class Array<?t> (Number length, Number size, void data) {
-	func ?t get(Number ix)(Any addr) {
-		addr = ix
+	func ?t get(Number ix) {
+		var addr = ix.to(Any)
 		addr << 3
 		addr += this.data
-		return addr.deref
+		var res = addr.deref.to(?t)
+		return res
 	}
 
-	func void set(Number ix, ?t item)(Any addr) {
-		addr = ix
+	func void set(Number ix, ?t item) {
+		var addr = ix.to(Any)
 		addr << 3
 		addr += this.data
-		addr.deref = item
+		addr.deref = item.to(Any)
 	}
 
 	func Array<?t> append(?t item)() {
@@ -74,30 +75,6 @@ class Array<?t> (Number length, Number size, void data) {
 		this.length++
 
 		return this
-	}
-
-	func Number find(?t val, Function compare)(Number index) {
-		index = 0
-		loop {
-			# Detect end of array
-			if (this.length == index) {
-				nasm("mov rax, -1")
-				return rax
-			}
-
-			# Detect match
-			rax = this.get(index)
-			nasm("push rax")
-			rax = val
-			nasm("push rax")
-			rax = compare
-			nasm("call rax")
-			if (rax == true) {
-				return index
-			}
-
-			index++
-		}
 	}
 
 	func void clear()() {

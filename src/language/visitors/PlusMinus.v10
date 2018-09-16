@@ -6,7 +6,7 @@ class virtual PlusMinus < Visitor () {
 		if (n.op == MINUS && n.expr.type == nNUMBER) {
 			var num = n.expr.to(StringNode)
 			num.string = num.string.clone(1).prepend('-')
-			return Some(num)
+			return Some(num.to(Node))
 		}
 
 		n.accept_children(this)

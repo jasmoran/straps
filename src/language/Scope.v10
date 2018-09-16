@@ -15,9 +15,7 @@ func Scope Scope_new(String name, Option<Scope> parent) {
 
 class Scope (String name, Option<Scope> parent, Map<String_Node> scope) {
 	func Option<Node> get(String name) {
-		var res = this.scope.get(name)
-		if (res.to(Number) < 1) return None<Node>
-		return Some(res)
+		return this.scope.get(name)
 	}
 
 	func void set(String name, Node node) {
@@ -63,7 +61,7 @@ class Scope (String name, Option<Scope> parent, Map<String_Node> scope) {
 			# Loop through each of the options args
 			for (index in Range_new(args.length)) {
 				var opt_type = optargs.get(index).to(RetNode).ret_type
-				var arg_type = args.get(index).ret_type
+				var arg_type = args.get(index).unwrap().ret_type
 				opt_type.resolve(scope)
 				# Returns the distance from the arg type to the optarg type
 				var match = opt_type.child_rank(arg_type)

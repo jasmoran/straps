@@ -24,6 +24,21 @@ class virtual ForLoop < Visitor () {
 		return UnaryOperationNode_new(pos, infer, VAR, assn, true)
 	}
 
+
+	# for (xxx in yyy) {
+	# 	## ...n.block
+	# }
+
+	# { ## outer_block
+	# 	var xxx_iter = yyy.iter()
+	# 	loop {
+	# 		if (xxx_iter.finished() == true) break
+	# 		var xxx = xxx_iter.fetch()
+	# 		## ...n.block
+	# 	}
+	# } ## outer_block
+
+
 	func Option<Node> visit(ForNode n) {
 		# TODO: Better than this
 		var pos = n.position.clone("ForNode")

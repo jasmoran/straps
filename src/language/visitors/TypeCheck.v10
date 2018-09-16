@@ -46,8 +46,8 @@ class virtual TypeCheck < Visitor (Option<Type> fret_type, Reporting report) {
 
 		# Check that non-void functions return a value
 		if (n.ret_type.raw.equal("void") == false)
-		if (n.block.children.last != 0.to(LinkedListNode<Node>))
-		if (n.block.children.last.payload.type != nRETURN) {
+		if (n.block.children.last.is_some() == true)
+		if (n.block.children.last.unwrap().payload.type != nRETURN) {
 				this.report.printNoReturn(n)
 		}
 
