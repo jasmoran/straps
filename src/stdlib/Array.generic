@@ -83,12 +83,8 @@ class Array<?t> (Number length, Number size, void data) {
 
 	func Array<?t> shallow_clone() {
 		var clone = Array<?t>_new(this.size)
-		var ix = 0
-		loop {
-			if (ix == this.length) { break }
-			clone.append(this.get(ix))
-			ix++
-		}
+		for (item in this) clone.append(item)
+		return clone
 	}
 
 	func ArrIterator<?t> iter() {

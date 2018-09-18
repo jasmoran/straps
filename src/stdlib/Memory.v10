@@ -10,6 +10,27 @@ func void allocate(Number num_bytes) {
 func void memcpy(void source, void destination, Number length) {
 	rsi = source
 	rdi = destination
-	rcx = length
+	rcx = length.to(void)
 	nasm("rep movsb")
+}
+
+func void memcpy(CharArr source, CharArr destination, Number length) {
+	memcpy(source.to(void), destination.to(void), length)
+}
+
+func Boolean memcmp(void a, void b, Number length) {
+	rsi = a
+	rdi = b
+	rcx = length.to(void)
+
+	# Compare byte by byte
+	nasm("repe cmpsb")
+	nasm("jne .not_eq")
+	return true
+	nasm(".not_eq:")
+	return false
+}
+
+func Boolean memcmp(CharArr a, CharArr b, Number length) {
+	return memcmp(a.to(void), b.to(void), length)
 }

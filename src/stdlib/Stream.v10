@@ -22,7 +22,7 @@ func void load_loop()() {
 		")
 		LOOPOUT = LOOPIN
 		LOOPIN >> 32
-		rax = LOOPOUT
+		rax = LOOPOUT.to(void)
 		nasm("mov rbx, 0xFFFFFFFF")
 		nasm("and rax, rbx")
 		LOOPOUT = rax.to(Stream)

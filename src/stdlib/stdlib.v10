@@ -80,15 +80,15 @@ func void backtrace() {
 }
 
 func Number and(Number a, Number b) {
-	rax = a
-	rbx = b
+	rax = a.to(void)
+	rbx = b.to(void)
 	nasm("and rax, rbx")
 	return rax.to(Number)
 }
 
 func Number or(Number a, Number b) {
-	rax = a
-	rbx = b
+	rax = a.to(void)
+	rbx = b.to(void)
 	nasm("or rax, rbx")
 	return rax.to(Number)
 }

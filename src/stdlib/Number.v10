@@ -8,27 +8,26 @@ func Boolean Number_equal(Any int1, Any int2)() {
 class Number (void data) {
 	func String toString() return this.toString(false)
 	func String toString(Boolean plus)(String str, Number digit_count, Character chr) {
-		rax = this
-		rcx = 10
+		rax = this.to(void)
+		rcx = 10.to(void)
 		digit_count = 0
 
 		# Get absolute value
 		if (this < 0) {
-			rax = 0
-			rax -= this
+			rax = -this
 		} else {
-			rax = this
+			rax = this.to(void)
 		}
 
 		loop {
-			rdx = 0
+			rdx = 0.to(void)
 			nasm("
 			div rcx
 			push rdx
 			")
 			digit_count++
 
-			if (rax == 0) {
+			if (rax == 0.to(void)) {
 				break
 			}
 		}
