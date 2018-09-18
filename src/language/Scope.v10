@@ -93,7 +93,9 @@ class Scope (String name, Option<Scope> parent, Map<String_Node> scope) {
 
 		# Can't clone here because Inferring process needs to modify the
 		# existing identifier in the scope not a clone.
-		if (res.is_some() && res.unwrap().type != nBLOCK) return res
+		if (res.is_some() == true) {
+			if(res.unwrap().type != nBLOCK) return res
+		}
 
 		# Just use unresolved identifier
 		return None<Node>
