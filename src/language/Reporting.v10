@@ -67,24 +67,24 @@ class Reporting(Boolean enabled, Stream st) {
 	}
 
 	func void printNotMatch(RetNode lhs, RetNode rhs) {
-		if (this.enabled == false) return Void
 		this.printRange(lhs.position, rhs.position, 0)
-		",\"level\":\"warning\",\"message\":\"".print(this.st)
+		",\"level\":\"error\",\"message\":\"".print(this.st)
 		rhs.ret_type.print(this.st)
 		" does not match ".print(this.st)
 		lhs.ret_type.print(this.st)
 		"\"}".println(this.st)
+		if (this.enabled == false) error()
 	}
 
 	func void printUnreturnable(ReturnNode n, Type fret_type) {
-		if (this.enabled == false) return Void
 		var rn = n.expr.to(RetNode)
 		this.printRange(n.position, rn.position, 0)
-		",\"level\":\"warning\",\"message\":\"".print(this.st)
+		",\"level\":\"error\",\"message\":\"".print(this.st)
 		rn.ret_type.print(this.st)
 		" does not match return type ".print(this.st)
 		fret_type.print(this.st)
 		" of function\"}".println(this.st)
+		if (this.enabled == false) error()
 	}
 
 	func void printUndefinedFunction(StringNode name, LinkedList<RetNode> args, Scope sc) {
@@ -146,24 +146,24 @@ class Reporting(Boolean enabled, Stream st) {
 	}
 
 	func void printInvalidType(Position start, Position end, Type type) {
-		if (this.enabled == false) return Void
 		this.printRange(start, end, 0)
 		",\"level\":\"error\",\"message\":\"Attempted to fetch scope but type is ".print(this.st)
 		type.print(this.st)
 		"\"}".println(this.st)
+		if (this.enabled == false) error()
 	}
 
 	func void printNonVirtualChild(ClassNode cn) {
-		if (this.enabled == false) return Void
 		this.printRange(cn.position, cn.position, cn.name.length)
 		",\"level\":\"error\",\"message\":\"Children of ".print(this.st)
 		cn.parent.unwrap().print(this.st)
 		" must be virtual\"}".println(this.st)
+		if (this.enabled == false) error()
 	}
 
 	func void printNoReturn(FunctionNode fn) {
-		if (this.enabled == false) return Void
 		this.printRange(fn.position, fn.position, 4)
 		",\"level\":\"error\",\"message\":\"Non-void function has no return value\"}".println(this.st)
+		if (this.enabled == false) error()
 	}
 }
