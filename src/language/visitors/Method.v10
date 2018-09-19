@@ -1,8 +1,8 @@
 func Method Method_new() {
-	return Method_new(None<ListNode>, None<ClassNode>)
+	return Method_new(None<BlockNode>, None<ClassNode>)
 }
 
-class virtual Method < Visitor (Option<ListNode> pb, Option<ClassNode> cls) {
+class virtual Method < Visitor (Option<BlockNode> pb, Option<ClassNode> cls) {
 	func Option<Node> visit(ClassNode n) {
 		this.cls = Some(n)
 
@@ -102,15 +102,14 @@ class virtual Method < Visitor (Option<ListNode> pb, Option<ClassNode> cls) {
   	return None<Node>
 	}
 
-	func Option<ListNode> visit(ListNode n) {
+	func Option<BlockNode> visit(BlockNode n) {
 		var old_pb = this.pb
-		if (n.type == nBLOCK)
-			this.pb = Some(n)
+		this.pb = Some(n)
 
 		n.accept_children(this)
 
 		this.pb = old_pb
 
-  	return None<ListNode>
+  	return None<BlockNode>
 	}
 }

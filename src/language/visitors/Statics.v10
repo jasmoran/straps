@@ -1,26 +1,25 @@
 func Statics Statics_new() {
-  return Statics_new(None<ListNode>)
+  return Statics_new(None<BlockNode>)
 }
 
 
-class virtual Statics < Visitor (Option<ListNode> pb) {
+class virtual Statics < Visitor (Option<BlockNode> pb) {
   func Option<Node> visit(ClassNode n) {
-    this.pb.expect("Attempted to appent static class outside of block").append(
+    this.pb.expect("Attempted to append static class outside of block").append(
       StaticClassNode_new(nSTATIC_CLASS, n.position.clone("Static Class"), n)
     )
 
     return None<Node>
   }
 
-  func Option<ListNode> visit(ListNode n) {
+  func Option<BlockNode> visit(BlockNode n) {
     var old_pb = this.pb
-    if (n.type == nBLOCK)
-      this.pb = Some(n)
+    this.pb = Some(n)
 
     n.accept_children(this)
 
     this.pb = old_pb
 
-    return None<ListNode>
+    return None<BlockNode>
   }
 }

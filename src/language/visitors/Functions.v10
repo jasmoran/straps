@@ -14,15 +14,13 @@ class virtual Functions < Visitor (ListNode lfuncs, Boolean root) {
 		return None<Node>
 	}
 
-	func Option<ListNode> visit(ListNode n)() {
-		if (n.type == nBLOCK) {
-			if (this.root == true) {
-				n.append(this.lfuncs)
-				this.root = false
-			}
+	func Option<BlockNode> visit(BlockNode n)() {
+		if (this.root == true) {
+			n.append(this.lfuncs)
+			this.root = false
 		}
 
 		n.accept_children(this)
-  	return None<ListNode>
+  	return None<BlockNode>
 	}
 }

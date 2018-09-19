@@ -67,4 +67,9 @@ class virtual Visitor() {
 		n.accept_children(this)
 		return None<Node>
 	}
+
+	func Option<BlockNode> visit(BlockNode n)() {
+		n.accept_children(this)
+		return None<BlockNode>
+	}
 }

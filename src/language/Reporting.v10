@@ -57,7 +57,7 @@ class Reporting(Boolean enabled, Stream st) {
 		"\"options\":[".print(this.st)
 		for (pair in sc) {
 			var value = pair.value.to(ListNode)
-			if (value.type == nBLOCK) {
+			if (value.type == nLIST) {
 				this.printFuncs(pair.key, value)
 			} else {
 				this.printVar(pair.key, value.to(StringNode))
@@ -99,7 +99,7 @@ class Reporting(Boolean enabled, Stream st) {
 			"\",".print(this.st)
 			this.printScopeOptions(sc.scope)
 
-		} else if (res.unwrap().type == nBLOCK) {
+		} else if (res.unwrap().type == nLIST) {
 			"Given arguments don't match a defined function. Got ".print(this.st)
 			for (arg in args) {
 				arg.ret_type.basicString().print(this.st)

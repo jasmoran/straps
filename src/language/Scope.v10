@@ -24,9 +24,9 @@ class Scope (String name, Option<Scope> parent, Map<String_Node> scope) {
 
 	func void set(String name, FunctionNode node) {
 		var capsule = this.get(name)
-											.unwrap_or(ListNode_new(nBLOCK, Position_new(MetaCharacter_new('?', 0, 0), "Scope Capsule")))
+											.unwrap_or(ListNode_new(nLIST, Position_new(MetaCharacter_new('?', 0, 0), "Scope Capsule")))
 
-		if (capsule.type != nBLOCK) error("Attempted to redefine identifier ", name, " with a function")
+		if (capsule.type != nLIST) error("Attempted to redefine identifier ", name, " with a function")
 		capsule.to(ListNode).append(node)
 
 		this.scope.set(name, capsule)
@@ -34,7 +34,7 @@ class Scope (String name, Option<Scope> parent, Map<String_Node> scope) {
 
 	func Option<FunctionNode> resolve(StringNode name, LinkedList<RetNode> args) {
 		var lnoptions = this.search(name.string)
-		if (lnoptions.is_none() == true || lnoptions.unwrap().type != nBLOCK) return None<FunctionNode>
+		if (lnoptions.is_none() == true || lnoptions.unwrap().type != nLIST) return None<FunctionNode>
 
 		var options = lnoptions.unwrap().to(ListNode).children
 
@@ -94,7 +94,7 @@ class Scope (String name, Option<Scope> parent, Map<String_Node> scope) {
 		# Can't clone here because Inferring process needs to modify the
 		# existing identifier in the scope not a clone.
 		if (res.is_some() == true) {
-			if(res.unwrap().type != nBLOCK) return res
+			if(res.unwrap().type != nLIST) return res
 		}
 
 		# Just use unresolved identifier

@@ -1,8 +1,8 @@
-func Node EnumNode_new(Position pos, String name, ListNode values)() {
+func Node EnumNode_new(Position pos, String name, BlockNode values)() {
 	return EnumNode_new(nENUM, pos, name, values)
 }
 
-class virtual EnumNode < Node (String name, ListNode values) {
+class virtual EnumNode < Node (String name, BlockNode values) {
 	func Option<Node> accept(Visitor v)() {
 		return v.visit(this)
 	}

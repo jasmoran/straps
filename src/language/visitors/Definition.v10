@@ -77,7 +77,7 @@ class virtual Definition < Visitor () {
   	return None<Node>
 	}
 
-	func Option<ListNode> visit(ListNode n) {
+	func Option<BlockNode> visit(BlockNode n) {
 		var new_list = LinkedList<Node>_new()
 
 		for (field in n.children) {
@@ -85,32 +85,41 @@ class virtual Definition < Visitor () {
 			#var pos = field.position.clone("Definition")
 			var pos = Position_new(MetaCharacter_new('?', 0, 0), "Definition")
 
-			if (n.type == nGLOBAL) {
-				if (field.type != nIDENTIFIER) error()
+			field.accept(this)
 
-				# Store global variable in global scope
-				scope.set(
-					field.to(StringNode).string,
-					BinaryOperationNode_new(
-						field.to(StringNode).ret_type,
-						pos,
-						SQUARE_OPEN,
-						field,
-						StringNode_new(nNUMBER, pos, Type_new("Number"), "0")
-					)
-				)
-			} else {
-				field.accept(this)
-
-				# Remove class nodes once they have been visited
-				if (field.type != nCLASS) {
-					new_list.append(field)
-					#$#
-					# n.children.remove(field_iter.curr.unwrap())
-				}
+			# Remove class nodes once they have been visited
+			if (field.type != nCLASS) {
+				new_list.append(field)
 			}
 		}
-		if (n.type != nGLOBAL) n.children = new_list
+
+		n.children = new_list
+
+		return None<BlockNode>
+	}
+
+	func Option<ListNode> visit(ListNode n) {
+		if (n.type != nGLOBAL) return None<ListNode>
+
+		for (field in n.children) {
+			if (field.type != nIDENTIFIER) error()
+
+			# TODO: Fix SEGFAULT
+			#var pos = field.position.clone("Definition")
+			var pos = Position_new(MetaCharacter_new('?', 0, 0), "Definition")
+
+			# Store global variable in global scope
+			scope.set(
+				field.to(StringNode).string,
+				BinaryOperationNode_new(
+					field.to(StringNode).ret_type,
+					pos,
+					SQUARE_OPEN,
+					field,
+					StringNode_new(nNUMBER, pos, Type_new("Number"), "0")
+				)
+			)
+		}
 
 		return None<ListNode>
 	}

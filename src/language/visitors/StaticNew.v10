@@ -1,8 +1,8 @@
 func StaticNew StaticNew_new() {
-  return StaticNew_new(None<ListNode>)
+  return StaticNew_new(None<BlockNode>)
 }
 
-class virtual StaticNew < Visitor (Option<ListNode> pb) {
+class virtual StaticNew < Visitor (Option<BlockNode> pb) {
   func Option<Node> visit(ClassNode n) {
     # Find any init methods
     var inits = LinkedList<FunctionNode>_new()
@@ -44,7 +44,7 @@ class virtual StaticNew < Visitor (Option<ListNode> pb) {
     var ret = ReturnNode_new(pos, obj)
 
     # Create static class block
-    var block = ListNode_new(nBLOCK, pos)
+    var block = BlockNode_new(pos)
 
     for (init in inits) {
       var args = init.args.children.shallow_clone().to(LinkedList<RetNode>)
@@ -58,8 +58,7 @@ class virtual StaticNew < Visitor (Option<ListNode> pb) {
       )
 
       # Create block for new function
-      var new_block = ListNode_new(nBLOCK, pos)
-                        .append(allocation)
+      var new_block = BlockNode_new(pos).append(allocation)
 
       # Assign vtable
       if (n.vtable.is_some() == true) {
@@ -108,15 +107,14 @@ class virtual StaticNew < Visitor (Option<ListNode> pb) {
     return None<Node>
   }
 
-  func Option<ListNode> visit(ListNode n) {
+  func Option<BlockNode> visit(BlockNode n) {
     var old_pb = this.pb
-    if (n.type == nBLOCK)
-      this.pb = Some(n)
+    this.pb = Some(n)
 
     n.accept_children(this)
 
     this.pb = old_pb
 
-    return None<ListNode>
+    return None<BlockNode>
   }
 }

@@ -158,30 +158,26 @@ class virtual IndexCall < Visitor (
 		return None<Node>
 	}
 
-	func Option<ListNode> visit(ListNode n) {
-		if (n.type == nBLOCK) {
-			var prev_list = this.parent_list
-			this.parent_list = Some(n.children)
+	func Option<BlockNode> visit(BlockNode n) {
+		var prev_list = this.parent_list
+		this.parent_list = Some(n.children)
 
-			for (nn in n.children) {
-				var prev_lln = this.parent_lln
-				this.parent_lln = nn_iter.curr
+		for (nn in n.children) {
+			var prev_lln = this.parent_lln
+			this.parent_lln = nn_iter.curr
 
-				var new_nn = nn.accept(this).unwrap_or(nn)
-				nn_iter.set(new_nn)
+			var new_nn = nn.accept(this).unwrap_or(nn)
+			nn_iter.set(new_nn)
 
-				this.parent_lln = prev_lln
+			this.parent_lln = prev_lln
 
-				# Guard against function return rax being placed directly in a block
-				if (new_nn.type == nREGISTER) n.children.remove(nn_iter.curr.unwrap())
-			}
-
-			this.parent_list = prev_list
-		} else {
-			n.accept_children(this)
+			# Guard against function return rax being placed directly in a block
+			if (new_nn.type == nREGISTER) n.children.remove(nn_iter.curr.unwrap())
 		}
 
-		return None<ListNode>
+		this.parent_list = prev_list
+
+		return None<BlockNode>
 	}
 
 	func Option<Node> visit(UnaryOperationNode n) {

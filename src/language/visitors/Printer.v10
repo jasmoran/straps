@@ -124,6 +124,18 @@ class virtual Printer < Visitor (Number indent, Stream s, Number depth, Boolean 
   	return None<Node>
 	}
 
+	func Option<BlockNode> visit(BlockNode n)() {
+		if (this.indent > this.depth) return None<BlockNode>
+		this.pi()
+		n.type.toString().println(this.s)
+
+		this.indent++
+		n.accept_children(this)
+		this.indent--
+
+  	return None<BlockNode>
+	}
+
 	func Option<ListNode> visit(ListNode n)() {
 		if (this.indent > this.depth) return None<ListNode>
 		this.pi()

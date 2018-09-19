@@ -1,8 +1,8 @@
 func Constructor Constructor_new() {
-	return Constructor_new(None<ListNode>)
+	return Constructor_new(None<BlockNode>)
 }
 
-class virtual Constructor < Visitor (Option<ListNode> pb) {
+class virtual Constructor < Visitor (Option<BlockNode> pb) {
 	func Option<Node> visit(ClassNode n)(Number size) {
 		var pos = n.position.clone("Constructor")
 		var new_obj = StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "obj")
@@ -17,7 +17,7 @@ class virtual Constructor < Visitor (Option<ListNode> pb) {
 			StringNode_new(nNUMBER, pos, Type_new("Number"), size.toString())
 		)
 
-		var block = ListNode_new(nBLOCK, pos).append(
+		var block = BlockNode_new(pos).append(
 			BinaryOperationNode_new(
 				pos,
 				ASSIGN,
@@ -84,14 +84,14 @@ class virtual Constructor < Visitor (Option<ListNode> pb) {
 		return None<Node>
 	}
 
-	func Option<ListNode> visit(ListNode n) {
+	func Option<BlockNode> visit(BlockNode n) {
 		var old_pb = this.pb
-		if (n.type == nBLOCK) this.pb = Some(n)
+		this.pb = Some(n)
 
 		n.accept_children(this)
 
 		this.pb = old_pb
 
-		return None<ListNode>
+		return None<BlockNode>
 	}
 }

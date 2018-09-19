@@ -1,8 +1,8 @@
-func ForNode ForNode_new(Position pos, StringNode item, Node iterable, ListNode block)() {
+func ForNode ForNode_new(Position pos, StringNode item, Node iterable, BlockNode block)() {
 	return ForNode_new(nFOR, pos, item, iterable, block)
 }
 
-class virtual ForNode < Node (StringNode item, Node iterable, ListNode block) {
+class virtual ForNode < Node (StringNode item, Node iterable, BlockNode block) {
 	func Option<Node> accept(Visitor v) {
 		return v.visit(this)
 	}

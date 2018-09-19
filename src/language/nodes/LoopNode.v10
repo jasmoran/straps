@@ -1,9 +1,8 @@
-func Node LoopNode_new(Position pos, ListNode block)() {
+func Node LoopNode_new(Position pos, BlockNode block)() {
 	return LoopNode_new(nLOOP, pos, block)
 }
 
-# TODO: Make this a subclass of ListNode?
-class virtual LoopNode < Node (ListNode block) {
+class virtual LoopNode < Node (BlockNode block) {
 	func Option<Node> accept(Visitor v)() {
 		return v.visit(this)
 	}

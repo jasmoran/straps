@@ -1,8 +1,8 @@
-func IfNode IfNode_new(Position pos, Node condition, ListNode block_if) {
-	return IfNode_new(nIF, pos, condition, block_if, None<ListNode>)
+func IfNode IfNode_new(Position pos, Node condition, BlockNode block_if) {
+	return IfNode_new(nIF, pos, condition, block_if, None<BlockNode>)
 }
 
-class virtual IfNode < Node (Node condition, ListNode block_if, Option<ListNode> block_else) {
+class virtual IfNode < Node (Node condition, BlockNode block_if, Option<BlockNode> block_else) {
 	func Option<Node> accept(Visitor v)() {
 		return v.visit(this)
 	}
@@ -11,8 +11,8 @@ class virtual IfNode < Node (Node condition, ListNode block_if, Option<ListNode>
 		this.condition = this.condition.accept(v).unwrap_or(this.condition)
 		this.block_if = this.block_if.accept(v).unwrap_or(this.block_if)
 		if (this.block_else.is_some() == true) {
-			var ListNode els = this.block_else.unwrap()
-			var ListNode res = els.accept(v).unwrap_or(els)
+			var els = this.block_else.unwrap()
+			var res = els.accept(v).unwrap_or(els)
 			this.block_else = Some(res)
 		}
 	}
