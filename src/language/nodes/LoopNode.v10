@@ -1,0 +1,18 @@
+func Node LoopNode_new(Position pos, ListNode block)() {
+	return LoopNode_new(nLOOP, pos, block)
+}
+
+# TODO: Make this a subclass of ListNode?
+class virtual LoopNode < Node (ListNode block) {
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
+	}
+
+	func void accept_children(Visitor v)(Node n) {
+		this.block = this.block.accept(v).unwrap_or(this.block)
+	}
+
+	func LoopNode clone() {
+		return LoopNode_new(this.type, this.position, this.block)
+	}
+}

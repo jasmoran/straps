@@ -1,4 +1,4 @@
-include "src/language/Node.v10"
+include "src/language/nodes/Node.v10"
 include "src/language/Tokenizer.v10"
 
 func Parser Parser_new(String stream_name, Stream input)() {

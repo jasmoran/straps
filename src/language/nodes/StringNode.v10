@@ -1,0 +1,11 @@
+class virtual StringNode < RetNode (String string) {
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
+	}
+
+	func void accept_children(Visitor v)() {}
+
+	func StringNode clone() {
+		return StringNode_new(this.type, this.position, this.ret_type, this.string)
+	}
+}

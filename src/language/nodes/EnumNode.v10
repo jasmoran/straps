@@ -1,0 +1,17 @@
+func Node EnumNode_new(Position pos, String name, ListNode values)() {
+	return EnumNode_new(nENUM, pos, name, values)
+}
+
+class virtual EnumNode < Node (String name, ListNode values) {
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
+	}
+
+	func void accept_children(Visitor v) {
+		this.values = this.values.accept(v).unwrap_or(this.values)
+	}
+
+	func EnumNode clone() {
+		return EnumNode_new(this.type, this.position, this.name, this.values)
+	}
+}

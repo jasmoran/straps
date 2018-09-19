@@ -1,0 +1,32 @@
+define t "ListNode"
+include "src/stdlib/Option.generic"
+
+func ListNode ListNode_new(NodeType type, Position pos)() {
+	return ListNode_new(type, pos, LinkedList<Node>_new())
+}
+
+class virtual ListNode < Node (LinkedList<Node> children) {
+	func Option<ListNode> accept(Visitor v)() {
+		return v.visit(this)
+	}
+
+	func void accept_children(Visitor v) {
+		for (n in this.children) {
+			n_iter.set(n.accept(v).unwrap_or(n))
+		}
+	}
+
+	func ListNode append(Node n) {
+		this.children.append(n)
+		return this
+	}
+
+	func ListNode prepend(Node n) {
+		this.children.prepend(n)
+		return this
+	}
+
+	func ListNode clone() {
+		return ListNode_new(this.type, this.position, this.children)
+	}
+}

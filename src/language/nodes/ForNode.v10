@@ -1,0 +1,20 @@
+func ForNode ForNode_new(Position pos, StringNode item, Node iterable, ListNode block)() {
+	return ForNode_new(nFOR, pos, item, iterable, block)
+}
+
+class virtual ForNode < Node (StringNode item, Node iterable, ListNode block) {
+	func Option<Node> accept(Visitor v) {
+		return v.visit(this)
+	}
+
+	func void accept_children(Visitor v) {
+		var item = this.item.accept(v).unwrap_or(this.item).to(StringNode)
+		this.item = item
+		this.iterable = this.iterable.accept(v).unwrap_or(this.iterable)
+		this.block = this.block.accept(v).unwrap_or(this.block)
+	}
+
+	func ForNode clone() {
+		return ForNode_new(this.type, this.position, this.item, this.iterable, this.block)
+	}
+}

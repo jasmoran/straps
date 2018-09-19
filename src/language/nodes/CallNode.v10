@@ -1,0 +1,30 @@
+func CallNode CallNode_new(Position pos, Node cfunction) {
+	var args = LinkedList<RetNode>_new()
+	return CallNode_new(pos, cfunction, args)
+}
+
+func CallNode CallNode_new(Position pos, Node cfunction, LinkedList<RetNode> args) {
+	return CallNode_new(nCALL, pos, Type_new(), cfunction, args)
+}
+
+class virtual CallNode < RetNode (Node cfunction, LinkedList<RetNode> args) {
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
+	}
+
+	func void accept_args(Visitor v) {
+		for (arg in this.args) {
+			var nn = arg.accept(v).unwrap_or(arg).to(RetNode)
+			arg_iter.set(nn)
+		}
+	}
+
+	func void accept_children(Visitor v) {
+		this.cfunction = this.cfunction.accept(v).unwrap_or(this.cfunction)
+		this.accept_args(v)
+	}
+
+	func CallNode clone() {
+		return CallNode_new(this.type, this.position, this.ret_type, this.cfunction, this.args)
+	}
+}

@@ -1,0 +1,5 @@
+class virtual OpNode < RetNode (Token op) {
+	func OpNode clone() {
+		return OpNode_new(this.type, this.position, this.ret_type, this.op)
+	}
+}

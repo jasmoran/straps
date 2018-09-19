@@ -1,0 +1,60 @@
+define k "String"
+define v "Node"
+include "src/stdlib/Map.generic"
+
+define t "Node"
+include "src/stdlib/Array.generic"
+
+define t "Node"
+include "src/stdlib/LinkedList.generic"
+
+define t "LinkedList<Node>"
+include "src/stdlib/Option.generic"
+
+enum NodeType {
+	nNONE nNASM nSYS nBLOCK nPAREN_LIST nFUNCTION nRETURN nCOMPARISON nIF
+	nNEXT nLOOP nBREAK nIDENTIFIER nENUM nCOMMENT nCHARACTER nSTRING nNUMBER
+	nINDEX nCALL nOPERATION nMEM_ACCESS nREGISTER nPUSH nPOP nCLASS nFIELD nGLOBAL
+	nSTRINGS nBINARYOP nUNARYOP nLIST nFUNCTIONS nVTAB_ACCESS nFOR nSTATIC_CLASS
+}
+
+class NodeType() {
+	func String toString() {
+		nasm("mov rax, NodeType")
+		var a = rax.to(Array<String>)
+		var ix = this.to(Number)
+		return a.get(ix)
+	}
+}
+
+define t "Node"
+include "src/stdlib/Option.generic"
+
+class virtual Node(NodeType type, Position position) {
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
+	}
+
+	func void accept_children(Visitor v)() {}
+
+	func Node clone() {
+		return Node_new(this.type, this.position)
+	}
+}
+
+include "src/language/nodes/RetNode.v10"
+include "src/language/nodes/OpNode.v10"
+
+include "src/language/nodes/CallNode.v10"
+include "src/language/nodes/BinaryOperationNode.v10"
+include "src/language/nodes/UnaryOperationNode.v10"
+include "src/language/nodes/StringNode.v10"
+include "src/language/nodes/StaticClassNode.v10"
+include "src/language/nodes/ClassNode.v10"
+include "src/language/nodes/FunctionNode.v10"
+include "src/language/nodes/ListNode.v10"
+include "src/language/nodes/IfNode.v10"
+include "src/language/nodes/LoopNode.v10"
+include "src/language/nodes/ReturnNode.v10"
+include "src/language/nodes/EnumNode.v10"
+include "src/language/nodes/ForNode.v10"

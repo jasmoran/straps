@@ -1,0 +1,23 @@
+func IfNode IfNode_new(Position pos, Node condition, ListNode block_if) {
+	return IfNode_new(nIF, pos, condition, block_if, None<ListNode>)
+}
+
+class virtual IfNode < Node (Node condition, ListNode block_if, Option<ListNode> block_else) {
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
+	}
+
+	func void accept_children(Visitor v)(Node n) {
+		this.condition = this.condition.accept(v).unwrap_or(this.condition)
+		this.block_if = this.block_if.accept(v).unwrap_or(this.block_if)
+		if (this.block_else.is_some() == true) {
+			var ListNode els = this.block_else.unwrap()
+			var ListNode res = els.accept(v).unwrap_or(els)
+			this.block_else = Some(res)
+		}
+	}
+
+	func IfNode clone() {
+		return IfNode_new(this.type, this.position, this.condition, this.block_if, this.block_else)
+	}
+}

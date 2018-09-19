@@ -1,0 +1,34 @@
+define t "ClassNode"
+include "src/stdlib/Option.generic"
+
+func ClassNode ClassNode_new(Position pos, String name, ListNode fields, ListNode block, Option<Map<String_FunctionNode>> vtable, Option<Type> parent)(Scope sc) {
+	sc = Scope_new(name, None<Scope>)
+	var ret_type = Type_new(name.clone(6).append("Static"))
+	return ClassNode_new(nCLASS, pos, ret_type, name, fields, block, sc, vtable, parent)
+}
+
+func ClassNode ClassNode_new(Position pos, String name, ListNode fields, ListNode block) {
+	var Option<Map<String_FunctionNode>> vtable = None<Map<String_FunctionNode>>
+	return ClassNode_new(pos, name, fields, block, vtable, None<Type>)
+}
+
+class virtual ClassNode < RetNode (String name, ListNode fields,
+								ListNode block, Scope scope, Option<Map<String_FunctionNode>> vtable, Option<Type> parent) {
+	func Option<Node> accept(Visitor v)() {
+		return v.visit(this)
+	}
+
+	func void accept_children(Visitor v)(Node n) {
+		this.fields = this.fields.accept(v).unwrap_or(this.fields)
+		this.block = this.block.accept(v).unwrap_or(this.block)
+	}
+
+	func ClassNode shallow_clone() {
+		return ClassNode_new(this.position, this.name, ListNode_new(nLIST, this.fields.position),
+												 ListNode_new(nLIST, this.block.position), this.vtable, this.parent)
+	}
+
+	func ClassNode clone() {
+		return ClassNode_new(this.type, this.position, this.ret_type, this.name, this.fields, this.block, this.scope, this.vtable, this.parent)
+	}
+}

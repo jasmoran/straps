@@ -1,0 +1,11 @@
+define t "RetNode"
+include "src/stdlib/LinkedList.generic"
+
+define t "RetNode"
+include "src/stdlib/Option.generic"
+
+class virtual RetNode < Node (Type ret_type) {
+	func RetNode clone() {
+		return RetNode_new(this.type, this.position, this.ret_type)
+	}
+}
