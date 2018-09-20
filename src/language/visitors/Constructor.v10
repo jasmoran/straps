@@ -4,6 +4,8 @@ func Constructor Constructor_new() {
 
 class virtual Constructor < Visitor (Option<BlockNode> pb) {
 	func Option<Node> visit(ClassNode n)(Number size) {
+		var pb = this.pb.expect("Class defined outside of block")
+
 		var pos = n.position.clone("Constructor")
 		var new_obj = StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "obj")
 
@@ -17,7 +19,7 @@ class virtual Constructor < Visitor (Option<BlockNode> pb) {
 			StringNode_new(nNUMBER, pos, Type_new("Number"), size.toString())
 		)
 
-		var block = BlockNode_new(pos).append(
+		var block = BlockNode_new(pos, Scope_new("ConstructorScope", pb.scope)).append(
 			BinaryOperationNode_new(
 				pos,
 				ASSIGN,
@@ -70,7 +72,7 @@ class virtual Constructor < Visitor (Option<BlockNode> pb) {
 		)
 
 		# Create _new function and append to parent block
-		this.pb.expect("Class defined outside of block").append(
+		pb.append(
 			FunctionNode_new(
 				pos,
 				Type_new(n.name),

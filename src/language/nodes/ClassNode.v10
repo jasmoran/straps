@@ -1,8 +1,8 @@
 define t "ClassNode"
 include "src/stdlib/Option.generic"
 
-func ClassNode ClassNode_new(Position pos, String name, ListNode fields, BlockNode block, Option<Map<String_FunctionNode>> vtable, Option<Type> parent)(Scope sc) {
-	sc = Scope_new(name, None<Scope>)
+func ClassNode ClassNode_new(Position pos, String name, ListNode fields, BlockNode block, Option<Map<String_FunctionNode>> vtable, Option<Type> parent) {
+	var sc = Scope_new(name, None<Scope>)
 	var ret_type = Type_new(name.clone(6).append("Static"))
 	return ClassNode_new(nCLASS, pos, ret_type, name, fields, block, sc, vtable, parent)
 }
@@ -25,7 +25,7 @@ class virtual ClassNode < RetNode (String name, ListNode fields,
 
 	func ClassNode shallow_clone() {
 		return ClassNode_new(this.position, this.name, ListNode_new(nLIST, this.fields.position),
-												 BlockNode_new(this.block.position), this.vtable, this.parent)
+												 BlockNode_new(this.block.position, Scope_new(this.name, None<Scope>)), this.vtable, this.parent)
 	}
 
 	func ClassNode clone() {

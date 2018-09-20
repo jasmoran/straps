@@ -4,6 +4,8 @@ func StaticNew StaticNew_new() {
 
 class virtual StaticNew < Visitor (Option<BlockNode> pb) {
   func Option<Node> visit(ClassNode n) {
+    var pb = this.pb.expect("Attempted to attach static class outside of block")
+
     # Find any init methods
     var inits = LinkedList<FunctionNode>_new()
     for (nmeth in n.block.children) {
@@ -44,7 +46,7 @@ class virtual StaticNew < Visitor (Option<BlockNode> pb) {
     var ret = ReturnNode_new(pos, obj)
 
     # Create static class block
-    var block = BlockNode_new(pos)
+    var block = BlockNode_new(pos, Scope_new("StaticClassScope", pb.scope))
 
     for (init in inits) {
       var args = init.args.children.shallow_clone().to(LinkedList<RetNode>)
@@ -58,7 +60,7 @@ class virtual StaticNew < Visitor (Option<BlockNode> pb) {
       )
 
       # Create block for new function
-      var new_block = BlockNode_new(pos).append(allocation)
+      var new_block = BlockNode_new(pos, Scope_new("StaticConstructorScope", None<Scope>)).append(allocation)
 
       # Assign vtable
       if (n.vtable.is_some() == true) {
@@ -99,7 +101,7 @@ class virtual StaticNew < Visitor (Option<BlockNode> pb) {
     # Create and attach static class
     var name = n.name.clone(6).append("Static")
     var static_class = ClassNode_new(pos, name, n.fields.clone(), block)
-    this.pb.expect("Attempted to attach static class outside of block").prepend(static_class)
+    pb.prepend(static_class)
 
     # Add static class to scope
     scope.set(name, static_class)

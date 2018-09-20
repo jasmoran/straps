@@ -2,7 +2,7 @@ include "src/language/nodes/Node.v10"
 include "src/language/Tokenizer.v10"
 
 func Parser Parser_new(String stream_name, Stream input)() {
-	return Parser_new(stream_name, Tokenizer_new(stream_name, input), Set<String>_new())
+	return Parser_new(stream_name, Tokenizer_new(stream_name, input), Set<String>_new(), None<Scope>)
 }
 
 func Node Parser_parse(String stream_name, Stream input)(Parser p) {
@@ -10,7 +10,7 @@ func Node Parser_parse(String stream_name, Stream input)(Parser p) {
 	return p.parse()
 }
 
-class Parser(String name, Tokenizer t, Set<String> reqs) {
+class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_scope) {
 	func Node nt_class() {
 		this.t.consume(CLASS)
 
@@ -31,7 +31,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		}
 
 		var fields = this.typed_list(nLIST)
-		var block = this.block()
+		var block = this.block(None<Scope>)
 
 		return ClassNode_new(pos, name, fields, block, vtable, parent)
 	}
@@ -42,7 +42,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		var pos = this.t.get_pos()
 
 		var name = this.t.consume(IDENTIFIER)
-		var values = this.block()
+		var values = this.block(None<Scope>)
 
 		return EnumNode_new(pos, name, values)
 	}
@@ -60,7 +60,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		} else {
 			vrbls = ListNode_new(nLIST, this.t.get_pos())
 		}
-		var block = this.block().to(BlockNode)
+		var block = this.block(Some(scope))
 
 		return FunctionNode_new(pos, Type_new(ret_type), name, args, vrbls, block)
 	}
@@ -77,13 +77,13 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		var pos = this.t.get_pos()
 
 		expr = this.expression()
-		var block_if = this.block()
+		var block_if = this.block(this.parent_scope)
 		node = IfNode_new(pos, expr, block_if)
 
 		this.skip_newlines()
 		if (this.t.peek() == ELSE) {
 			this.t.consume(ELSE)
-			node.block_else = Some(this.block())
+			node.block_else = Some(this.block(this.parent_scope))
 		}
 
 		return node
@@ -122,7 +122,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 
 	func Node parse() {
 		var pos = this.t.get_pos()
-		var block = BlockNode_new(pos)
+		var block = BlockNode_new(pos, scope)
 
 		loop {
 			var expr = this.statement()
@@ -133,12 +133,15 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		return block
 	}
 
-	func BlockNode block() {
+	func BlockNode block(Option<Scope> parent_scope) {
 		this.skip_newlines()
 
 		var peek = this.t.peek()
 		var pos = this.t.get_pos()
-		var block = BlockNode_new(pos)
+
+		var block = BlockNode_new(pos, Scope_new("BlockScope", parent_scope))
+		var prev_scope = this.parent_scope
+		this.parent_scope = Some(block.scope)
 
 		if (peek == CURLY_OPEN) {
 			this.t.consume(CURLY_OPEN)
@@ -154,6 +157,8 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		} else {
 			block.append(this.statement())
 		}
+
+		this.parent_scope = prev_scope
 
 		return block
 	}
@@ -355,7 +360,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 			var iter = this.expression()
 			this.t.consume(PAREN_CLOSE)
 
-			return ForNode_new(pos, item, iter, this.block())
+			return ForNode_new(pos, item, iter, this.block(this.parent_scope))
 		}
 
 		if (tk == FUNC) {
@@ -378,7 +383,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs) {
 		if (tk == LOOP) {
 			this.t.consume(LOOP)
 			var pos = this.t.get_pos()
-			return LoopNode_new(pos, this.block())
+			return LoopNode_new(pos, this.block(this.parent_scope))
 		}
 
 		if (tk == NASM) {

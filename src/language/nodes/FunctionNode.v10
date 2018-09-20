@@ -31,7 +31,7 @@ class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls
 	}
 
 	func FunctionNode shallow_clone()(FunctionNode fn) {
-		fn = FunctionNode_new(this.position, this.ret_type, this.name, this.args, this.vrbls, BlockNode_new(this.block.position))
+		fn = FunctionNode_new(this.position, this.ret_type, this.name, this.args, this.vrbls, BlockNode_new(this.block.position, Scope_new(this.name, None<Scope>)))
 		fn.scope = this.scope
 		return fn
 	}
