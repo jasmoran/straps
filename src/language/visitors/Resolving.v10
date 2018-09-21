@@ -27,8 +27,6 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 	}
 
 	func Option<Node> visit(FunctionNode n)(Scope prev_scope, ListNode block) {
-		prev_scope = this.scope
-		this.scope = n.block.scope
 		n.ret_type.resolve(this.scope)
 
 		# Dont resolve identifiers in vars and args
@@ -38,8 +36,17 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 		this.resolve_idents = true
 		n.block.accept(this)
 
-		this.scope = prev_scope
 		return None<Node>
+	}
+
+	func Option<BlockNode> visit(BlockNode n) {
+		var prev_scope = this.scope
+		this.scope = n.scope
+
+		n.accept_children(this)
+
+		this.scope = prev_scope
+		return None<BlockNode>
 	}
 
 	func Option<Node> visit(CallNode n) {

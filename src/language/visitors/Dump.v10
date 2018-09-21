@@ -225,7 +225,7 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 			n.name.print(this.stream)
 		}
 		":\npush rbp\nmov rbp, rsp\nsub rsp, ".print(this.stream)
-		size = n.vrbls.children.length
+		size = n.num_vars
 		size << 3
 		size.toString().println(this.stream)
 		"push r12\npush r13".println(this.stream)

@@ -1,20 +1,64 @@
-func Variables Variables_new()(FunctionNode fn) {
-	return Variables_new(None<FunctionNode>)
+func Variables Variables_new() {
+	return Variables_new(None<BlockNode>, 0, 0)
 }
 
-class virtual Variables < Visitor (Option<FunctionNode> containing_fun) {
+class virtual Variables < Visitor (
+	Option<BlockNode> containing_block,
+	Number max_vars,
+	Number available_position
+) {
+
 	func Option<Node> visit(FunctionNode n) {
-		var old_cf = this.containing_fun
-		this.containing_fun = Some(n)
+		this.available_position = n.vrbls.children.length
+		this.max_vars = this.available_position
+
 		n.accept_children(this)
-		this.containing_fun = old_cf
+
+		n.num_vars = this.max_vars
+
 		return None<Node>
+	}
+
+	func Option<BlockNode> visit(BlockNode n) {
+		var old_cb = this.containing_block
+		var old_ap = this.available_position
+
+		this.containing_block = Some(n)
+		n.accept_children(this)
+
+		this.containing_block = old_cb
+		this.available_position = old_ap
+
+		return None<BlockNode>
 	}
 
 	func Option<Node> visit(UnaryOperationNode n) {
 		if (n.op != VAR) return None<Node>
-		var binop = n.expr.to(BinaryOperationNode)
-		this.containing_fun.expect("var declared outside of any function").vrbls.append(binop.lhs)
-		return Some(binop.to(Node))
+		var containing_block = this.containing_block.expect("var declared outside of any block")
+
+		# Calculate offset of variable from offset
+		this.available_position++
+		var offset = this.available_position
+		offset << 3
+		offset = 0 - offset
+
+		# Update max_vars if required
+		if (this.available_position > this.max_vars) this.max_vars = this.available_position
+
+		# Add variable to block scope
+		var assignment = n.expr.to(BinaryOperationNode)
+		var vrbl = assignment.lhs.to(StringNode)
+		containing_block.scope.set(
+			vrbl.string,
+			BinaryOperationNode_new(
+				vrbl.ret_type,
+				vrbl.position,
+				SQUARE_OPEN,
+				StringNode_new(nREGISTER, vrbl.position, Type_new(), "rbp"),
+				StringNode_new(nNUMBER, vrbl.position, Type_new("Number"), offset.toString())
+			)
+		)
+
+		return Some(assignment.to(Node))
 	}
 }
