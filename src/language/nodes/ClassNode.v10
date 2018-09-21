@@ -2,9 +2,8 @@ define t "ClassNode"
 include "src/stdlib/Option.generic"
 
 func ClassNode ClassNode_new(Position pos, String name, ListNode fields, BlockNode block, Option<Map<String_FunctionNode>> vtable, Option<Type> parent) {
-	var sc = Scope_new(name, None<Scope>)
 	var ret_type = Type_new(name.clone(6).append("Static"))
-	return ClassNode_new(nCLASS, pos, ret_type, name, fields, block, sc, vtable, parent)
+	return ClassNode_new(nCLASS, pos, ret_type, name, fields, block, vtable, parent)
 }
 
 func ClassNode ClassNode_new(Position pos, String name, ListNode fields, BlockNode block) {
@@ -13,7 +12,7 @@ func ClassNode ClassNode_new(Position pos, String name, ListNode fields, BlockNo
 }
 
 class virtual ClassNode < RetNode (String name, ListNode fields,
-								BlockNode block, Scope scope, Option<Map<String_FunctionNode>> vtable, Option<Type> parent) {
+								BlockNode block, Option<Map<String_FunctionNode>> vtable, Option<Type> parent) {
 	func Option<Node> accept(Visitor v)() {
 		return v.visit(this)
 	}
@@ -25,10 +24,10 @@ class virtual ClassNode < RetNode (String name, ListNode fields,
 
 	func ClassNode shallow_clone() {
 		return ClassNode_new(this.position, this.name, ListNode_new(nLIST, this.fields.position),
-												 BlockNode_new(this.block.position, Scope_new(this.name, None<Scope>)), this.vtable, this.parent)
+												 BlockNode_new(this.block.position, this.block.scope), this.vtable, this.parent)
 	}
 
 	func ClassNode clone() {
-		return ClassNode_new(this.type, this.position, this.ret_type, this.name, this.fields, this.block, this.scope, this.vtable, this.parent)
+		return ClassNode_new(this.type, this.position, this.ret_type, this.name, this.fields, this.block, this.vtable, this.parent)
 	}
 }

@@ -9,7 +9,7 @@ class virtual Definition < Visitor () {
 			if (field.type != nIDENTIFIER) error()
 
 			# Store field offset in class scope
-			n.scope.set(
+			n.block.scope.set(
 				field.to(StringNode).string,
 				StringNode_new(nINDEX, field.position.clone("Definition"), field.to(StringNode).ret_type, ix.toString())
 			)

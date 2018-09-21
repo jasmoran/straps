@@ -97,7 +97,7 @@ class virtual Printer < Visitor (Number indent, Stream s, Number depth, Boolean 
 		"(".print(this.s)
 		n.name.print(this.s)
 		")\n".print(this.s)
-		if (this.print_scope == true) n.scope.print()
+		if (this.print_scope == true) n.block.scope.print()
 
 		this.indent++
 		n.accept_children(this)

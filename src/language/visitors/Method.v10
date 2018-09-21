@@ -14,7 +14,7 @@ class virtual Method < Visitor (Option<BlockNode> pb, Option<ClassNode> cls) {
 
 			if (parent.res.is_some() == true) {
 				# Link scopes
-				n.scope.parent = Some(parent.res.unwrap().scope)
+				n.block.scope.parent = parent.getScope()
 
 				# Inherit vtable
 				if (n.vtable.is_some() == true) {
@@ -73,7 +73,7 @@ class virtual Method < Visitor (Option<BlockNode> pb, Option<ClassNode> cls) {
 
 			if (cls.vtable.is_none() == true) {
 				# Add method (direct) to scope of class
-				cls.scope.set(pure, clone)
+				cls.block.scope.set(pure, clone)
 			} else {
 				# Add method to vtable of class
 				cls.vtable.unwrap().set(cls_scope_name, n)
@@ -86,7 +86,7 @@ class virtual Method < Visitor (Option<BlockNode> pb, Option<ClassNode> cls) {
 				var vtab = n.shallow_clone()
 				vtab.type = nVTAB_ACCESS
 				vtab.name = offset.toString()
-				cls.scope.set(pure, vtab)
+				cls.block.scope.set(pure, vtab)
 			}
 
 			# Save new method name "_CLASS_METHOD"

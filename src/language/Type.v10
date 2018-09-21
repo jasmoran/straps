@@ -43,9 +43,9 @@ class Type (String raw, Option<ClassNode> res, TypeStrength strength) {
 		}
 	}
 
-	func Option<Scope> getScope(Position pos) {
+	func Option<Scope> getScope() {
 		if (this.res.is_none() == true) return None<Scope>
-		return Some(this.res.unwrap().scope)
+		return Some(this.res.unwrap().block.scope)
 	}
 
 	func void print(Stream s)() {
