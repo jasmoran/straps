@@ -48,7 +48,7 @@ class virtual Definition < Visitor () {
 			if (field.type != nIDENTIFIER) error()
 
 			# Store value in function scope
-			n.scope.set(
+			n.block.scope.set(
 				field.to(StringNode).string,
 				this.new_variable(ix, field.to(StringNode))
 			)
@@ -68,7 +68,7 @@ class virtual Definition < Visitor () {
 			ix -= 8
 
 			# Store value in function scope
-			n.scope.set(
+			n.block.scope.set(
 				field.to(StringNode).string,
 				this.new_variable(ix, field.to(StringNode))
 			)

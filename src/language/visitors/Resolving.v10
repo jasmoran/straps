@@ -28,7 +28,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 
 	func Option<Node> visit(FunctionNode n)(Scope prev_scope, ListNode block) {
 		prev_scope = this.scope
-		this.scope = n.scope
+		this.scope = n.block.scope
 		n.ret_type.resolve(this.scope)
 
 		# Dont resolve identifiers in vars and args
@@ -75,7 +75,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 
 			# Set sc to that of the first items type
 			lhs.ret_type.resolve(this.scope)
-			var opt_sc = lhs.ret_type.getScope(lhs.position)
+			var opt_sc = lhs.ret_type.getScope()
 			var sc = opt_sc.unwrap_or(this.scope)
 			if (opt_sc.is_none() == true) {
 				this.report.printInvalidType(binop.lhs.position, binop.rhs.position, lhs.ret_type)
@@ -159,7 +159,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 			# Set scope to that of the first items type
 			var sn = n.lhs.to(StringNode)
 			sn.ret_type.resolve(this.scope)
-			var opt_sc = sn.ret_type.getScope(sn.position)
+			var opt_sc = sn.ret_type.getScope()
 			if (opt_sc.is_none() == true) {
 				this.report.printInvalidType(n.lhs.position, n.rhs.position, sn.ret_type)
 				return Some(n.to(Node))
