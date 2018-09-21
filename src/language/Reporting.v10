@@ -93,8 +93,8 @@ class Reporting(Boolean enabled, Stream st) {
 		this.printRange(name.position, name.position, name.string.length)
 		",\"level\":\"error\",\"message\":\"".print(this.st)
 
-		if (res.is_some() == true) {
-			"Could not resolve ".print(this.st)
+		if (res.is_none() == true) {
+			"Could not resolve function ".print(this.st)
 			name.string.print(this.st)
 			"\",".print(this.st)
 			this.printScopeOptions(sc.scope)
@@ -127,7 +127,7 @@ class Reporting(Boolean enabled, Stream st) {
 		",\"level\":\"error\",\"message\":\"".print(this.st)
 
 		if (res.is_none() == true) {
-			"Could not resolve ".print(this.st)
+			"Could not resolve identifier ".print(this.st)
 			name.string.print(this.st)
 			"\",".print(this.st)
 			this.printScopeOptions(sc.scope)

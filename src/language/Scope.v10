@@ -34,7 +34,8 @@ class Scope (String name, Option<Scope> parent, Map<String_Node> scope) {
 
 	func Option<FunctionNode> resolve(StringNode name, LinkedList<RetNode> args) {
 		var lnoptions = this.search(name.string)
-		if (lnoptions.is_none() == true || lnoptions.unwrap().type != nLIST) return None<FunctionNode>
+		if (lnoptions.is_none() == true) return None<FunctionNode>
+		if (lnoptions.unwrap().type != nLIST) return None<FunctionNode>
 
 		var options = lnoptions.unwrap().to(ListNode).children
 
