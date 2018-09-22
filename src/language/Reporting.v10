@@ -47,7 +47,8 @@ class Reporting(Boolean enabled, Stream st) {
 
 	func void printFuncs(String name, ListNode fns) {
 		for (fn in fns.children) {
-			if (fn.type != nFUNCTION) error("List item is not a FunctionNode")
+			if (fn.type != nFUNCTION && fn.type != nVTAB_ACCESS)
+				error("List item is not a FunctionNode")
 			this.printFunc(name, fn.to(FunctionNode))
 			",".print(this.st)
 		}
