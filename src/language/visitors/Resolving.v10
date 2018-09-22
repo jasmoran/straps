@@ -145,7 +145,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 		}
 
 		# Inherit ret_type from function
-		n.ret_type = n.cfunction.to(RetNode).ret_type
+		if (n.ret_type.strength < CAST) n.ret_type = n.cfunction.to(RetNode).ret_type
 
 		return Some(n.to(Node))
 	}
@@ -181,8 +181,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 			if (orig_type.strength == CAST) sn.ret_type = orig_type
 
 			# Inherit ret_type from rhs
-			var sn = n.rhs.to(StringNode)
-			n.ret_type = sn.ret_type
+			if (n.ret_type.strength < CAST) n.ret_type = n.rhs.to(StringNode).ret_type
 
 			# Restore scope
 			this.scope = prev_scope
