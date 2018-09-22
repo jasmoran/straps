@@ -245,12 +245,18 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		return None<Node>
 	}
 
-	func Option<ListNode> visit(ListNode n) {
+	func Option<BlockNode> visit(BlockNode n) {
 		if (this.top == true) {
 			"section .text\nglobal _start".println(this.stream)
 			this.top = false
 		}
 
+		n.accept_children(this)
+
+		return None<BlockNode>
+	}
+
+	func Option<ListNode> visit(ListNode n) {
 		if (n.type == nSYS) {
 			var ix = 0
 			for (nn in n.children) {
