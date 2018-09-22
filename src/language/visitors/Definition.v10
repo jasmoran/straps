@@ -60,20 +60,6 @@ class virtual Definition < Visitor () {
 		if (n.pure == NullString) error("Null pure")
 		scope.set(n.pure, n.shallow_clone())
 
-		# Loop through variables
-		ix = 0
-		for (field in n.vrbls.children) {
-			if (field.type != nIDENTIFIER) error()
-
-			ix -= 8
-
-			# Store value in function scope
-			n.block.scope.set(
-				field.to(StringNode).string,
-				this.new_variable(ix, field.to(StringNode))
-			)
-		}
-
   	return None<Node>
 	}
 

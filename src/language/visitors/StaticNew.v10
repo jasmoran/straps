@@ -86,14 +86,28 @@ class virtual StaticNew < Visitor (Option<BlockNode> pb) {
       var new_args = ListNode_new(nLIST, pos)
       new_args.children = init.args.children.shallow_clone()
 
+      # Add obj to block scope
+      block.scope.set(
+        obj.string,
+        BinaryOperationNode_new(
+          obj.ret_type,
+          obj.position,
+          SQUARE_OPEN,
+          StringNode_new(nREGISTER, obj.position, Type_new(), "rbp"),
+          StringNode_new(nNUMBER, obj.position, Type_new("Number"), "-8")
+        )
+      )
+
       block.append(
         FunctionNode_new(
+          nFUNCTION,
           pos,
           Type_new(n.name),
           "new",
           new_args,
-          ListNode_new(nLIST, pos).append(obj),
-          new_block
+          new_block,
+          NullString,
+          1
         )
       )
     }

@@ -10,7 +10,7 @@ class virtual Variables < Visitor (
 ) {
 
 	func Option<Node> visit(FunctionNode n) {
-		this.available_position = n.vrbls.children.length
+		this.available_position = 0
 		this.max_vars = this.available_position
 
 		n.accept_children(this)

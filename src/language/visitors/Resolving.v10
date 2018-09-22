@@ -29,10 +29,9 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 	func Option<Node> visit(FunctionNode n) {
 		n.ret_type.resolve(this.scope)
 
-		# Dont resolve identifiers in vars and args
+		# Dont resolve identifiers in args
 		this.resolve_idents = false
 		n.args.accept(this)
-		n.vrbls.accept(this)
 		this.resolve_idents = true
 		n.block.accept(this)
 

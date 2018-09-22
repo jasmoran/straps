@@ -71,6 +71,18 @@ class virtual Constructor < Visitor (Option<BlockNode> pb) {
 			ReturnNode_new(pos, new_obj)
 		)
 
+		# Add new_obj to block scope
+		block.scope.set(
+			new_obj.string,
+			BinaryOperationNode_new(
+				new_obj.ret_type,
+				new_obj.position,
+				SQUARE_OPEN,
+				StringNode_new(nREGISTER, new_obj.position, Type_new(), "rbp"),
+				StringNode_new(nNUMBER, new_obj.position, Type_new("Number"), "-8")
+			)
+		)
+
 		# Create _new function and append to parent block
 		pb.append(
 			FunctionNode_new(
@@ -79,7 +91,6 @@ class virtual Constructor < Visitor (Option<BlockNode> pb) {
 				Type_new(n.name),
 				n.name.clone(4).append("_new"),
 				args,
-				ListNode_new(nLIST, pos).append(new_obj),
 				block,
 				NullString,
 				1
