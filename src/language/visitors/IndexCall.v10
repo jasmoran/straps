@@ -26,7 +26,8 @@ class virtual IndexCall < Visitor (
 			# Visit argument
 			var arg_acc = arg.accept(this)
 			if (arg_acc.is_some() == true) {
-				var arg = arg_acc.unwrap().to(RetNode)
+				var rn = arg_acc.unwrap().to(RetNode)
+				arg = rn
 				arg_iter.set(arg)
 			}
 

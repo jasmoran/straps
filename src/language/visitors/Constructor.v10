@@ -74,12 +74,15 @@ class virtual Constructor < Visitor (Option<BlockNode> pb) {
 		# Create _new function and append to parent block
 		pb.append(
 			FunctionNode_new(
+				nFUNCTION,
 				pos,
 				Type_new(n.name),
 				n.name.clone(4).append("_new"),
 				args,
 				ListNode_new(nLIST, pos).append(new_obj),
-				block
+				block,
+				NullString,
+				1
 			)
 		)
 

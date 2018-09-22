@@ -27,7 +27,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 		var parent = None<Type>
 		if (this.t.peek() == LESS) {
 			this.t.consume(LESS)
-			var parent = Some(Type_new(this.t.consume(IDENTIFIER)))
+			parent = Some(Type_new(this.t.consume(IDENTIFIER)))
 		}
 
 		var fields = this.typed_list(nLIST)
@@ -313,10 +313,9 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 				this.t.consume(SQUARE_CLOSE)
 			} else if (tk == DOT) {
 				this.t.consume(DOT)
+				var rhs = StringNode_new(nIDENTIFIER, pos, Type_new(), "_MISSING").to(StringNode)
 				if (this.t.peek() == IDENTIFIER) {
-					var rhs = this.nt_identifier()
-				} else {
-					rhs = StringNode_new(nIDENTIFIER, pos, Type_new(), "_MISSING")
+					rhs = this.nt_identifier()
 				}
 				node = BinaryOperationNode_new(pos, DOT, node, rhs)
 			} else if (tk == INCREMENT) {
@@ -420,15 +419,17 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 			var vr_pos = this.t.get_pos()
 			var raw_type = this.t.consume(IDENTIFIER)
 			var ident_pos = this.t.get_pos()
+
+			# Inferring
+			var vrbl = raw_type
+			var type = Type_new(INFER)
+
 			if (this.t.peek() == IDENTIFIER) {
 				# Explicit
-				var vrbl = this.t.consume(IDENTIFIER)
-				var type = Type_new(raw_type)
-			} else {
-				# Inferring
-				vrbl = raw_type
-				type = Type_new(INFER)
+				vrbl = this.t.consume(IDENTIFIER)
+				type = Type_new(raw_type)
 			}
+
 			this.t.consume(ASSIGN)
 			var ass_pos = this.t.get_pos()
 
@@ -480,6 +481,6 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 		error("Unknown expression ", tk.toString(), " at ", this.t.get_pos().toString())
 
-		return RetNode_new(nNONE, pos, Type_new())
+		return RetNode_new(nNONE, Position_new(MetaCharacter_new('?', 0, 0), "Impossible"), Type_new())
 	}
 }

@@ -281,14 +281,14 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 			"section .text".println(this.stream)
 		} else if (n.type == nSTRINGS) {
 			"section .data".println(this.stream)
-			ix = 0
+			var ix = 0
 			for (nn in n.children) {
 				if (nn.type != nSTRING) error()
 
 				"string_".print(this.stream)
 				ix.toString().print(this.stream)
 				":\ndq ".print(this.stream)
-				s = nn.to(StringNode).string.unescaped_length().toString()
+				var s = nn.to(StringNode).string.unescaped_length().toString()
 				s.print(this.stream)
 				", ".print(this.stream)
 				s.print(this.stream)
@@ -302,9 +302,9 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 			"section .text".println(this.stream)
 		} else if (n.type == nFUNCTIONS) {
 			"section .data\n_FUNCTIONLIST:\ndq ".print(this.stream)
-			ix = n.children.length
+			var ix = n.children.length
 			ix >> 1
-			s = ix.toString()
+			var s = ix.toString()
 			s.print(this.stream)
 			", ".print(this.stream)
 			s.print(this.stream)

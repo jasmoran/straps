@@ -130,8 +130,8 @@ func Set<String> build(String name, Reporting reporting) {
 
 	# if (name.equal("src/stdlib/stdlib") == false) parser.reqs.add("src/stdlib/stdlib")
 
-	var pos = Position_new(MetaCharacter_new('?', 0, 0), "MainFunctions")
-	var lfuncs = ListNode_new(nFUNCTIONS, pos)
+	var fn_pos = Position_new(MetaCharacter_new('?', 0, 0), "MainFunctions")
+	var lfuncs = ListNode_new(nFUNCTIONS, fn_pos)
 	var glob_reqs = Set<String>_new()
 	glob_reqs.add(name)
 
