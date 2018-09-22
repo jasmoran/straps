@@ -1,16 +1,16 @@
-func UnaryOperationNode UnaryOperationNode_new(Position pos, Token op, Node expr, Boolean left)() {
+func UnaryOperationNode UnaryOperationNode_new(Position pos, Token op, Node expr, Boolean left) {
 	return UnaryOperationNode_new(pos, Type_new(), op, expr, left)
 }
-func UnaryOperationNode UnaryOperationNode_new(Position pos, Type ret_type, Token op, Node expr, Boolean left)() {
+func UnaryOperationNode UnaryOperationNode_new(Position pos, Type ret_type, Token op, Node expr, Boolean left) {
 	return UnaryOperationNode_new(nUNARYOP, pos, ret_type, op, expr, left)
 }
 
 class virtual UnaryOperationNode < OpNode (Node expr, Boolean left) {
-	func Option<Node> accept(Visitor v)() {
+	func Option<Node> accept(Visitor v) {
 		return v.visit(this)
 	}
 
-	func void accept_children(Visitor v)(Node n) {
+	func void accept_children(Visitor v) {
 		this.expr = this.expr.accept(v).unwrap_or(this.expr)
 	}
 

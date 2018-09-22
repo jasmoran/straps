@@ -24,7 +24,7 @@ define t "Type"
 include "src/stdlib/Option.generic"
 
 class Type (String raw, Option<ClassNode> res, TypeStrength strength) {
-	func String toString()(String s) {
+	func String toString() {
     if (this.strength == INFER) {
 			return "ToBeInferred"
 		} else if (this.res.is_some() == true) {
@@ -48,7 +48,7 @@ class Type (String raw, Option<ClassNode> res, TypeStrength strength) {
 		return Some(this.res.unwrap().block.scope)
 	}
 
-	func void print(Stream s)() {
+	func void print(Stream s) {
 		this.toString().print(s)
 	}
 

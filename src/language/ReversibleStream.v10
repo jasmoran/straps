@@ -4,17 +4,17 @@ define t "MetaCharacter"
 include "src/stdlib/CircularBuffer.generic"
 include "src/stdlib/Array.generic"
 
-func ReversibleStream ReversibleStream_new(Stream stream, Number size)() {
+func ReversibleStream ReversibleStream_new(Stream stream, Number size) {
 	return ReversibleStream_new(stream, CircularBuffer<MetaCharacter>_new(size), 0, 0, 1)
 }
 
-func ReversibleStream ReversibleStream_new(String input)(Character nulchar, Number len, ReversibleStream rs) {
+func ReversibleStream ReversibleStream_new(String input) {
 	load_loop()
 	input.print(LOOPIN)
 	'\0'.toString().print(LOOPIN)
-	len = input.length
+	var len = input.length
 	len++
-	rs = ReversibleStream_new(LOOPOUT, len)
+	var rs = ReversibleStream_new(LOOPOUT, len)
 	loop {
 		if (rs.get().get_character() == '\0') break
 	}
@@ -26,10 +26,12 @@ define t "ReversibleStream"
 include "src/stdlib/Option.generic"
 
 class ReversibleStream (Stream stream, CircularBuffer<MetaCharacter> buffer, Number nxt_pos, Number col, Number line) {
-	func MetaCharacter get()(Character chr, MetaCharacter mc) {
+	func MetaCharacter get() {
+		var mc = 0.to(MetaCharacter)
+
 		# Get a character from the underlying Stream if necessary
 		if (this.nxt_pos == this.buffer.length) {
-			chr = this.stream.get()
+			var chr = this.stream.get()
 			this.col++
 			mc = MetaCharacter_new(chr, this.col, this.line)
 
@@ -49,18 +51,18 @@ class ReversibleStream (Stream stream, CircularBuffer<MetaCharacter> buffer, Num
 		return mc
 	}
 
-	func void rewind(Number amount)() {
+	func void rewind(Number amount) {
 		# Rewind specified amount of characters
 		this.nxt_pos -= amount
 		if (this.nxt_pos < 0) error("Rewound ReversibleStream too far")
 	}
 
-	func void rewind()() {
+	func void rewind() {
 		# Reverse to beginning of buffer
 		this.nxt_pos = 0
 	}
 
-	func void flush()() {
+	func void flush() {
 		loop {
 			if (this.nxt_pos == 0) break
 			this.buffer.pop_front()

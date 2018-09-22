@@ -114,9 +114,9 @@ class Scope (String name, Option<Scope> parent, Map<String_Node> scope) {
 		return None<Node>
 	}
 
-	func void print()(Number index, Visitor printer) {
-		index = 0
-		printer = Printer_new(1, STDOUT, 1)
+	func void print() {
+		var index = 0
+		var printer = Printer_new(1, STDOUT, 1)
 		loop {
 			if (this.scope.keys.length == index) break
 			this.scope.keys.get(index).print()

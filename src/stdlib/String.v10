@@ -65,13 +65,13 @@ func String String_fromTerminated(CharArr source) {
 	return addr
 }
 
-func Boolean String_equal(String a, String b)() {
+func Boolean String_equal(String a, String b) {
 	return a.equal(b)
 }
 
 class Character (void data) {
-	func String toString()(String s) {
-		s = String_new(1)
+	func String toString() {
+		var s = String_new(1)
 		s.append(this)
 		return s
 	}
@@ -81,7 +81,7 @@ define t "String"
 include "src/stdlib/Option.generic"
 
 class String (Number length, Number size, CharArr data) {
-	func Character get(Number ix)() {
+	func Character get(Number ix) {
 		var ca = this.data.to(void)
 		rax = ca
 		rax += ix
@@ -92,7 +92,7 @@ class String (Number length, Number size, CharArr data) {
 		return rbx.to(Character)
 	}
 
-	func void set(Number ix, Character character)() {
+	func void set(Number ix, Character character) {
 		var ca = this.data.to(void)
 		rax = ca
 		rax += ix
@@ -101,7 +101,7 @@ class String (Number length, Number size, CharArr data) {
 		")
 	}
 
-	func String append(Character character)() {
+	func String append(Character character) {
 		# TODO: check size is large enough
 
 		this.set(this.length, character)
@@ -110,14 +110,14 @@ class String (Number length, Number size, CharArr data) {
 		return this
 	}
 
-	func String prepend(Character character)() {
+	func String prepend(Character character) {
 		this.shift_right(1)
 		this.set(0, character)
 		return this
 	}
 
 	# Shifts characters in the string n bytes to the right
-	func String shift_right(Number n)() {
+	func String shift_right(Number n) {
 		var end_of_string = this.data + this.length - 1
 		nasm("std")
 		memcpy(end_of_string, end_of_string + n, this.length)
@@ -127,29 +127,29 @@ class String (Number length, Number size, CharArr data) {
 	}
 
 	# Shifts characters in the string n bytes to the left
-	func String shift_left(Number n)() {
+	func String shift_left(Number n) {
 		this.length -= n
 		memcpy(this.data + n, this.data, this.length)
 
 		return this
 	}
 
-	func void print()() {
+	func void print() {
 		this.print(STDOUT)
 	}
 
-	func void print(Stream out)() {
+	func void print(Stream out) {
 		if (this == NullString) { return Void }
 		sys(1, out, this.data, this.length)
 	}
 
-	func void println()() {
+	func void println() {
 		this.println(STDOUT)
 	}
 
-	func void println(Stream out)(String new_line) {
+	func void println(Stream out) {
 		this.print(out)
-		new_line = "\n"
+		var new_line = "\n"
 		new_line.print(out)
 	}
 
@@ -161,19 +161,19 @@ class String (Number length, Number size, CharArr data) {
 		dest.length = this.length
 	}
 
-	func String clone()() {
+	func String clone() {
 		return this.clone(0)
 	}
 
-	func String clone(Number extra)(Number len, String str) {
-		len = this.length
+	func String clone(Number extra) {
+		var len = this.length
 		len += extra
-		str = String_new(len)
+		var str = String_new(len)
 		this.copyTo(str)
 		return str
 	}
 
-	func void clear()() {
+	func void clear() {
 		this.length = 0
 	}
 
@@ -218,9 +218,9 @@ class String (Number length, Number size, CharArr data) {
 		return memcmp(this.data, other.data, this.length)
 	}
 
-	func Number unescaped_length()(Number ix, Number escaped) {
-		escaped = 0
-		ix = 0
+	func Number unescaped_length() {
+		var escaped = 0
+		var ix = 0
 		loop {
 			if (ix >= this.length) { break }
 

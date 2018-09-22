@@ -1,5 +1,5 @@
 class Boolean (void data) {
-	func String toString()() {
+	func String toString() {
 		if (this == false) {
 			return "false"
 		}

@@ -1,4 +1,4 @@
-func Boolean Number_equal(Any int1, Any int2)() {
+func Boolean Number_equal(Any int1, Any int2) {
 	if (int1 == int2) {
 		return true
 	}
@@ -7,10 +7,10 @@ func Boolean Number_equal(Any int1, Any int2)() {
 
 class Number (void data) {
 	func String toString() return this.toString(false)
-	func String toString(Boolean plus)(String str, Number digit_count, Character chr) {
+	func String toString(Boolean plus) {
 		rax = this.to(void)
 		rcx = 10.to(void)
-		digit_count = 0
+		var digit_count = 0
 
 		# Get absolute value
 		if (this < 0) {
@@ -33,7 +33,7 @@ class Number (void data) {
 		}
 
 		digit_count++
-		str = String_new(digit_count)
+		var str = String_new(digit_count)
 		digit_count--
 
 		if (this < 0) {
@@ -48,7 +48,7 @@ class Number (void data) {
 			nasm("pop rax")
 			rax += '0'
 
-			chr = rax.to(Character)
+			var chr = rax.to(Character)
 			str.append(chr)
 
 			digit_count--

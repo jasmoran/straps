@@ -13,7 +13,7 @@ func ClassNode ClassNode_new(Position pos, String name, ListNode fields, BlockNo
 
 class virtual ClassNode < RetNode (String name, ListNode fields,
 								BlockNode block, Option<Map<String_FunctionNode>> vtable, Option<Type> parent) {
-	func Option<Node> accept(Visitor v)() {
+	func Option<Node> accept(Visitor v) {
 		return v.visit(this)
 	}
 

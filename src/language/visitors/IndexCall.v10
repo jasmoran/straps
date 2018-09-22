@@ -26,8 +26,7 @@ class virtual IndexCall < Visitor (
 			# Visit argument
 			var arg_acc = arg.accept(this)
 			if (arg_acc.is_some() == true) {
-				var rn = arg_acc.unwrap().to(RetNode)
-				arg = rn
+				arg = arg_acc.unwrap().to(RetNode)
 				arg_iter.set(arg)
 			}
 
@@ -48,7 +47,7 @@ class virtual IndexCall < Visitor (
 		return Some(reg)
 	}
 
-	func Option<Node> visit(BinaryOperationNode n)(ListNode args) {
+	func Option<Node> visit(BinaryOperationNode n) {
 		# Visit left hand side
 		n.lhs = n.lhs.accept(this).unwrap_or(n.lhs)
 

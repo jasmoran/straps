@@ -10,7 +10,7 @@ class virtual Inherit < Visitor (Reporting report) {
 		}
 	}
 
-	func Option<Node> visit(ClassNode n)() {
+	func Option<Node> visit(ClassNode n) {
 		if (n.parent.is_none() == true) return None<Node>
 		var parent = n.parent.unwrap()
 

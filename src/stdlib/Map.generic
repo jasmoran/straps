@@ -49,7 +49,7 @@ class MapIterator<?k_?v> (Map<?k_?v> map, Number curr, Boolean back) {
 class Pair<?k_?v> (?k key, ?v value) {}
 
 
-func Map<?k_?v> Map<?k_?v>_new(Number size)() {
+func Map<?k_?v> Map<?k_?v>_new(Number size) {
 	return Map<?k_?v>_new(Array<?k>_new(size), Array<?v>_new(size))
 }
 

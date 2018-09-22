@@ -8,7 +8,7 @@ func CallNode CallNode_new(Position pos, Node cfunction, LinkedList<RetNode> arg
 }
 
 class virtual CallNode < RetNode (Node cfunction, LinkedList<RetNode> args) {
-	func Option<Node> accept(Visitor v)() {
+	func Option<Node> accept(Visitor v) {
 		return v.visit(this)
 	}
 

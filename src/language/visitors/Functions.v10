@@ -1,11 +1,11 @@
-func Functions Functions_new()() {
+func Functions Functions_new() {
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "Functions")
 	return Functions_new(ListNode_new(nFUNCTIONS, pos), true)
 }
 
 class virtual Functions < Visitor (ListNode lfuncs, Boolean root) {
-	func Option<Node> visit(FunctionNode n)(String name) {
-		name = n.name
+	func Option<Node> visit(FunctionNode n) {
+		var name = n.name
 		if (n.name.equal("main") == true) name = "_start"
 		var pos = n.position.clone("Functions")
 		this.lfuncs.append(StringNode_new(nIDENTIFIER, pos, Type_new(), name))
@@ -14,7 +14,7 @@ class virtual Functions < Visitor (ListNode lfuncs, Boolean root) {
 		return None<Node>
 	}
 
-	func Option<BlockNode> visit(BlockNode n)() {
+	func Option<BlockNode> visit(BlockNode n) {
 		if (this.root == true) {
 			n.append(this.lfuncs)
 			this.root = false

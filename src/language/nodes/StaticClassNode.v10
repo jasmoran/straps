@@ -1,5 +1,5 @@
 class virtual StaticClassNode < Node (ClassNode klass) {
-	func Option<Node> accept(Visitor v)() {
+	func Option<Node> accept(Visitor v) {
 		return v.visit(this)
 	}
 }

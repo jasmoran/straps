@@ -1,13 +1,13 @@
-func Node ReturnNode_new(Position pos, Node expr)() {
+func Node ReturnNode_new(Position pos, Node expr) {
 	return ReturnNode_new(nRETURN, pos, expr)
 }
 
 class virtual ReturnNode < Node (Node expr) {
-	func Option<Node> accept(Visitor v)() {
+	func Option<Node> accept(Visitor v) {
 		return v.visit(this)
 	}
 
-	func void accept_children(Visitor v)(Node n) {
+	func void accept_children(Visitor v) {
 		this.expr = this.expr.accept(v).unwrap_or(this.expr)
 	}
 

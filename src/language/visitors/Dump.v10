@@ -46,7 +46,7 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		return None<Node>
 	}
 
-	func Option<Node> visit(BinaryOperationNode n)(String op, Node nn, FunctionNode fun, String lastTrue, String lastFalse) {
+	func Option<Node> visit(BinaryOperationNode n) {
 		if (n.op == DOT || n.op == SQUARE_OPEN) {
 			if (n.rhs.type != nNUMBER && n.rhs.type != nINDEX)
 				error("Non-number ", n.rhs.type.toString(), "in DOT or SQUARE_OPEN")
@@ -59,13 +59,12 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 			"]".print(this.stream)
 
 		} else if (n.op == OR) {
-			lastFalse = this.falseLabel
+			var lastFalse = this.falseLabel
 			this.falseLabel = this.createLabel(".falseCond")
 
 			this.target = this.trueLabel
 			this.negate = false
-			nn = n.lhs
-			nn.accept(this)
+			n.lhs.accept(this)
 
 			this.falseLabel.print(this.stream)
 			":".println(this.stream)
@@ -73,20 +72,18 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 
 			this.target = this.trueLabel
 			this.negate = false
-			nn = n.rhs
-			nn.accept(this)
+			n.rhs.accept(this)
 
 			"jmp ".print(this.stream)
 			this.falseLabel.println(this.stream)
 
 		} else if (n.op == AND) {
-			lastTrue = this.trueLabel
+			var lastTrue = this.trueLabel
 			this.trueLabel = this.createLabel(".trueCond")
 
 			this.target = this.falseLabel
 			this.negate = true
-			nn = n.lhs
-			nn.accept(this)
+			n.lhs.accept(this)
 
 			this.trueLabel.print(this.stream)
 			":".println(this.stream)
@@ -94,8 +91,7 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 
 			this.target = this.falseLabel
 			this.negate = true
-			nn = n.rhs
-			nn.accept(this)
+			n.rhs.accept(this)
 			"jmp ".print(this.stream)
 
 			this.trueLabel.println(this.stream)
@@ -105,14 +101,12 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 			if (n.op <= ASSIGN) {
 				# Retrieve string representation of op
 				var ix = (n.op - ADD).to(Number)
-				op = this.binops.get(ix)
+				var op = this.binops.get(ix)
 
 				op.print(this.stream)
-				nn = n.lhs
-				nn.accept(this)
+				n.lhs.accept(this)
 				", ".print(this.stream)
-				nn = n.rhs
-				nn.accept(this)
+				n.rhs.accept(this)
 				"\n".print(this.stream)
 				return None<Node>
 			}
@@ -121,11 +115,9 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 			if (n.op >= EQUAL)
 			if (n.op <= LESS_EQ) {
 				"cmp ".print(this.stream)
-				nn = n.lhs
-				nn.accept(this)
+				n.lhs.accept(this)
 				", ".print(this.stream)
-				nn = n.rhs
-				nn.accept(this)
+				n.rhs.accept(this)
 				"\n".print(this.stream)
 
 				if (this.negate == true) {
@@ -155,7 +147,7 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		return None<Node>
 	}
 
-	func Option<Node> visit(UnaryOperationNode n)() {
+	func Option<Node> visit(UnaryOperationNode n) {
 		if (n.op == INCREMENT) "inc ".print(this.stream)
 		else if (n.op == DECREMENT) "dec ".print(this.stream)
 		else if (n.op == PUSH) "push ".print(this.stream)
@@ -169,7 +161,7 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		return None<Node>
 	}
 
-	func Option<Node> visit(StringNode n)() {
+	func Option<Node> visit(StringNode n) {
 		if (n.type == nCHARACTER) {
 			"\`".print(this.stream)
 			n.string.print(this.stream)
@@ -182,14 +174,14 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		return None<Node>
 	}
 
-	func Option<Node> visit(ClassNode n)() {
+	func Option<Node> visit(ClassNode n) {
 		n.name.print(this.stream)
 		"Static".print(this.stream)
 
 		return None<Node>
 	}
 
-	func Option<Node> visit(StaticClassNode n)() {
+	func Option<Node> visit(StaticClassNode n) {
 		"section .bss".println(this.stream)
 		n.klass.name.print(this.stream)
 		"Static:\nresq ".print(this.stream)
@@ -215,7 +207,7 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		return None<Node>
 	}
 
-	func Option<Node> visit(FunctionNode n)(Number size) {
+	func Option<Node> visit(FunctionNode n) {
 		"global ".print(this.stream)
 		if (n.name.equal("main") == true) {
 			"_start".println(this.stream)
@@ -225,7 +217,7 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 			n.name.print(this.stream)
 		}
 		":\npush rbp\nmov rbp, rsp\nsub rsp, ".print(this.stream)
-		size = n.num_vars
+		var size = n.num_vars
 		size << 3
 		size.toString().println(this.stream)
 		"push r12\npush r13".println(this.stream)
@@ -336,11 +328,11 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		return None<ListNode>
 	}
 
-	func Option<Node> visit(IfNode n)(Node nn, String endLabel, String old_trueLabel, String old_falseLabel, String old_target, Boolean old_negate) {
-		old_trueLabel = this.trueLabel
-		old_falseLabel = this.falseLabel
-		old_target = this.target
-		old_negate = this.negate
+	func Option<Node> visit(IfNode n) {
+		var old_trueLabel = this.trueLabel
+		var old_falseLabel = this.falseLabel
+		var old_target = this.target
+		var old_negate = this.negate
 
 		this.trueLabel = this.createLabel(".trueLabel")
 		this.falseLabel = this.createLabel(".falseLabel")
@@ -348,14 +340,13 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 
 		this.target = this.falseLabel
 		this.negate = true
-		nn = n.condition
-		nn.accept(this)
+		n.condition.accept(this)
 
 		this.trueLabel.print(this.stream)
 		":".println(this.stream)
 		n.block_if.accept(this)
 
-		endLabel = this.createLabel(".endIf")
+		var endLabel = this.createLabel(".endIf")
 		if (n.block_else.is_some() == true) {
 			"jmp ".print(this.stream)
 			endLabel.println(this.stream)
@@ -376,8 +367,8 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		return None<Node>
 	}
 
-	func Option<Node> visit(LoopNode n)(String oldid) {
-		oldid = this.idloop
+	func Option<Node> visit(LoopNode n) {
+		var oldid = this.idloop
 		this.idloop = this.counter.toString()
 		this.counter++
 
@@ -398,7 +389,7 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		return None<Node>
 	}
 
-	func Option<Node> visit(ReturnNode n)() {
+	func Option<Node> visit(ReturnNode n) {
 		"mov rax, ".print(this.stream)
 		n.accept_children(this)
 		"\njmp .ret".println(this.stream)
@@ -425,11 +416,11 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		return None<Node>
 	}
 
-	func String createLabel(String orig)(String num, Number len, String joined) {
-		num = this.counter.toString()
-		len = num.length
+	func String createLabel(String orig) {
+		var num = this.counter.toString()
+		var len = num.length
 		len += orig.length
-		joined = String_new(len)
+		var joined = String_new(len)
 		joined.append(orig).append(num)
 		this.counter++
 		return joined

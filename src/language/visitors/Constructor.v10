@@ -3,13 +3,13 @@ func Constructor Constructor_new() {
 }
 
 class virtual Constructor < Visitor (Option<BlockNode> pb) {
-	func Option<Node> visit(ClassNode n)(Number size) {
+	func Option<Node> visit(ClassNode n) {
 		var pb = this.pb.expect("Class defined outside of block")
 
 		var pos = n.position.clone("Constructor")
 		var new_obj = StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "obj")
 
-		size = n.fields.children.length
+		var size = n.fields.children.length
 		if (n.vtable.is_some() == true) size++
 		size << 3
 

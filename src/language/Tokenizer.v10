@@ -32,21 +32,21 @@ class Tokenizer(
 	Map<String_String> macros
 ) {
 
-	func Token peek()() {
+	func Token peek() {
 		if (this.type == NONE) {
 			this.type = this.load()
 		}
 		return this.type
 	}
 
-	func String consume()(String copy) {
+	func String consume() {
 		this.peek()
 
 		if (this.type == EOF) {
 			error("Attempting to read past end of file")
 		}
 
-		copy = NullString
+		var copy = NullString
 		if (this.image.length > 0) {
 			copy = this.image.clone()
 		}
@@ -57,8 +57,8 @@ class Tokenizer(
 		return copy
 	}
 
-	func String consume(Token type)(Token peek) {
-		peek = this.peek()
+	func String consume(Token type) {
+		var peek = this.peek()
 		if (peek != type) {
 			"Error: Expected token ".print(STDERR)
 			type.toString().print(STDERR)
@@ -73,14 +73,14 @@ class Tokenizer(
 		return this.consume()
 	}
 
-	func Boolean match(String token)(Number ix, Character c) {
-		ix = 0
+	func Boolean match(String token) {
+		var ix = 0
 		loop {
 			# Check for end of string
 			if (ix == token.length) { break }
 
 			# Rewind if characters dont match
-			c = this.rs.get().get_character()
+			var c = this.rs.get().get_character()
 			if (c != token.get(ix)) {
 				this.rs.rewind()
 				return false
@@ -94,8 +94,8 @@ class Tokenizer(
 		return true
 	}
 
-	func Boolean match_number()(Character c) {
-		c = this.rs.get().get_character()
+	func Boolean match_number() {
+		var c = this.rs.get().get_character()
 
 		# Must have at least one digit
 		if (c < '0') {
@@ -119,9 +119,9 @@ class Tokenizer(
 		return true
 	}
 
-	func Boolean match_identifier()(Character c) {
+	func Boolean match_identifier() {
 		loop {
-			c = this.rs.get().get_character()
+			var c = this.rs.get().get_character()
 
 			# Break out of macro
 			if (c == '\0') {
@@ -232,8 +232,8 @@ class Tokenizer(
 		return true
 	}
 
-	func Boolean match_comment()(Character c) {
-		c = this.rs.get().get_character()
+	func Boolean match_comment() {
+		var c = this.rs.get().get_character()
 		if (c == '/') {
 			if (this.rs.get().get_character() != '/') {
 				this.rs.rewind()
@@ -257,13 +257,13 @@ class Tokenizer(
 		return true
 	}
 
-	func Boolean match_character()(Character c) {
+	func Boolean match_character() {
 		if (this.rs.get().get_character() != '\'') {
 			this.rs.rewind()
 			return false
 		}
 
-		c = this.rs.get().get_character()
+		var c = this.rs.get().get_character()
 		this.image.append(c)
 
 		# Handle backslashes
@@ -280,11 +280,11 @@ class Tokenizer(
 		return true
 	}
 
-	func Token load()(Character c, String macro, Number ix) {
+	func Token load() {
 		# Skip whitespace
 		loop {
 			this.first_char = this.rs.get()
-			c = this.first_char.get_character()
+			var c = this.first_char.get_character()
 			if (c == '\0') {
 				if (this.rs_old.is_none() == true) {
 					File_close(this.rs.stream)
@@ -304,7 +304,7 @@ class Tokenizer(
 		if (this.match("define") == true) {
 			if (this.load() != IDENTIFIER)
 				error("Malformed definition at ", this.rs.get().toString(), " in stream ", this.stream_name)
-			macro = this.image.clone(1).prepend('?')
+			var macro = this.image.clone(1).prepend('?')
 			this.image.clear()
 			if (this.load() != STRING)
 				error("Malformed definition at ", this.rs.get().toString(), " in stream ", this.stream_name)
@@ -379,10 +379,10 @@ class Tokenizer(
 		if (this.match_comment() == true) { return this.load() }
 
 		# Use macros
-		ix = 0
+		var ix = 0
 		loop {
 			if (this.macros.keys.length == ix) break
-			macro = this.macros.keys.get(ix)
+			var macro = this.macros.keys.get(ix)
 			if (this.match(macro) == true) {
 				macro = this.macros.values.get(ix)
 				this.rs_old = Some(this.rs)

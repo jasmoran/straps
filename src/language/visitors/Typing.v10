@@ -1,5 +1,5 @@
 class virtual Typing < Visitor () {
-	func Option<Node> visit(ClassNode n)(Scope sc) {
+	func Option<Node> visit(ClassNode n) {
 		scope.set(n.name, n)
 		n.accept_children(this)
 

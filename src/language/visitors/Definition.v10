@@ -127,7 +127,7 @@ class virtual Definition < Visitor () {
 
 
 
-	func Node new_variable(Number offset, StringNode field)() {
+	func Node new_variable(Number offset, StringNode field) {
 		var pos = field.position.clone("Definition")
 		return BinaryOperationNode_new(
 			field.ret_type,

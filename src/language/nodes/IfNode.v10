@@ -3,11 +3,11 @@ func IfNode IfNode_new(Position pos, Node condition, BlockNode block_if) {
 }
 
 class virtual IfNode < Node (Node condition, BlockNode block_if, Option<BlockNode> block_else) {
-	func Option<Node> accept(Visitor v)() {
+	func Option<Node> accept(Visitor v) {
 		return v.visit(this)
 	}
 
-	func void accept_children(Visitor v)(Node n) {
+	func void accept_children(Visitor v) {
 		this.condition = this.condition.accept(v).unwrap_or(this.condition)
 		this.block_if = this.block_if.accept(v).unwrap_or(this.block_if)
 		if (this.block_else.is_some() == true) {

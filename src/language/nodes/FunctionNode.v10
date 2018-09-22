@@ -18,11 +18,11 @@ func FunctionNode FunctionNode_new(Position pos, Type ret_type, String name, Lis
 }
 
 class virtual FunctionNode < RetNode (String name, ListNode args, ListNode vrbls, BlockNode block, String pure, Number num_vars) {
-	func Option<Node> accept(Visitor v)() {
+	func Option<Node> accept(Visitor v) {
 		return v.visit(this)
 	}
 
-	func void accept_children(Visitor v)(Node n) {
+	func void accept_children(Visitor v) {
 		this.args = this.args.accept(v).unwrap_or(this.args)
 		this.vrbls = this.vrbls.accept(v).unwrap_or(this.vrbls)
 		this.block = this.block.accept(v).unwrap_or(this.block)

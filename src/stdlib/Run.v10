@@ -1,24 +1,24 @@
-func Run Run_new(Number numargs)() {
+func Run Run_new(Number numargs) {
 	numargs++
 	return Run_new(Array<CharArr>_new(numargs))
 }
 
 class Run (Array<CharArr> args) {
-	func Run add(String arg)() {
+	func Run add(String arg) {
 		this.args.append(arg.toTerminated())
 		return this
 	}
 
-	func void exec()(CharArr command, Number pid) {
-    # Fork process
+	func void exec() {
+		# Fork process
 		sys(57)
-		pid = rax.to(Number)
+		var pid = rax.to(Number)
 
 		if (pid == 0) {
-      # Child process
+			# Child process
 			var NullCharArr = 0.to(CharArr)
 			this.args.append(NullCharArr)
-			command = this.args.get(0)
+			var command = this.args.get(0)
 			# Exec command
 			sys(59, command, this.args.data, 0)
 		} else {

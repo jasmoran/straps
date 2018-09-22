@@ -5,7 +5,7 @@ enum Stream {
 global(Stream LOOPIN, Stream LOOPOUT)
 
 class Stream (Number s) {
-	func Character get()() {
+	func Character get() {
 		nasm("push 0")
 		sys(0, this, rsp, 1)
 		nasm("pop rax")
@@ -13,7 +13,7 @@ class Stream (Number s) {
 	}
 }
 
-func void load_loop()() {
+func void load_loop() {
 	if (LOOPIN == 0.to(Stream)) {
 		# Create loop stream
 		nasm("mov rax, 22

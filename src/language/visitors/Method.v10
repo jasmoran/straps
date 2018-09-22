@@ -36,7 +36,7 @@ class virtual Method < Visitor (Option<BlockNode> pb, Option<ClassNode> cls) {
   	return None<Node>
 	}
 
-	func Option<Node> visit(FunctionNode n)(Number length) {
+	func Option<Node> visit(FunctionNode n) {
 		var pure = n.name.clone()
 		n.pure = pure
 
@@ -90,7 +90,7 @@ class virtual Method < Visitor (Option<BlockNode> pb, Option<ClassNode> cls) {
 			}
 
 			# Save new method name "_CLASS_METHOD"
-			length = n.name.length
+			var length = n.name.length
 			length += 2
 			n.name = cls.name.clone(length).prepend('_').append('_').append(n.name)
 			clone.name = n.name

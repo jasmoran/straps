@@ -20,12 +20,12 @@ include "src/stdlib/Option.generic"
 class Any (Any deref) {}
 class Function () {}
 
-func void exit(Number exit_code)() {
+func void exit(Number exit_code) {
 	sys(60, exit_code)
 }
-func void exit()() exit(0)
+func void exit() exit(0)
 
-func void error(String s1, String s2, String s3, String s4, String s5)() {
+func void error(String s1, String s2, String s3, String s4, String s5) {
 	"Error: ".print(STDERR)
 	if(s1 > NullString) s1.print(STDERR)
 	if(s2 > NullString) s2.print(STDERR)
@@ -35,11 +35,11 @@ func void error(String s1, String s2, String s3, String s4, String s5)() {
 	backtrace()
 	exit(1)
 }
-func void error(String s1, String s2, String s3, String s4)() error(NullString, s1, s2, s3, s4)
-func void error(String s1, String s2, String s3)() error(NullString, NullString, s1, s2, s3)
-func void error(String s1, String s2)() error(NullString, NullString, NullString, s1, s2)
-func void error(String s1)() error(NullString, NullString, NullString, NullString, s1)
-func void error()() error(NullString, NullString, NullString, NullString, NullString)
+func void error(String s1, String s2, String s3, String s4) error(NullString, s1, s2, s3, s4)
+func void error(String s1, String s2, String s3) error(NullString, NullString, s1, s2, s3)
+func void error(String s1, String s2) error(NullString, NullString, NullString, s1, s2)
+func void error(String s1) error(NullString, NullString, NullString, NullString, s1)
+func void error() error(NullString, NullString, NullString, NullString, NullString)
 
 func void backtrace() {
 	# Get list of function pointers

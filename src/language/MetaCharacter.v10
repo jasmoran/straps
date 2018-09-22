@@ -22,18 +22,18 @@ class MetaCharacter (void data) {
 		return char
 	}
 
-	func Number get_column()() {
+	func Number get_column() {
 		this >> 8
 		return and(this.to(Number), 255)
 	}
 
-	func Number get_line()() {
+	func Number get_line() {
 		this >> 16
 		return and(this.to(Number), 65535)
 	}
 
-	func String toString()(String s) {
-		s = String_new(42)
+	func String toString() {
+		var s = String_new(42)
 		s.append("Character: '")
 		s.append(this.get_character())
 		s.append("', Line: ")

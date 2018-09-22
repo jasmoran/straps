@@ -1,16 +1,16 @@
-func BinaryOperationNode BinaryOperationNode_new(Position pos, Token op, Node lhs, Node rhs)() {
+func BinaryOperationNode BinaryOperationNode_new(Position pos, Token op, Node lhs, Node rhs) {
 	return BinaryOperationNode_new(Type_new(), pos, op, lhs, rhs)
 }
-func BinaryOperationNode BinaryOperationNode_new(Type ret_type, Position pos, Token op, Node lhs, Node rhs)() {
+func BinaryOperationNode BinaryOperationNode_new(Type ret_type, Position pos, Token op, Node lhs, Node rhs) {
 	return BinaryOperationNode_new(nBINARYOP, pos, ret_type, op, lhs, rhs)
 }
 
 class virtual BinaryOperationNode < OpNode (Node lhs, Node rhs) {
-	func Option<Node> accept(Visitor v)() {
+	func Option<Node> accept(Visitor v) {
 		return v.visit(this)
 	}
 
-	func void accept_children(Visitor v)(Node n) {
+	func void accept_children(Visitor v) {
 		this.lhs = this.lhs.accept(v).unwrap_or(this.lhs)
 		this.rhs = this.rhs.accept(v).unwrap_or(this.rhs)
 	}

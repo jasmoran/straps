@@ -31,11 +31,11 @@ define t "Node"
 include "src/stdlib/Option.generic"
 
 class virtual Node(NodeType type, Position position) {
-	func Option<Node> accept(Visitor v)() {
+	func Option<Node> accept(Visitor v) {
 		return v.visit(this)
 	}
 
-	func void accept_children(Visitor v)() {}
+	func void accept_children(Visitor v) {}
 
 	func Node clone() {
 		return Node_new(this.type, this.position)

@@ -1,10 +1,10 @@
-func Strings Strings_new()() {
+func Strings Strings_new() {
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "Strings")
 	return Strings_new(0, ListNode_new(nSTRINGS, pos), true, false)
 }
 
 class virtual Strings < Visitor (Number counter, ListNode strings, Boolean root, Boolean do_idents) {
-	func void addString(StringNode n)() {
+	func void addString(StringNode n) {
 		var pos = Position_new(MetaCharacter_new('?', 0, 0), "Strings")
 		this.strings.append(StringNode_new(nSTRING, pos, Type_new(), n.string))
 		n.string = "string_".clone(4).append(this.counter.toString())
@@ -12,7 +12,7 @@ class virtual Strings < Visitor (Number counter, ListNode strings, Boolean root,
 		this.counter++
 	}
 
-	func Option<Node> visit(StringNode n)() {
+	func Option<Node> visit(StringNode n) {
 		if (n.type == nSTRING) this.addString(n)
 		if (n.type == nIDENTIFIER) {
 			if (this.do_idents == true) this.addString(n)
@@ -40,7 +40,7 @@ class virtual Strings < Visitor (Number counter, ListNode strings, Boolean root,
 		return None<ListNode>
 	}
 
-	func Option<Node> visit(EnumNode n)() {
+	func Option<Node> visit(EnumNode n) {
 		this.do_idents = true
 		n.accept_children(this)
 		this.do_idents = false

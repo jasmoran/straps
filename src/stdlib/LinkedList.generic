@@ -62,13 +62,13 @@ func LinkedListNode<?t> LinkedListNode<?t>_new(?t payload) {
 class LinkedListNode<?t> (Option<LinkedListNode<?t>> fwrd, Option<LinkedListNode<?t>> back, ?t payload) {}
 
 class LinkedList<?t> (Option<LinkedListNode<?t>> first, Option<LinkedListNode<?t>> last, Number length) {
-	func Option<?t> get(Number ix)() {
+	func Option<?t> get(Number ix) {
 		var fetch = this.fetch(ix)
 		if (fetch.is_none() == true) return None<?t>
 		return Some(fetch.unwrap().payload)
 	}
 
-	func void set(Number ix, ?t payload)() {
+	func void set(Number ix, ?t payload) {
 		this.fetch(ix).expect("Index out of range").payload = payload
 	}
 
@@ -90,7 +90,7 @@ class LinkedList<?t> (Option<LinkedListNode<?t>> first, Option<LinkedListNode<?t
 		return this
 	}
 
-	func LinkedList<?t> prepend(?t payload)() {
+	func LinkedList<?t> prepend(?t payload) {
 		this.insert_before(this.first, payload)
 		return this
 	}
@@ -150,7 +150,7 @@ class LinkedList<?t> (Option<LinkedListNode<?t>> first, Option<LinkedListNode<?t
 		if (node.is_some() == true) this.remove(node.unwrap())
 	}
 
-	func void remove_last()() {
+	func void remove_last() {
 		if (this.last.is_some() == true) this.remove(this.last.unwrap())
 	}
 
@@ -163,7 +163,7 @@ class LinkedList<?t> (Option<LinkedListNode<?t>> first, Option<LinkedListNode<?t
 		return None<LinkedListNode<?t>>
 	}
 
-	func void clear()() {
+	func void clear() {
 		this.first = None<LinkedListNode<?t>>
 		this.last = None<LinkedListNode<?t>>
 		this.length = 0

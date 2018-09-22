@@ -1,12 +1,12 @@
 define t "ListNode"
 include "src/stdlib/Option.generic"
 
-func ListNode ListNode_new(NodeType type, Position pos)() {
+func ListNode ListNode_new(NodeType type, Position pos) {
 	return ListNode_new(type, pos, LinkedList<Node>_new())
 }
 
 class virtual ListNode < Node (LinkedList<Node> children) {
-	func Option<ListNode> accept(Visitor v)() {
+	func Option<ListNode> accept(Visitor v) {
 		return v.visit(this)
 	}
 

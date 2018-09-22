@@ -1,74 +1,74 @@
 class virtual Visitor() {
-	func Option<Node> visit(Node n)() {
+	func Option<Node> visit(Node n) {
 		return None<Node>
 	}
 
-	func Option<Node> visit(BinaryOperationNode n)() {
+	func Option<Node> visit(BinaryOperationNode n) {
 		n.accept_children(this)
 		return None<Node>
 	}
 
-	func Option<Node> visit(UnaryOperationNode n)() {
+	func Option<Node> visit(UnaryOperationNode n) {
 		n.accept_children(this)
 		return None<Node>
 	}
 
-	func Option<Node> visit(StringNode n)() {
+	func Option<Node> visit(StringNode n) {
 		n.accept_children(this)
 		return None<Node>
 	}
 
-	func Option<Node> visit(StaticClassNode n)() {
+	func Option<Node> visit(StaticClassNode n) {
 		n.accept_children(this)
 		return None<Node>
 	}
 
-	func Option<Node> visit(ClassNode n)() {
+	func Option<Node> visit(ClassNode n) {
 		n.accept_children(this)
 		return None<Node>
 	}
 
-	func Option<Node> visit(FunctionNode n)() {
+	func Option<Node> visit(FunctionNode n) {
 		n.accept_children(this)
 		return None<Node>
 	}
 
-	func Option<ListNode> visit(ListNode n)() {
+	func Option<ListNode> visit(ListNode n) {
 		n.accept_children(this)
 		return None<ListNode>
 	}
 
-	func Option<Node> visit(IfNode n)() {
+	func Option<Node> visit(IfNode n) {
 		n.accept_children(this)
 		return None<Node>
 	}
 
-	func Option<Node> visit(LoopNode n)() {
+	func Option<Node> visit(LoopNode n) {
 		n.accept_children(this)
 		return None<Node>
 	}
 
-	func Option<Node> visit(ReturnNode n)() {
+	func Option<Node> visit(ReturnNode n) {
 		n.accept_children(this)
 		return None<Node>
 	}
 
-	func Option<Node> visit(EnumNode n)() {
+	func Option<Node> visit(EnumNode n) {
 		n.accept_children(this)
 		return None<Node>
 	}
 
-	func Option<Node> visit(ForNode n)() {
+	func Option<Node> visit(ForNode n) {
 		n.accept_children(this)
 		return None<Node>
 	}
 
-	func Option<Node> visit(CallNode n)() {
+	func Option<Node> visit(CallNode n) {
 		n.accept_children(this)
 		return None<Node>
 	}
 
-	func Option<BlockNode> visit(BlockNode n)() {
+	func Option<BlockNode> visit(BlockNode n) {
 		n.accept_children(this)
 		return None<BlockNode>
 	}

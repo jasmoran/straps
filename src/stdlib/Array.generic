@@ -46,8 +46,8 @@ class ArrIterator<?t> (Array<?t> arr, Number curr, Boolean back) {
 	func ArrIterator<?t> iter() return this
 }
 
-func Array<?t> Array<?t>_new(Number size)(Number byte_size) {
-	byte_size = size
+func Array<?t> Array<?t>_new(Number size) {
+	var byte_size = size
 	byte_size << 3
 	return Array<?t>_new(0, size, allocate(byte_size))
 }
@@ -68,7 +68,7 @@ class Array<?t> (Number length, Number size, void data) {
 		addr.deref = item.to(Any)
 	}
 
-	func Array<?t> append(?t item)() {
+	func Array<?t> append(?t item) {
 		# TODO: check size is large enough
 
 		this.set(this.length, item)
@@ -77,7 +77,7 @@ class Array<?t> (Number length, Number size, void data) {
 		return this
 	}
 
-	func void clear()() {
+	func void clear() {
 		this.length = 0
 	}
 
