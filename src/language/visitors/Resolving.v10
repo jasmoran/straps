@@ -3,7 +3,7 @@ func Resolving Resolving_new(Reporting report) {
 }
 
 class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reporting report) {
-	func Option<Node> visit(StringNode n)(Node replacement) {
+	func Option<Node> visit(StringNode n) {
 		n.ret_type.resolve(this.scope)
 
 		if (n.type == nIDENTIFIER) {
@@ -26,7 +26,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 		return None<Node>
 	}
 
-	func Option<Node> visit(FunctionNode n)(Scope prev_scope, ListNode block) {
+	func Option<Node> visit(FunctionNode n) {
 		n.ret_type.resolve(this.scope)
 
 		# Dont resolve identifiers in vars and args
@@ -122,21 +122,21 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 
 
 		# Fix up dot if it resolved to a function
-		var binop2 = n.cfunction.to(BinaryOperationNode)
-		if (binop2.type == nBINARYOP && binop2.op == DOT) {
-			if (binop2.rhs.type == nFUNCTION) {
-				n.cfunction = binop2.rhs
+		binop = n.cfunction.to(BinaryOperationNode)
+		if (binop.type == nBINARYOP && binop.op == DOT) {
+			if (binop.rhs.type == nFUNCTION) {
+				n.cfunction = binop.rhs
 			}
 
 			# Virtual methods
-			if (binop2.rhs.type == nVTAB_ACCESS) {
+			if (binop.rhs.type == nVTAB_ACCESS) {
 				# TODO: Use pos from CallNode
 				var pos = Position_new(MetaCharacter_new('?', 0, 0), "Resolving vtab")
-				var vtab_off = binop2.rhs.to(FunctionNode)
+				var vtab_off = binop.rhs.to(FunctionNode)
 				n.cfunction = BinaryOperationNode_new(
 					vtab_off.ret_type, pos, SQUARE_OPEN,
 					BinaryOperationNode_new(Type_new(), pos, SQUARE_OPEN,
-						binop2.lhs,
+						binop.lhs,
 						StringNode_new(nNUMBER, pos, Type_new(), "0")
 					),
 					StringNode_new(nNUMBER, pos, Type_new(), vtab_off.name)
@@ -150,38 +150,34 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 		return Some(n.to(Node))
 	}
 
-	func Option<Node> visit(BinaryOperationNode n)(Scope prev_scope, Node nn, Number num) {
+	func Option<Node> visit(BinaryOperationNode n) {
 		# Handle fields
 		if (n.op == DOT) {
 			# Resolve first item
-			var sn = n.lhs.to(StringNode)
-			var orig_type = sn.ret_type
-			n.lhs = sn.accept(this).unwrap_or(n.lhs)
-			var sn1 = n.lhs.to(StringNode)
-			if (orig_type.strength == CAST) sn1.ret_type = orig_type
+			var orig_type = n.lhs.to(RetNode).ret_type
+			n.lhs = n.lhs.accept(this).unwrap_or(n.lhs)
+			if (orig_type.strength == CAST) n.lhs.to(RetNode).ret_type = orig_type
 
 			# Save current scope
-			prev_scope = this.scope
+			var prev_scope = this.scope
 
 			# Set scope to that of the first items type
-			var sn2 = n.lhs.to(StringNode)
-			sn2.ret_type.resolve(this.scope)
-			var opt_sc = sn2.ret_type.getScope()
+			var lhs_type = n.lhs.to(RetNode).ret_type
+			lhs_type.resolve(this.scope)
+			var opt_sc = lhs_type.getScope()
 			if (opt_sc.is_none() == true) {
-				this.report.printInvalidType(n.lhs.position, n.rhs.position, sn2.ret_type)
+				this.report.printInvalidType(n.lhs.position, n.rhs.position, lhs_type)
 				return Some(n.to(Node))
 			}
 			this.scope = opt_sc.unwrap()
 
 			# Resolve second item
-			var sn3 = n.rhs.to(StringNode)
-			orig_type = sn3.ret_type
-			n.rhs = sn3.accept(this).unwrap_or(n.rhs)
-			var sn4 = n.rhs.to(StringNode)
-			if (orig_type.strength == CAST) sn4.ret_type = orig_type
+			orig_type = n.rhs.to(RetNode).ret_type
+			n.rhs = n.rhs.accept(this).unwrap_or(n.rhs)
+			if (orig_type.strength == CAST) n.rhs.to(RetNode).ret_type = orig_type
 
 			# Inherit ret_type from rhs
-			if (n.ret_type.strength < CAST) n.ret_type = n.rhs.to(StringNode).ret_type
+			if (n.ret_type.strength < CAST) n.ret_type = n.rhs.to(RetNode).ret_type
 
 			# Restore scope
 			this.scope = prev_scope
@@ -193,8 +189,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 		if (n.op == ASTERISK || n.op == FWD_SLASH || n.op == PLUS || n.op == MINUS) {
 			n.accept_children(this)
 
-			var sn = n.lhs.to(StringNode)
-			n.ret_type = sn.ret_type
+			n.ret_type = n.lhs.to(RetNode).ret_type
 
 			return Some(n.to(Node))
 		}
@@ -203,6 +198,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 		if (n.op == ASSIGN && n.lhs.type == nIDENTIFIER) {
 			var field = n.lhs.to(StringNode)
 			if (field.ret_type.strength == INFER) {
+				# Resolve variable (LHS)
 				var opt = this.scope.resolve(field)
 				if (opt.is_some() == true) {
 					n.lhs = opt.unwrap()
@@ -210,15 +206,14 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 					this.report.printUndefinedIdentifier(field, this.scope)
 					n.lhs = field
 				}
-				var vrbl = n.lhs.to(StringNode)
 
-				var rn = n.rhs.to(RetNode)
-				var orig_type = rn.ret_type
-				n.rhs = rn.accept(this).unwrap_or(n.rhs)
-				var rn2 = n.rhs.to(RetNode)
-				if (orig_type.strength == CAST) rn2.ret_type = orig_type
+				# Resolve value (RHS)
+				var orig_type = n.rhs.to(RetNode).ret_type
+				n.rhs = n.rhs.accept(this).unwrap_or(n.rhs)
+				if (orig_type.strength == CAST) n.rhs.to(RetNode).ret_type = orig_type
 
-				vrbl.ret_type = rn2.ret_type
+				# Assign type of value to variable
+				n.lhs.to(RetNode).ret_type = n.rhs.to(RetNode).ret_type
 
 				return Some(n.to(Node))
 			}
@@ -229,7 +224,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 		return Some(n.to(Node))
 	}
 
-	func Option<ListNode> visit(ListNode n)() {
+	func Option<ListNode> visit(ListNode n) {
 		if (n.type != nGLOBAL) {
 			n.accept_children(this)
 		}
