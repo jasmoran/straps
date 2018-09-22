@@ -55,14 +55,13 @@ class virtual Method < Visitor (Option<BlockNode> pb, Option<ClassNode> cls) {
 		var cls_scope_name = String_new(256).append(n.name)
 
 		# Loop through arguments
-		for (arg in n.args.children) {
-			if (arg.type != nIDENTIFIER) error("Non identifier argument to function ", pure)
-			var type = arg.to(StringNode).ret_type.raw
+		for (arg in n.args) {
+			var type = arg.ret_type.raw
 
 			# Append arguments type to function name
 			n.name.append('_').append(type)
 
-			if (arg != n.args.children.first.unwrap().payload) {
+			if (arg != n.args.first.unwrap().payload) {
 				cls_scope_name.append('_').append(type)
 			}
 		}

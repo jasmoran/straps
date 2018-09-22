@@ -29,7 +29,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 			parent = Some(Type_new(this.t.consume(IDENTIFIER)))
 		}
 
-		var fields = this.typed_list(nLIST)
+		var fields = this.typed_list()
 		var block = this.block(None<Scope>)
 
 		return ClassNode_new(pos, name, fields, block, vtable, parent)
@@ -53,7 +53,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 		var ret_type = this.t.consume(IDENTIFIER)
 		var name = this.t.consume(IDENTIFIER)
-		var args = this.typed_list(nLIST)
+		var args = this.typed_list()
 		var block = this.block(Some(scope))
 
 		return FunctionNode_new(pos, Type_new(ret_type), name, args, block)
@@ -157,9 +157,9 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 		return block
 	}
 
-	func ListNode typed_list(NodeType t) {
+	func LinkedList<StringNode> typed_list() {
 		this.t.consume(PAREN_OPEN)
-		var l = ListNode_new(t, this.t.get_pos())
+		var l = LinkedList<StringNode>_new()
 
 		loop {
 			if (this.t.peek() == PAREN_CLOSE) { break }
@@ -362,7 +362,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 		if (tk == GLOBAL) {
 			this.t.consume(GLOBAL)
-			return this.typed_list(nGLOBAL)
+			return ListNode_new(nGLOBAL, this.t.get_pos(), this.typed_list().to(LinkedList<Node>))
 		}
 
 		if (tk == IF) {

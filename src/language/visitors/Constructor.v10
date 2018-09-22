@@ -9,7 +9,7 @@ class virtual Constructor < Visitor (Option<BlockNode> pb) {
 		var pos = n.position.clone("Constructor")
 		var new_obj = StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "obj")
 
-		var size = n.fields.children.length
+		var size = n.fields.length
 		if (n.vtable.is_some() == true) size++
 		size << 3
 
@@ -33,7 +33,7 @@ class virtual Constructor < Visitor (Option<BlockNode> pb) {
 		)
 
 		# Loop through fields
-		for (field in n.fields.children) {
+		for (field in n.fields) {
 			# Assign passed values to this field and append to block
 			block.append(
 				BinaryOperationNode_new(
@@ -45,12 +45,12 @@ class virtual Constructor < Visitor (Option<BlockNode> pb) {
 			)
 		}
 
-		var ListNode args = ListNode_new(nLIST, pos, n.fields.children.shallow_clone())
+		var args = n.fields.shallow_clone()
 
 		# Add vtable
 		if (n.vtable.is_some() == true) {
 			# Add vtable to fields
-			var Node vt_ident = StringNode_new(nIDENTIFIER, pos, Type_new("void"), "vt")
+			var vt_ident = StringNode_new(nIDENTIFIER, pos, Type_new("void"), "vt")
 			n.fields.prepend(vt_ident)
 
 			var tabname = "_vtable_".clone(n.name.length).append(n.name)

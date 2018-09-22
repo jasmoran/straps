@@ -1,29 +1,37 @@
 define t "ClassNode"
 include "src/stdlib/Option.generic"
 
-func ClassNode ClassNode_new(Position pos, String name, ListNode fields, BlockNode block, Option<Map<String_FunctionNode>> vtable, Option<Type> parent) {
+func ClassNode ClassNode_new(Position pos, String name, LinkedList<StringNode> fields, BlockNode block, Option<Map<String_FunctionNode>> vtable, Option<Type> parent) {
 	var ret_type = Type_new(name.clone(6).append("Static"))
 	return ClassNode_new(nCLASS, pos, ret_type, name, fields, block, vtable, parent)
 }
 
-func ClassNode ClassNode_new(Position pos, String name, ListNode fields, BlockNode block) {
+func ClassNode ClassNode_new(Position pos, String name, LinkedList<StringNode> fields, BlockNode block) {
 	var Option<Map<String_FunctionNode>> vtable = None<Map<String_FunctionNode>>
 	return ClassNode_new(pos, name, fields, block, vtable, None<Type>)
 }
 
-class virtual ClassNode < RetNode (String name, ListNode fields,
-								BlockNode block, Option<Map<String_FunctionNode>> vtable, Option<Type> parent) {
+class virtual ClassNode < RetNode (
+	String name,
+	LinkedList<StringNode> fields,
+	BlockNode block,
+	Option<Map<String_FunctionNode>> vtable,
+	Option<Type> parent
+) {
+
 	func Option<Node> accept(Visitor v) {
 		return v.visit(this)
 	}
 
 	func void accept_children(Visitor v) {
-		this.fields = this.fields.accept(v).unwrap_or(this.fields)
+		for (field in this.fields) {
+			field_iter.set(field.accept(v).to(Option<StringNode>).unwrap_or(field))
+		}
 		this.block = this.block.accept(v).unwrap_or(this.block)
 	}
 
 	func ClassNode shallow_clone() {
-		return ClassNode_new(this.position, this.name, ListNode_new(nLIST, this.fields.position),
+		return ClassNode_new(this.position, this.name, LinkedList<StringNode>_new(),
 												 BlockNode_new(this.block.position, this.block.scope), this.vtable, this.parent)
 	}
 

@@ -20,7 +20,7 @@ class virtual StaticNew < Visitor (Option<BlockNode> pb) {
     if (inits.length == 0) return None<Node>
 
     # Calculate size of allocation
-    var size = n.fields.children.length
+    var size = n.fields.length
     if (n.vtable.is_some() == true) size++
     size << 3
 
@@ -49,7 +49,7 @@ class virtual StaticNew < Visitor (Option<BlockNode> pb) {
     var block = BlockNode_new(pos, Scope_new("StaticClassScope", pb.scope))
 
     for (init in inits) {
-      var args = init.args.children.shallow_clone().to(LinkedList<RetNode>)
+      var args = init.args.shallow_clone().to(LinkedList<RetNode>)
 
       # Create init call
       var Node init_call = CallNode_new(
@@ -84,8 +84,8 @@ class virtual StaticNew < Visitor (Option<BlockNode> pb) {
       new_block.append(ret)
 
       # Create args to new function
-      var new_args = ListNode_new(nLIST, pos)
-      new_args.children = init.args.children.shallow_clone()
+      var new_args = LinkedList<StringNode>_new()
+      new_args = init.args.shallow_clone()
 
       # Add obj to block scope
       new_block.scope.set(
@@ -115,7 +115,7 @@ class virtual StaticNew < Visitor (Option<BlockNode> pb) {
 
     # Create and attach static class
     var name = n.name.clone(6).append("Static")
-    var static_class = ClassNode_new(pos, name, n.fields.clone(), block)
+    var static_class = ClassNode_new(pos, name, n.fields, block)
     pb.prepend(static_class)
 
     # Add static class to scope

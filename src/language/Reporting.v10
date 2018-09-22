@@ -34,7 +34,7 @@ class Reporting(Boolean enabled, Stream st) {
 		fn.ret_type.basicString().print(this.st)
 		"\",\"args\":[".print(this.st)
 
-		for (narg in fn.args.children) {
+		for (narg in fn.args) {
 			if (narg.type != nIDENTIFIER) error("Non identifier in function arguments")
 			var arg = narg.to(StringNode)
 			# Skip 'this' arg

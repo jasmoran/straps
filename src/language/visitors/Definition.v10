@@ -5,13 +5,11 @@ class virtual Definition < Visitor () {
 	func Option<Node> visit(ClassNode n) {
 		var ix = 0
 
-		for (field in n.fields.children) {
-			if (field.type != nIDENTIFIER) error()
-
+		for (field in n.fields) {
 			# Store field offset in class scope
 			n.block.scope.set(
-				field.to(StringNode).string,
-				StringNode_new(nINDEX, field.position.clone("Definition"), field.to(StringNode).ret_type, ix.toString())
+				field.string,
+				StringNode_new(nINDEX, field.position.clone("Definition"), field.ret_type, ix.toString())
 			)
 
 			ix += 8
@@ -44,13 +42,11 @@ class virtual Definition < Visitor () {
 		var ix = 16
 
 		# Loop through arguments
-		for (field in n.args.children) {
-			if (field.type != nIDENTIFIER) error()
-
+		for (field in n.args) {
 			# Store value in function scope
 			n.block.scope.set(
-				field.to(StringNode).string,
-				this.new_variable(ix, field.to(StringNode))
+				field.string,
+				this.new_variable(ix, field)
 			)
 
 			ix += 8

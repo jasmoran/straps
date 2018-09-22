@@ -13,17 +13,19 @@ include "src/stdlib/Option.generic"
 define t "Map<String_FunctionNode>"
 include "src/stdlib/Option.generic"
 
-func FunctionNode FunctionNode_new(Position pos, Type ret_type, String name, ListNode args, BlockNode block) {
+func FunctionNode FunctionNode_new(Position pos, Type ret_type, String name, LinkedList<StringNode> args, BlockNode block) {
 	return FunctionNode_new(nFUNCTION, pos, ret_type, name, args, block, NullString, 0)
 }
 
-class virtual FunctionNode < RetNode (String name, ListNode args, BlockNode block, String pure, Number num_vars) {
+class virtual FunctionNode < RetNode (String name, LinkedList<StringNode> args, BlockNode block, String pure, Number num_vars) {
 	func Option<Node> accept(Visitor v) {
 		return v.visit(this)
 	}
 
 	func void accept_children(Visitor v) {
-		this.args = this.args.accept(v).unwrap_or(this.args)
+		for (arg in this.args) {
+			arg_iter.set(arg.accept(v).to(Option<StringNode>).unwrap_or(arg))
+		}
 		this.block = this.block.accept(v).unwrap_or(this.block)
 	}
 

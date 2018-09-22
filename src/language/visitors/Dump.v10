@@ -185,7 +185,7 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		"section .bss".println(this.stream)
 		n.klass.name.print(this.stream)
 		"Static:\nresq ".print(this.stream)
-		n.klass.fields.children.length.toString().println(this.stream)
+		n.klass.fields.length.toString().println(this.stream)
 		"section .text".println(this.stream)
 
 		if (n.klass.vtable.is_none() == true) return None<Node>
@@ -230,7 +230,7 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 			"mov rdi, rax\nmov rax, 60\nsyscall".println(this.stream)
 		} else {
 			"pop r13\npop r12\nmov rsp, rbp\npop rbp\nret ".print(this.stream)
-			size = n.args.children.length
+			size = n.args.length
 			size << 3
 			size.toString().println(this.stream)
 		}

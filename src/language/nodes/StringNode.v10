@@ -1,3 +1,9 @@
+define t "StringNode"
+include "src/stdlib/LinkedList.generic"
+
+define t "StringNode"
+include "src/stdlib/Option.generic"
+
 class virtual StringNode < RetNode (String string) {
 	func Option<Node> accept(Visitor v) {
 		return v.visit(this)

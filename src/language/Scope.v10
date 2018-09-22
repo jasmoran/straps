@@ -48,7 +48,7 @@ class Scope (String name, Option<Scope> parent, Map<String_Node> scope) {
 			if (opt.type != nFUNCTION && opt.type != nVTAB_ACCESS)
 				error("Found ", opt.type.toString(), " in function scope")
 			var option = opt.to(FunctionNode)
-			var optargs = option.args.children
+			var optargs = option.args
 			if (optargs.length != args.length) next
 
 			# Nothing to compare if there are no arguments

@@ -1,25 +1,23 @@
 func Resolving Resolving_new(Reporting report) {
-	return Resolving_new(scope, true, report)
+	return Resolving_new(scope, report)
 }
 
-class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reporting report) {
+class virtual Resolving < Visitor (Scope scope, Reporting report) {
 	func Option<Node> visit(StringNode n) {
 		n.ret_type.resolve(this.scope)
 
 		if (n.type == nIDENTIFIER) {
-			if (this.resolve_idents == true) {
-				var opt = this.scope.resolve(n)
+			var opt = this.scope.resolve(n)
 
-				if (opt.is_some() == true) {
-					var new = opt.unwrap().to(RetNode).clone()
-					new.position = n.position
-					if (n.ret_type.strength == CAST) new.ret_type = n.ret_type
+			if (opt.is_some() == true) {
+				var new = opt.unwrap().to(RetNode).clone()
+				new.position = n.position
+				if (n.ret_type.strength == CAST) new.ret_type = n.ret_type
 
-					return Some(new.to(Node))
+				return Some(new.to(Node))
 
-				} else {
-					this.report.printUndefinedIdentifier(n, this.scope)
-				}
+			} else {
+				this.report.printUndefinedIdentifier(n, this.scope)
 			}
 		}
 
@@ -30,9 +28,7 @@ class virtual Resolving < Visitor (Scope scope, Boolean resolve_idents, Reportin
 		n.ret_type.resolve(this.scope)
 
 		# Dont resolve identifiers in args
-		this.resolve_idents = false
-		n.args.accept(this)
-		this.resolve_idents = true
+		for (arg in n.args) arg.ret_type.resolve(this.scope)
 		n.block.accept(this)
 
 		return None<Node>
