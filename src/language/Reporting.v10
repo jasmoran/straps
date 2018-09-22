@@ -145,6 +145,13 @@ class Reporting(Boolean enabled, Stream st) {
 		if (this.enabled == false) error()
 	}
 
+	func void printRedefinedVar(StringNode vrbl) {
+		this.printRange(vrbl.position, vrbl.position, vrbl.string.length)
+		",\"level\":\"error\",\"message\":\"Redefined variable\"}".println(this.st)
+
+		if (this.enabled == false) error()
+	}
+
 	func void printInvalidType(Position start, Position end, Type type) {
 		this.printRange(start, end, 0)
 		",\"level\":\"error\",\"message\":\"Attempted to fetch scope but type is ".print(this.st)

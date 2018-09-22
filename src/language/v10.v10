@@ -169,7 +169,7 @@ func Set<String> build(String name, Reporting reporting) {
 	root.accept(v)
 	v = ForLoop_new()
 	root.accept(v)
-	v = Variables_new()
+	v = Variables_new(reporting)
 	root.accept(v)
 	v = Typing_new()
 	root.accept(v)

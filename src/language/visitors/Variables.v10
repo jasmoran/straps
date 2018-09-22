@@ -1,11 +1,12 @@
-func Variables Variables_new() {
-	return Variables_new(None<BlockNode>, 0, 0)
+func Variables Variables_new(Reporting reporting) {
+	return Variables_new(None<BlockNode>, 0, 0, reporting)
 }
 
 class virtual Variables < Visitor (
 	Option<BlockNode> containing_block,
 	Number max_vars,
-	Number available_position
+	Number available_position,
+	Reporting reporting
 ) {
 
 	func Option<Node> visit(FunctionNode n) {
@@ -36,6 +37,14 @@ class virtual Variables < Visitor (
 		if (n.op != VAR) return None<Node>
 		var containing_block = this.containing_block.expect("var declared outside of any block")
 
+		var assignment = n.expr.to(BinaryOperationNode)
+		var vrbl = assignment.lhs.to(StringNode)
+
+		if (containing_block.scope.search(vrbl.string).is_some() == true) {
+			this.reporting.printRedefinedVar(vrbl)
+			return Some(assignment.to(Node))
+		}
+
 		# Calculate offset of variable from offset
 		this.available_position++
 		var offset = this.available_position
@@ -46,8 +55,6 @@ class virtual Variables < Visitor (
 		if (this.available_position > this.max_vars) this.max_vars = this.available_position
 
 		# Add variable to block scope
-		var assignment = n.expr.to(BinaryOperationNode)
-		var vrbl = assignment.lhs.to(StringNode)
 		containing_block.scope.set(
 			vrbl.string,
 			BinaryOperationNode_new(
