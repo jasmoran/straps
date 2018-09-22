@@ -35,7 +35,7 @@ class virtual StaticNew < Visitor (Option<BlockNode> pb) {
       obj,
       CallNode_new(
         pos,
-        StringNode_new(nIDENTIFIER, pos, Type_new(n.name), "allocate"),
+        StringNode_new(nIDENTIFIER, pos, Type_new(n.name, CAST), "allocate"),
         LinkedList<RetNode>_new().append(
           StringNode_new(nNUMBER, pos, Type_new("Number"), size.toString())
         )
@@ -60,7 +60,8 @@ class virtual StaticNew < Visitor (Option<BlockNode> pb) {
       )
 
       # Create block for new function
-      var new_block = BlockNode_new(pos, Scope_new("StaticConstructorScope", None<Scope>)).append(allocation)
+      var new_block = BlockNode_new(pos, Scope_new("StaticConstructorScope", Some(scope)))
+                        .append(allocation)
 
       # Assign vtable
       if (n.vtable.is_some() == true) {
@@ -87,7 +88,7 @@ class virtual StaticNew < Visitor (Option<BlockNode> pb) {
       new_args.children = init.args.children.shallow_clone()
 
       # Add obj to block scope
-      block.scope.set(
+      new_block.scope.set(
         obj.string,
         BinaryOperationNode_new(
           obj.ret_type,
