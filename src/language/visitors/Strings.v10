@@ -23,7 +23,7 @@ class virtual Strings < Visitor (Number counter, ListNode strings, Boolean root,
 
 	func Option<BlockNode> visit(BlockNode n) {
 		if (this.root == true) {
-			n.append(this.strings)
+			n.prepend(this.strings)
 			this.root = false
 		}
 

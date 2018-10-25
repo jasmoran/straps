@@ -94,7 +94,7 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, Option<CharArr>
 	# Set up linker runner
 	var Number num_args = glob_reqs.length + 5
 	var linker = Run_new(num_args)
-	linker.add("/usr/bin/ld").add("-m").add("elf_x86_64").add("-o").add(String_fromTerminated(out_path))
+	# linker.add("/usr/bin/ld").add("-m").add("elf_x86_64").add("-o").add(String_fromTerminated(out_path))
 
 	for (req in glob_reqs) {
 		if (req == glob_reqs.first.unwrap().payload) next
@@ -136,17 +136,8 @@ func Set<String> build(String name, Reporting reporting) {
 	glob_reqs.add(name)
 
 	var externals = LinkedList<String>_new()
-	"section .text".println(output)
 	headerize(glob_reqs, parser.reqs, lfuncs, externals, reporting)
-	for (fnc in lfuncs.children) {
-		"extern ".print(output)
-		fnc.to(StringNode).string.println(output)
-		fnc_iter.fetch()
-	}
-	for (extern in externals) {
-		"extern ".print(output)
-		extern.println(output)
-	}
+	"window.st = window.st || {};".println(output)
 
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "GLOBALS_SETUP")
 	var type = Type_new("void")
@@ -203,7 +194,7 @@ func Set<String> build(String name, Reporting reporting) {
 
 	# nasm -f elf64 out.asm
 	var obj_path = name.clone(2).append(".o")
-	Run_new(6).add("/usr/bin/nasm").add("-f").add("elf64").add(asm_path).add("-o").add(obj_path).exec()
+	# Run_new(6).add("/usr/bin/nasm").add("-f").add("elf64").add(asm_path).add("-o").add(obj_path).exec()
 
 	return glob_reqs
 }

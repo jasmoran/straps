@@ -6,7 +6,7 @@ func Functions Functions_new() {
 class virtual Functions < Visitor (ListNode lfuncs, Boolean root) {
 	func Option<Node> visit(FunctionNode n) {
 		var name = n.name
-		if (n.name.equal("main") == true) name = "_start"
+		# if (n.name.equal("main") == true) name = "_start"
 		var pos = n.position.clone("Functions")
 		this.lfuncs.append(StringNode_new(nIDENTIFIER, pos, Type_new(), name))
 		this.lfuncs.append(StringNode_new(nSTRING, pos, Type_new(), n.name))

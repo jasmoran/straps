@@ -1,0 +1,244 @@
+<html>
+<head>
+  <!-- <link href="prism.css" rel="stylesheet" /> -->
+</head>
+<body>
+  <!-- <script src="prism.js"></script> -->
+  <pre id="stdout"></pre>
+  <pre id="stderr"></pre>
+  <script type="text/javascript">
+    JSON.safe_stringify = obj => {
+      const cache = [];
+      return JSON.stringify(obj, function (key, value) {
+        if (typeof value === 'object' && value !== null) {
+          if (cache.indexOf(value) !== -1) {
+            try {
+              return JSON.parse(JSON.stringify(value));
+            } catch (error) {
+              return null;
+            }
+          }
+          cache.push(value);
+        }
+        return value;
+      });
+    }
+
+    function deepFreeze(o) {
+      o.__proxy = true;
+
+      Object.getOwnPropertyNames(o).forEach(prop => {
+        if (o[prop] !== null
+          && (typeof o[prop] === "object" || typeof o[prop] === "function")
+          && !o[prop].__proxy) {
+          o[prop] = deepFreeze(o[prop]);
+        }
+      });
+
+      return new Proxy(o, {
+        set(target, key, value) {
+          if (target[key] !== value) debugger;
+          return value;
+        }
+      });
+    };
+  </script>
+  <script src="view.js" type="text/javascript"></script>
+  <script src="fs.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    // include "src/stdlib/Stream.v10"
+    files['input.v10'] = `
+include "src/stdlib/stdlib.v10"
+func void main() {
+	var str = String_new(12)
+	str.append("Hello ").append("World\\n").print(STDOUT)
+}`;
+
+    const to_js = str => String.fromCharCode(...str[2].slice(0, str[0]));
+    const to_ca = str => Array.from(str).map(c => c.charCodeAt(0));
+    const to_st = str => [str.length, str.length, to_ca(str)];
+
+    const read_only = handler => str => {
+      if (str) throw new Error('Read-only stream');
+      return handler(str);
+    };
+
+    const write_only = handler => str => {
+      if (!str) throw new Error('Write-only stream');
+      return handler(str);
+    };
+
+    const closed_stream = () => { throw new Error('Tried to access closed stream') };
+
+    const _STDIN = read_only(() => { throw new Error('STDIN is not implemented') });
+    // const _STDOUT = write_only(console.log);
+    // const _STDERR = write_only(console.error);
+    const _STDOUT = write_only(str => document.getElementById('stdout').innerText += str);
+    const _STDERR = write_only(str => document.getElementById('stderr').innerText += str);
+    const _LOOPIN = write_only(str => {
+      Array.from(str).forEach(c => loopbuffer.push(c.charCodeAt(0)));
+    });
+    const _LOOPOUT = read_only(() => {
+      return loopbuffer.shift();
+    });
+
+    const loopbuffer = [];
+    const streams = [_STDIN, _STDOUT, _STDERR, _LOOPIN, _LOOPOUT];
+
+    window.out_files = {};
+
+    function allocate_Number(num_bytes) {
+      if (num_bytes % 8 != 0 || num_bytes < 0) debugger;
+      const num_qw = num_bytes / 8;
+      return new Array(num_qw);
+    }
+
+    function String_fromTerminated_CharArr(ca) {
+      const len = ca.indexOf(0);
+      const str = String_new_Number(len);
+      str[0] = len;
+      str[2] = ca.slice(0, len);
+      return str;
+    }
+
+    function String_new_Number(len) {
+      return [0, len, allocate_Number(len * 8).fill(0)];
+    }
+
+    function _String_toTerminated_String(str) {
+      return [...str[2], 0];
+    }
+
+    function backtrace() {
+      console.trace();
+    }
+
+    function memcpy_void_void_Number(src, dst, len) {
+      for (let ix = 0; ix < len; ix++) {
+        dst[ix] = src[ix];
+      }
+    }
+
+    function memcmp_void_void_Number(v1, v2, len) {
+      for (let ix = 0; ix < len; ix++) {
+        if (v1[ix] !== v2[ix]) return 0;
+      }
+      return 1;
+    }
+
+    function _Stream_get_Stream(str) {
+      const stream = streams[str];
+      if (!stream) debugger;
+      return stream();
+    }
+
+    function Array_get_Array_Any__Number(ary, ix) {
+      return ary[2][ix];
+    }
+
+    function Array_set_Array_Any__Number_Any(ary, ix, val) {
+      ary[2][ix] = val;
+    }
+
+    function _String_get_String_Number(str, ix) {
+      return str[2][ix];
+    }
+
+    function _String_set_String_Number_Character(str, ix, char) {
+      str[2][ix] = char;
+    }
+
+    function _String_append_String_String(str1, str2) {
+      for (let ix = 0; ix < str2[0]; ix++) {
+        str1[2][ix + str1[0]] = str2[2][ix];
+      }
+      str1[0] += str2[0];
+
+      return str1;
+    }
+
+    function _Number_toString_Number_Boolean(num, sign) {
+      return to_st(num.toString());
+    }
+
+    function _String_shift_left_String_Number(str, shift) {
+      str[0] += shift;
+      str[2].push(...new Array(shift));
+      str[2].splice(str[1]);
+      return str;
+    }
+
+    function _String_shift_right_String_Number(str, shift) {
+      str[0] += shift;
+      str[2].unshift(...new Array(shift));
+      str[2].splice(str[1]);
+      return str;
+    }
+
+    function _String_hash_String(a16) {
+      console.error('String.hash is not supported');
+      return 0;
+    }
+
+    function load_loop() {
+      LOOPIN[0] = 3;
+      LOOPOUT[0] = 4;
+    }
+
+    function syscall(call_id, ...args) {
+      switch (call_id) {
+        // Write
+        case 1:
+          const str = String.fromCharCode(...args[1].slice(0, args[2]))
+          const stream = streams[args[0]];
+          if (!stream) debugger;
+          stream(str);
+          break;
+
+        // Open
+        case 2:
+          let path = String.fromCharCode(...args[0].slice(0, args[0].indexOf(0)))
+          const file = files[path];
+          // console.log(`Opened ${path}`);
+          if (!file) debugger;
+          window.rax = streams.length;
+          const data = to_ca(file);
+          streams.push(() => data.shift());
+          break;
+
+        // Close
+        case 3:
+          streams[args[0]] = closed_stream;
+          break;
+
+        // Exit
+        case 60:
+          throw new Error(`Process exited with code (${args[0]})`);
+          break;
+
+        // Create
+        case 85:
+          const cpath = String.fromCharCode(...args[0].slice(0, args[0].indexOf(0)));
+          window.rax = streams.length;
+          window.out_files[cpath] = [];
+          streams.push(write_only(str => window.out_files[cpath].push(...str)));
+          break;
+
+        // default:
+        //   console.log(call_id, args)
+      }
+    }
+
+    // window.devtoolsFormatters = [{
+    //   header(obj) {
+    //     if (Array.isArray(obj) && obj.every(n => (n < 256 && typeof n == 'number'))) return ['div', {}, '[' + String.fromCharCode(...obj) + ']'];
+    //     return null;
+    //   },
+    //   hasBody() { return false; }
+    // }];
+
+    const go = () => main(null, to_ca('src/language/v10.v10\0'), to_ca('output\0'), 0)
+  </script>
+</body>
+
+</html>

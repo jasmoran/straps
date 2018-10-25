@@ -43,11 +43,11 @@ func void error() error(NullString, NullString, NullString, NullString, NullStri
 
 func void backtrace() {
 	# Get list of function pointers
-	nasm("mov rax, _FUNCTIONLIST")
+	nasm("rax = window._FUNCTIONLIST;")
 	var flist = rax.to(Array<Any>)
 
 	# Get list of function names
-	nasm("mov rax, _FUNCTIONNAMELIST")
+	nasm("rax = window._FUNCTIONNAMELIST;")
 	var fnamelist = rax.to(Array<String>)
 
 	var curr_rbp = rbp.to(Any)
@@ -82,13 +82,13 @@ func void backtrace() {
 func Number and(Number a, Number b) {
 	rax = a.to(void)
 	rbx = b.to(void)
-	nasm("and rax, rbx")
+	nasm("rax &= rbx;")
 	return rax.to(Number)
 }
 
 func Number or(Number a, Number b) {
 	rax = a.to(void)
 	rbx = b.to(void)
-	nasm("or rax, rbx")
+	nasm("rax |= rbx;")
 	return rax.to(Number)
 }

@@ -54,18 +54,11 @@ func Array<?t> Array<?t>_new(Number size) {
 
 class Array<?t> (Number length, Number size, void data) {
 	func ?t get(Number ix) {
-		var addr = ix.to(Any)
-		addr << 3
-		addr += this.data
-		var res = addr.deref.to(?t)
-		return res
+		return Array_get(this.to(Array<Any>), ix).to(?t)
 	}
 
 	func void set(Number ix, ?t item) {
-		var addr = ix.to(Any)
-		addr << 3
-		addr += this.data
-		addr.deref = item.to(Any)
+		Array_set(this.to(Array<Any>), ix, item.to(Any))
 	}
 
 	func Array<?t> append(?t item) {

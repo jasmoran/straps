@@ -1,0 +1,15 @@
+class void() {}
+class Number() {}
+func void allocate(Number n) {}
+
+func TVisitor get_virtual() {
+  return TVisitor_new()
+}
+
+class virtual TVisitor() {
+  func void wolo() {}
+}
+
+func void main() {
+  get_virtual().wolo()
+}

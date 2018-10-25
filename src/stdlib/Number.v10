@@ -21,9 +21,9 @@ class Number (void data) {
 
 		loop {
 			rdx = 0.to(void)
-			nasm("
+			nasm("/*
 			div rcx
-			push rdx
+			push rdx*/
 			")
 			digit_count++
 
@@ -45,7 +45,7 @@ class Number (void data) {
 		}
 
 		loop {
-			nasm("pop rax")
+			nasm("/*pop rax*/")
 			rax += '0'
 
 			var chr = rax.to(Character)

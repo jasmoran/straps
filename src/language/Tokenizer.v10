@@ -11,7 +11,7 @@ enum Token {
 
 class Token(void type) {
 	func String toString() {
-		nasm("mov rax, Token")
+		nasm("rax = window.st.Token;")
 		var a = rax.to(Array<String>)
 		var ix = this.to(Number)
 		return a.get(ix)
@@ -173,7 +173,7 @@ class Tokenizer(
 			# Use macros
 			if (c == '?') {
 				var macro_name = c.toString().clone(1).append(this.rs.get().get_character())
-				var macro = this.macros.get(macro_name).unwrap_or("Used undefined macro")
+				var macro = this.macros.get(macro_name).expect("Used undefined macro")
 				this.rs_old = Some(this.rs)
 				this.rs = ReversibleStream_new(macro)
 				next
@@ -214,7 +214,7 @@ class Tokenizer(
 			# Use macros
 			if (c == '?') {
 				var macro_name = c.toString().clone(1).append(this.rs.get().get_character())
-				var macro = this.macros.get(macro_name).unwrap_or("Used undefined macro")
+				var macro = this.macros.get(macro_name).expect("Used undefined macro")
 				this.rs_old = Some(this.rs)
 				this.rs = ReversibleStream_new(macro)
 				next

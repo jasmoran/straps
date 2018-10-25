@@ -4,3 +4,18 @@ define t "String"
 include "src/stdlib/Array.generic"
 define t "CharArr"
 include "src/stdlib/Array.generic"
+
+func Any Array_get(Array<Any> arr, Number ix) {
+	var addr = ix.to(Any)
+	addr << 3
+	addr += arr.data
+	var res = addr.deref.to(Any)
+	return res
+}
+
+func void Array_set(Array<Any> arr, Number ix, Any item) {
+	var addr = ix.to(Any)
+	addr << 3
+	addr += arr.data
+	addr.deref = item.to(Any)
+}
