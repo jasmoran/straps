@@ -16,6 +16,8 @@ func Dump Dump_new(Stream stream, LinkedList<String> externals) {
 	scallreg.append("r9")
 
 	"section .text".println(stream)
+	"_start:".println(stream)
+	"jmp main".println(stream)
 	for (extern in externals) {
 		"extern ".print(stream)
 		extern.println(stream)
@@ -215,13 +217,8 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 
 	func Option<Node> visit(FunctionNode n) {
 		"global ".print(this.stream)
-		if (n.name.equal("main") == true) {
-			"_start".println(this.stream)
-			"_start".print(this.stream)
-		} else {
-			n.name.println(this.stream)
-			n.name.print(this.stream)
-		}
+		n.name.println(this.stream)
+		n.name.print(this.stream)
 		":\npush rbp\nmov rbp, rsp\nsub rsp, ".print(this.stream)
 		var size = n.num_vars
 		size << 3
