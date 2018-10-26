@@ -191,13 +191,15 @@ func Set<String> build(String name, Reporting reporting, Boolean link, Boolean j
 
 	if (reporting.enabled == true) return glob_reqs
 
-	v = IndexCall_new(js)
-	root.accept(v)
-	var fncvis = Functions_new()
-	fncvis.lfuncs = lfuncs
-	root.accept(fncvis)
-	v = Strings_new()
-	root.accept(v)
+	root.accept(IndexCall_new(js))
+
+	if (js == false) {
+		var fncvis = Functions_new()
+		fncvis.lfuncs = lfuncs
+		root.accept(fncvis)
+	}
+
+	root.accept(Strings_new())
 
 	if (js == true) {
 		root.accept(JSDump_new(output))
