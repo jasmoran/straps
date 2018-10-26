@@ -48,8 +48,8 @@ func String String_fromTerminated(CharArr source) {
 	rdi = source.to(void)
 	rax = 0.to(void)
 	rcx = 1000000.to(void)
-	nasm("/*repne scasb*/
-	")
+	nasm(";/*
+	repne scasb;*/")
 	var length = 999999
 	length -= rcx
 
@@ -86,7 +86,8 @@ class String (Number length, Number size, CharArr data) {
 		rax = ca
 		rax += ix
 		rbx = 0.to(void)
-		nasm("/*mov bl, BYTE[rax]*/
+		nasm(";/*
+		mov bl, BYTE[rax];*/
 		")
 
 		return rbx.to(Character)
@@ -97,7 +98,8 @@ class String (Number length, Number size, CharArr data) {
 		rax = ca
 		rax += ix
 		rbx = character.to(void)
-		nasm("/*mov BYTE[rax], bl*/
+		nasm(";/*
+		mov BYTE[rax], bl;*/
 		")
 	}
 
@@ -119,9 +121,11 @@ class String (Number length, Number size, CharArr data) {
 	# Shifts characters in the string n bytes to the right
 	func String shift_right(Number n) {
 		var end_of_string = this.data + this.length - 1
-		nasm("/*std*/")
+		nasm(";/*
+		std;*/")
 		memcpy(end_of_string, end_of_string + n, this.length)
-		nasm("/*cld*/")
+		nasm(";/*
+		cld;*/")
 		this.length += n
 		return this
 	}
@@ -197,7 +201,8 @@ class String (Number length, Number size, CharArr data) {
 		for (char in this) {
 			rax = hash.to(void)
 			rcx = char.to(void)
-			nasm("/*xor al, cl*/")
+			nasm(";/*
+			xor al, cl;*/")
 			hash = rax.to(Number) * 1099511628211
 		}
 
@@ -243,7 +248,8 @@ class String (Number length, Number size, CharArr data) {
 
 		rax = chararr.to(void)
 		rax += this.length
-		nasm("/*mov BYTE[rax], 0*/")
+		nasm(";/*
+		mov BYTE[rax], 0;*/")
 
 		return chararr
 	}

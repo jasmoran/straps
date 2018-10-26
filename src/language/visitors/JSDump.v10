@@ -9,7 +9,7 @@ func JSDump JSDump_new(Stream stream) {
 	return JSDump_new(binops, true, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true, stream, " ")
 }
 
-class virtual JSDump < Visitor (Array<String> binops, Array<String> scallreg, Boolean top, Number counter,
+class virtual JSDump < Visitor (Array<String> binops, Boolean top, Number counter,
 					 String trueLabel, String falseLabel, String target, Boolean negate,
 					 Stream stream, String idloop) {
 
@@ -179,9 +179,7 @@ class virtual JSDump < Visitor (Array<String> binops, Array<String> scallreg, Bo
 			n.string.print(this.stream)
 			"\`.charCodeAt(0)".print(this.stream)
 		} else if (n.type == nNASM) {
-			# "/*".print(this.stream)
 			n.string.print(this.stream)
-			# "*/".println(this.stream)
 		} else {
 			n.string.replace('#', '_').print(this.stream)
 		}
@@ -196,14 +194,14 @@ class virtual JSDump < Visitor (Array<String> binops, Array<String> scallreg, Bo
 	}
 
 	func Option<Node> visit(StaticClassNode n) {
-		"window.st.".print(this.stream)
+		"const ".print(this.stream)
 		n.klass.name.replace('#', '_').print(this.stream)
 		"Static = new Array(".print(this.stream)
 		n.klass.fields.length.toString().print(this.stream)
 		");".println(this.stream)
 
 		if (n.klass.vtable.is_none() == true) return None<Node>
-		"window._vtable_".print(this.stream)
+		"const _vtable_".print(this.stream)
 		n.klass.name.print(this.stream)
 		" = [".print(this.stream)
 
@@ -270,7 +268,7 @@ class virtual JSDump < Visitor (Array<String> binops, Array<String> scallreg, Bo
 			");".println(this.stream)
 		} else if (n.type == nGLOBAL) {
 			for (nn in n.children) {
-				"window.".print(this.stream)
+				"const ".print(this.stream)
 				nn.accept(this)
 				" = [null];".println(this.stream)
 			}
@@ -279,7 +277,7 @@ class virtual JSDump < Visitor (Array<String> binops, Array<String> scallreg, Bo
 			for (nn in n.children) {
 				if (nn.type != nSTRING) error()
 
-				"window.string_".print(this.stream)
+				"const string_".print(this.stream)
 				ix.toString().print(this.stream)
 				" = [".print(this.stream)
 				var s = nn.to(StringNode).string.unescaped_length().toString()
@@ -292,34 +290,7 @@ class virtual JSDump < Visitor (Array<String> binops, Array<String> scallreg, Bo
 				ix++
 			}
 		} else if (n.type == nFUNCTIONS) {
-			"window._FUNCTIONLIST = [".print(this.stream)
-			var ix = n.children.length
-			ix >> 1
-			var s = ix.toString()
-			s.print(this.stream)
-			", ".print(this.stream)
-			s.print(this.stream)
-			", [".print(this.stream)
-
-			for (nn in n.children) {
-				nn.accept(this)
-				", ".print(this.stream)
-				nn_iter.fetch()
-			}
-
-			"]];\nwindow._FUNCTIONNAMELIST = [".print(this.stream)
-			s.print(this.stream)
-			", ".print(this.stream)
-			s.print(this.stream)
-			", [".print(this.stream)
-
-			for (nn in n.children) {
-				nn = nn_iter.fetch()
-				nn.accept(this)
-				", ".print(this.stream)
-			}
-
-			"]]".println(this.stream)
+			return None<ListNode>
 		} else {
 			n.accept_children(this)
 		}

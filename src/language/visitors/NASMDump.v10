@@ -1,4 +1,4 @@
-func Dump Dump_new(Stream stream, LinkedList<String> externals) {
+func NASMDump NASMDump_new(Stream stream, LinkedList<String> externals) {
 	var binops = Array<String>_new(5)
 	binops.append("add ")
 	binops.append("sub ")
@@ -16,6 +16,7 @@ func Dump Dump_new(Stream stream, LinkedList<String> externals) {
 	scallreg.append("r9")
 
 	"section .text".println(stream)
+	"global _start".println(stream)
 	"_start:".println(stream)
 	"jmp main".println(stream)
 	for (extern in externals) {
@@ -23,10 +24,10 @@ func Dump Dump_new(Stream stream, LinkedList<String> externals) {
 		extern.println(stream)
 	}
 
-	return Dump_new(binops, scallreg, true, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true, stream, " ")
+	return NASMDump_new(binops, scallreg, true, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true, stream, " ")
 }
 
-class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Boolean top, Number counter,
+class virtual NASMDump < Visitor (Array<String> binops, Array<String> scallreg, Boolean top, Number counter,
 					 String trueLabel, String falseLabel, String target, Boolean negate,
 					 Stream stream, String idloop) {
 
@@ -241,11 +242,6 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 	}
 
 	func Option<BlockNode> visit(BlockNode n) {
-		if (this.top == true) {
-			"section .text\nglobal _start".println(this.stream)
-			this.top = false
-		}
-
 		n.accept_children(this)
 
 		return None<BlockNode>
@@ -402,13 +398,14 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 	func Option<Node> visit(EnumNode n) {
 		"section .data".println(this.stream)
 		n.name.print(this.stream)
-		":\ndq ".print(this.stream)
+		"Values:\ndq ".print(this.stream)
 		var len = n.values.children.length.toString()
 		len.print(this.stream)
 		", ".print(this.stream)
 		len.print(this.stream)
 		", 24+".print(this.stream)
 		n.name.print(this.stream)
+		"Values".print(this.stream)
 
 		for (nn in n.values.children) {
 			", ".print(this.stream)

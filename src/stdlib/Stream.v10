@@ -6,9 +6,11 @@ global(Stream LOOPIN, Stream LOOPOUT)
 
 class Stream (Number s) {
 	func Character get() {
-		nasm("/*push 0*/")
+		nasm(";/*
+		push 0;*/")
 		sys(0, this, rsp, 1)
-		nasm("/*pop rax*/")
+		nasm(";/*
+		pop rax;*/")
 		return rax.to(Character)
 	}
 }
@@ -16,15 +18,18 @@ class Stream (Number s) {
 func void load_loop() {
 	if (LOOPIN == 0.to(Stream)) {
 		# Create loop stream
-		nasm("/*mov rax, 22
+		nasm(";/*
+		mov rax, 22
 		mov rdi, LOOPIN
-		syscall*/
+		syscall;*/
 		")
 		LOOPOUT = LOOPIN
 		LOOPIN >> 32
 		rax = LOOPOUT.to(void)
-		nasm("rbx = 0xFFFFFFFF;")
-		nasm("rax &= rbx;")
+		nasm(";rbx = 0xFFFFFFFF;/*
+		mov rbx, 0xFFFFFFFF;*/")
+		nasm(";rax &= rbx;/*
+		and rax, rbx;*/")
 		LOOPOUT = rax.to(Stream)
 	}
 }

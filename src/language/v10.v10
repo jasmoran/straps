@@ -86,7 +86,7 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, Option<CharArr>
 		if (flags.length > 1) {
 			keep = flags.contains('k')
 			report = flags.contains('r')
-			report = flags.contains('j')
+			js = flags.contains('j')
 			if(flags.contains('n') == true) link = false
 		}
 	}
@@ -94,7 +94,7 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, Option<CharArr>
 	var reporting = Reporting_new(report, STDOUT)
 
 	var name = norm_name(String_fromTerminated(src_path))
-	var glob_reqs = build(name, reporting, link)
+	var glob_reqs = build(name, reporting, link, js)
 
 	if (report == true) return Void
 
@@ -105,7 +105,7 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, Option<CharArr>
 
 	for (req in glob_reqs) {
 		if (req == glob_reqs.first.unwrap().payload) next
-		build(req, reporting, link)
+		build(req, reporting, link, js)
 
 		# Add object to linker args
 		if (link == true) linker.add(req.clone(2).append(".o"))
@@ -121,7 +121,7 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, Option<CharArr>
 	# }
 }
 
-func Set<String> build(String name, Reporting reporting, Boolean link) {
+func Set<String> build(String name, Reporting reporting, Boolean link, Boolean js) {
 	# Open input file
 	var src_path = name.clone(4).append(".v10")
 	var input = File_open(src_path)
@@ -191,7 +191,7 @@ func Set<String> build(String name, Reporting reporting, Boolean link) {
 
 	if (reporting.enabled == true) return glob_reqs
 
-	v = IndexCall_new()
+	v = IndexCall_new(js)
 	root.accept(v)
 	var fncvis = Functions_new()
 	fncvis.lfuncs = lfuncs
