@@ -1,11 +1,12 @@
-func IndexCall IndexCall_new() {
+func IndexCall IndexCall_new(Boolean js) {
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "IndexCall_scratchreg")
 	return IndexCall_new(
 		None<LinkedList<Node>>,
 		None<LinkedListNode<Node>>,
 		StringNode_new(nREGISTER, pos, Type_new(), "r12"),
 		pos,
-		0
+		0,
+		js
 	)
 }
 
@@ -14,7 +15,8 @@ class virtual IndexCall < Visitor (
 	Option<LinkedListNode<Node>> parent_lln,
 	Node scratch_reg,
 	Position pos,
-	Number count
+	Number count,
+	Boolean js
 ) {
 
 	func void prepend(Node child) {
@@ -23,6 +25,45 @@ class virtual IndexCall < Visitor (
 	}
 
 	func Option<Node> visit(CallNode n) {
+		if (this.js == true) {
+			# Loop through arguments from last to first
+			for (arg in n.args.iter().reverse()) {
+				# Visit argument
+				var arg_acc = arg.accept(this)
+				if (arg_acc.is_some() == true) {
+					arg = arg_acc.unwrap().to(RetNode)
+					arg_iter.set(arg)
+				}
+
+				# Push each argument onto block
+				var nom = this.count.toString().clone(1).prepend('p')
+				this.count++
+				this.prepend(
+					BinaryOperationNode_new(
+						this.pos,
+						ASSIGN,
+						StringNode_new(nNASM, this.pos, Type_new(), "const ".clone(6).append(nom)),
+						arg
+					)
+				)
+				arg_iter.set(StringNode_new(nREGISTER, this.pos, Type_new(), nom))
+			}
+
+			if (n.cfunction.type == nBINARYOP) {
+				var cfunc = n.cfunction.to(BinaryOperationNode)
+				if (cfunc.op == SQUARE_OPEN && cfunc.lhs.type == nBINARYOP) {
+					var vtab = cfunc.lhs.to(BinaryOperationNode)
+					if (vtab.op == SQUARE_OPEN) {
+						vtab.lhs = n.args.get(0).unwrap()
+					}
+				}
+			}
+
+			# Visit function
+			n.cfunction = n.cfunction.accept(this).unwrap_or(n.cfunction)
+			return None<Node>
+		}
+
 		# Loop through arguments from last to first
 		for (arg in n.args.iter().reverse()) {
 			# Visit argument
@@ -33,38 +74,20 @@ class virtual IndexCall < Visitor (
 			}
 
 			# Push each argument onto block
-			var nom = this.count.toString().clone(1).prepend('p')
-			this.count++
 			this.prepend(
-				BinaryOperationNode_new(
-					this.pos,
-					ASSIGN,
-					StringNode_new(nNASM, this.pos, Type_new(), "const ".clone(6).append(nom)),
-					arg
-				)
+				UnaryOperationNode_new(this.pos, PUSH, arg, true)
 			)
-			arg_iter.set(StringNode_new(nREGISTER, this.pos, Type_new(), nom))
-		}
-
-		if (n.cfunction.type == nBINARYOP) {
-			var cfunc = n.cfunction.to(BinaryOperationNode)
-			if (cfunc.op == SQUARE_OPEN && cfunc.lhs.type == nBINARYOP) {
-				var vtab = cfunc.lhs.to(BinaryOperationNode)
-				if (vtab.op == SQUARE_OPEN) {
-					vtab.lhs = n.args.get(0).unwrap()
-				}
-			}
 		}
 
 		# Visit function
 		n.cfunction = n.cfunction.accept(this).unwrap_or(n.cfunction)
 
 		# Actually call function after pushing arguments
-		# this.prepend(n)
+		this.prepend(n)
 
 		# Replace with rax
-		# var reg = StringNode_new(nREGISTER, this.pos, Type_new(), "rax").to(Node)
-		return None<Node>
+		var reg = StringNode_new(nREGISTER, this.pos, Type_new(), "rax").to(Node)
+		return Some(reg)
 	}
 
 	func Option<Node> visit(BinaryOperationNode n) {
