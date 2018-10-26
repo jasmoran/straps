@@ -35,6 +35,9 @@ class virtual Definition < Visitor () {
 			ix++
 		}
 
+		var values = n.name.clone(6).append("Values")
+		scope.set(values, StringNode_new(nNASM, n.position.clone("Definition"), Type_new("Array#String#"), values))
+
 		return None<Node>
 	}
 

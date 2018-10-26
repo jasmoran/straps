@@ -410,9 +410,9 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 	}
 
 	func Option<Node> visit(EnumNode n) {
-		"window.st.".print(this.stream)
+		"const ".print(this.stream)
 		n.name.replace('#', '_').print(this.stream)
-		" = [".print(this.stream)
+		"Values = [".print(this.stream)
 		var len = n.values.children.length.toString()
 		len.print(this.stream)
 		", ".print(this.stream)
