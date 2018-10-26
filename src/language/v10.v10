@@ -78,34 +78,38 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, Option<CharArr>
 	# Read flags
 	var keep = false
 	var report = false
+	var link = true
 	if (caflags.is_some() == true) {
 		var flags = String_fromTerminated(caflags.unwrap())
-		if (flags.length > 1 && flags.get(1) == 'k') keep = true
-		if (flags.length > 2 && flags.get(2) == 'r') report = true
+		if (flags.length > 1) {
+			keep = flags.contains('k')
+			report = flags.contains('r')
+			if(flags.contains('n') == true) link = false
+		}
 	}
 
 	var reporting = Reporting_new(report, STDOUT)
 
 	var name = norm_name(String_fromTerminated(src_path))
-	var glob_reqs = build(name, reporting)
+	var glob_reqs = build(name, reporting, link)
 
 	if (report == true) return Void
 
 	# Set up linker runner
 	var Number num_args = glob_reqs.length + 5
 	var linker = Run_new(num_args)
-	# linker.add("/usr/bin/ld").add("-m").add("elf_x86_64").add("-o").add(String_fromTerminated(out_path))
+	if (link == true) linker.add("/usr/bin/ld").add("-m").add("elf_x86_64").add("-o").add(String_fromTerminated(out_path))
 
 	for (req in glob_reqs) {
 		if (req == glob_reqs.first.unwrap().payload) next
-		build(req, reporting)
+		build(req, reporting, link)
 
 		# Add object to linker args
-		linker.add(req.clone(2).append(".o"))
+		if (link == true) linker.add(req.clone(2).append(".o"))
 	}
 
 	# ld -m elf_x86_64 -o out_path out.o
-	linker.add(name.clone(2).append(".o")).exec()
+	if (link == true) linker.add(name.clone(2).append(".o")).exec()
 
 	# # Clean up
 	# if (keep == false) {
@@ -114,7 +118,7 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, Option<CharArr>
 	# }
 }
 
-func Set<String> build(String name, Reporting reporting) {
+func Set<String> build(String name, Reporting reporting, Boolean link) {
 	# Open input file
 	var src_path = name.clone(4).append(".v10")
 	var input = File_open(src_path)
@@ -137,7 +141,6 @@ func Set<String> build(String name, Reporting reporting) {
 
 	var externals = LinkedList<String>_new()
 	headerize(glob_reqs, parser.reqs, lfuncs, externals, reporting)
-	"window.st = window.st || {};".println(output)
 
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "GLOBALS_SETUP")
 	var type = Type_new("void")
@@ -193,8 +196,10 @@ func Set<String> build(String name, Reporting reporting) {
 	root.accept(v)
 
 	# nasm -f elf64 out.asm
-	var obj_path = name.clone(2).append(".o")
-	# Run_new(6).add("/usr/bin/nasm").add("-f").add("elf64").add(asm_path).add("-o").add(obj_path).exec()
+	if (link == true) {
+		var obj_path = name.clone(2).append(".o")
+		Run_new(6).add("/usr/bin/nasm").add("-f").add("elf64").add(asm_path).add("-o").add(obj_path).exec()
+	}
 
 	return glob_reqs
 }
