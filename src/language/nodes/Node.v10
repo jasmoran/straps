@@ -20,10 +20,7 @@ enum NodeType {
 
 class NodeType() {
 	func String toString() {
-		nasm("rax = window.st.NodeType;")
-		var a = rax.to(Array<String>)
-		var ix = this.to(Number)
-		return a.get(ix)
+		return NodeTypeValues.get(this.to(Number))
 	}
 }
 
