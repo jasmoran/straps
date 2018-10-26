@@ -1,10 +1,10 @@
-func Dump Dump_new(Stream stream) {
+func Dump Dump_new(Stream stream, LinkedList<String> externals) {
 	var binops = Array<String>_new(5)
-	binops.append(" += ")
-	binops.append(" -= ")
-	binops.append(" <<= ")
-	binops.append(" >>= ")
-	binops.append(" = ")
+	binops.append("add ")
+	binops.append("sub ")
+	binops.append("shl ")
+	binops.append("shr ")
+	binops.append("mov ")
 
 	var scallreg = Array<String>_new(7)
 	scallreg.append("rax")
@@ -15,6 +15,12 @@ func Dump Dump_new(Stream stream) {
 	scallreg.append("r8")
 	scallreg.append("r9")
 
+	"section .text".println(stream)
+	for (extern in externals) {
+		"extern ".print(stream)
+		extern.println(stream)
+	}
+
 	return Dump_new(binops, scallreg, true, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true, stream, " ")
 }
 
@@ -24,30 +30,24 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 
 	func Option<Node> visit(Node n) {
 		if (n.type == nNEXT) {
-			"target = '.loop_".print(this.stream)
-			this.idloop.print(this.stream)
-			"'; continue;".println(this.stream)
+			"jmp .loop_".print(this.stream)
+			this.idloop.println(this.stream)
 		} else if (n.type == nBREAK) {
-			"target = '.loop_end_".print(this.stream)
-			this.idloop.print(this.stream)
-			"'; continue;".println(this.stream)
+			"jmp .loop_end_".print(this.stream)
+			this.idloop.println(this.stream)
 		}
 
 		return None<Node>
 	}
 
 	func Option<Node> visit(CallNode n) {
+		"call ".print(this.stream)
 		if (n.cfunction.type == nFUNCTION) {
-			n.cfunction.to(FunctionNode).name.replace('#', '_').print(this.stream)
+			n.cfunction.to(FunctionNode).name.print(this.stream)
 		} else {
 			n.cfunction.accept(this)
 		}
-		"(".print(this.stream)
-		for (arg in n.args) {
-			arg.accept(this)
-			", ".print(this.stream)
-		}
-		")".println(this.stream)
+		"\n".print(this.stream)
 
 		return None<Node>
 	}
@@ -55,24 +55,14 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 	func Option<Node> visit(BinaryOperationNode n) {
 		if (n.op == DOT || n.op == SQUARE_OPEN) {
 			if (n.rhs.type != nNUMBER && n.rhs.type != nINDEX)
-				error("Non-number ", n.rhs.type.toString(), " in DOT or SQUARE_OPEN")
+				error("Non-number ", n.rhs.type.toString(), "in DOT or SQUARE_OPEN")
 			var num = n.rhs.to(StringNode).string
 
-			if (n.lhs.type == nREGISTER && n.lhs.to(StringNode).string.equal("rbp") == true) {
-				if (num.get(0) == '-') {
-					num.set(0, 'v')
-					num.print(this.stream)
-					num.set(0, '-')
-				} else {
-					"a".print(this.stream)
-					num.print(this.stream)
-				}
-			} else {
-				n.lhs.accept(this)
-				"[".print(this.stream)
-				num.print(this.stream)
-				">>3]".print(this.stream)
-			}
+			"QWORD[".print(this.stream)
+			n.lhs.accept(this)
+			if (num.get(0) != '-') "+".print(this.stream)
+			num.print(this.stream)
+			"]".print(this.stream)
 
 		} else if (n.op == OR) {
 			var lastFalse = this.falseLabel
@@ -82,18 +72,16 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 			this.negate = false
 			n.lhs.accept(this)
 
-			"case '".print(this.stream)
 			this.falseLabel.print(this.stream)
-			"':".println(this.stream)
+			":".println(this.stream)
 			this.falseLabel = lastFalse
 
 			this.target = this.trueLabel
 			this.negate = false
 			n.rhs.accept(this)
 
-			"target = '".print(this.stream)
-			this.falseLabel.print(this.stream)
-			"'; continue;".println(this.stream)
+			"jmp ".print(this.stream)
+			this.falseLabel.println(this.stream)
 
 		} else if (n.op == AND) {
 			var lastTrue = this.trueLabel
@@ -103,59 +91,58 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 			this.negate = true
 			n.lhs.accept(this)
 
-			"case '".print(this.stream)
 			this.trueLabel.print(this.stream)
-			"':".println(this.stream)
+			":".println(this.stream)
 			this.trueLabel = lastTrue
 
 			this.target = this.falseLabel
 			this.negate = true
 			n.rhs.accept(this)
-			"target = '".print(this.stream)
-			this.trueLabel.print(this.stream)
-			"'; continue;".println(this.stream)
+			"jmp ".print(this.stream)
+
+			this.trueLabel.println(this.stream)
 		} else {
 			# Standard binops
 			if (n.op >= ADD)
 			if (n.op <= ASSIGN) {
 				# Retrieve string representation of op
 				var ix = (n.op - ADD).to(Number)
-
-				n.lhs.accept(this)
 				var op = this.binops.get(ix)
+
 				op.print(this.stream)
+				n.lhs.accept(this)
+				", ".print(this.stream)
 				n.rhs.accept(this)
-				";\n".print(this.stream)
+				"\n".print(this.stream)
 				return None<Node>
 			}
 
 			# Comparisons
 			if (n.op >= EQUAL)
 			if (n.op <= LESS_EQ) {
-				"if (".print(this.stream)
+				"cmp ".print(this.stream)
 				n.lhs.accept(this)
+				", ".print(this.stream)
+				n.rhs.accept(this)
+				"\n".print(this.stream)
 
 				if (this.negate == true) {
-					if (n.op == EQUAL)      " !== ".print(this.stream)
-					if (n.op == NOT_EQUAL)  " === ".print(this.stream)
-					if (n.op == GREATER)    " <= ".print(this.stream)
-					if (n.op == GREATER_EQ) " < ".print(this.stream)
-					if (n.op == LESS)       " >= ".print(this.stream)
-					if (n.op == LESS_EQ)    " > ".print(this.stream)
+					if (n.op == EQUAL)      "jne ".print(this.stream)
+					if (n.op == NOT_EQUAL)  "je  ".print(this.stream)
+					if (n.op == GREATER)    "jle ".print(this.stream)
+					if (n.op == GREATER_EQ) "jl  ".print(this.stream)
+					if (n.op == LESS)       "jge ".print(this.stream)
+					if (n.op == LESS_EQ)    "jg  ".print(this.stream)
 				} else {
-					if (n.op == EQUAL)      " === ".print(this.stream)
-					if (n.op == NOT_EQUAL)  " !== ".print(this.stream)
-					if (n.op == GREATER)    " > ".print(this.stream)
-					if (n.op == GREATER_EQ) " >= ".print(this.stream)
-					if (n.op == LESS)       " < ".print(this.stream)
-					if (n.op == LESS_EQ)    " <= ".print(this.stream)
+					if (n.op == EQUAL)      "je  ".print(this.stream)
+					if (n.op == NOT_EQUAL)  "jne ".print(this.stream)
+					if (n.op == GREATER)    "jg  ".print(this.stream)
+					if (n.op == GREATER_EQ) "jge ".print(this.stream)
+					if (n.op == LESS)       "jl  ".print(this.stream)
+					if (n.op == LESS_EQ)    "jle ".print(this.stream)
 				}
 
-				n.rhs.accept(this)
-				") { target = '".print(this.stream)
-				this.target.print(this.stream)
-				"'; continue; }".println(this.stream)
-
+				this.target.println(this.stream)
 				return None<Node>
 			}
 
@@ -167,14 +154,12 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 	}
 
 	func Option<Node> visit(UnaryOperationNode n) {
-		if (n.op == INCREMENT) "++".print(this.stream)
-		else if (n.op == DECREMENT) "--".print(this.stream)
-		else if (n.op == ASTERISK) "rax *= ".print(this.stream)
-		else if (n.op == FWD_SLASH) "rax /= ".print(this.stream)
-		else if (n.op == MINUS) {
-			n.accept_children(this)
-			" = -".print(this.stream)
-		}
+		if (n.op == INCREMENT) "inc ".print(this.stream)
+		else if (n.op == DECREMENT) "dec ".print(this.stream)
+		else if (n.op == PUSH) "push ".print(this.stream)
+		else if (n.op == ASTERISK) "mul ".print(this.stream)
+		else if (n.op == FWD_SLASH) "div ".print(this.stream)
+		else if (n.op == MINUS) "neg ".print(this.stream)
 		else error("Can't use ", n.op.toString(), " as a unary operator")
 
 		n.accept_children(this)
@@ -186,84 +171,84 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		if (n.type == nCHARACTER) {
 			"\`".print(this.stream)
 			n.string.print(this.stream)
-			"\`.charCodeAt(0)".print(this.stream)
+			"\`".print(this.stream)
 		} else if (n.type == nNASM) {
-			# "/*".print(this.stream)
-			n.string.print(this.stream)
-			# "*/".println(this.stream)
+			n.string.println(this.stream)
 		} else {
-			n.string.replace('#', '_').print(this.stream)
+			n.string.print(this.stream)
 		}
 		return None<Node>
 	}
 
 	func Option<Node> visit(ClassNode n) {
-		n.name.replace('#', '_').print(this.stream)
+		n.name.print(this.stream)
 		"Static".print(this.stream)
 
 		return None<Node>
 	}
 
 	func Option<Node> visit(StaticClassNode n) {
-		"window.st.".print(this.stream)
-		n.klass.name.replace('#', '_').print(this.stream)
-		"Static = new Array(".print(this.stream)
-		n.klass.fields.length.toString().print(this.stream)
-		");".println(this.stream)
+		"section .bss".println(this.stream)
+		n.klass.name.print(this.stream)
+		"Static:\nresq ".print(this.stream)
+		n.klass.fields.length.toString().println(this.stream)
+		"section .text".println(this.stream)
 
 		if (n.klass.vtable.is_none() == true) return None<Node>
-		"window._vtable_".print(this.stream)
+		"section .data\n_vtable_".print(this.stream)
 		n.klass.name.print(this.stream)
-		" = [".print(this.stream)
+		":\ndq ".print(this.stream)
 
 		var array = n.klass.vtable.unwrap().values
 		var ix = 0
 		loop {
 			if (ix == array.length) { break }
 			var FunctionNode funnode = array.get(ix)
-			funnode.name.replace('#', '_').print(this.stream)
+			funnode.name.print(this.stream)
 			", ".print(this.stream)
 			ix++
 		}
 
-		"];".println(this.stream)
+		"0\nsection .text".println(this.stream)
 		return None<Node>
 	}
 
 	func Option<Node> visit(FunctionNode n) {
-		"function ".print(this.stream)
-		n.name.replace('#', '_').print(this.stream)
-		"(".print(this.stream)
-
-		# Arguments
-		for (ix in Range_new(n.args.length)) {
-			var num = ix + 2
-			num << 3
-			"a".print(this.stream)
-			num.toString().print(this.stream)
-			", ".print(this.stream)
+		"global ".print(this.stream)
+		if (n.name.equal("main") == true) {
+			"_start".println(this.stream)
+			"_start".print(this.stream)
+		} else {
+			n.name.println(this.stream)
+			n.name.print(this.stream)
 		}
-
-		") {\nlet r12, r13, target".print(this.stream)
-
-		# Variables
-		for (ix in Range_new(n.num_vars)) {
-			var num = ix + 1
-			num << 3
-			", v".print(this.stream)
-			num.toString().print(this.stream)
-		}
-		";\nwhile(1) {\nswitch(target) {\ndefault:".println(this.stream)
+		":\npush rbp\nmov rbp, rsp\nsub rsp, ".print(this.stream)
+		var size = n.num_vars
+		size << 3
+		size.toString().println(this.stream)
+		"push r12\npush r13".println(this.stream)
 
 		# Dump block
 		n.block.accept(this)
 
-		"}\nreturn;\n}\n}".println(this.stream)
-
+		".ret:".println(this.stream)
+		if (n.name.equal("main") == true) {
+			"mov rdi, rax\nmov rax, 60\nsyscall".println(this.stream)
+		} else {
+			"pop r13\npop r12\nmov rsp, rbp\npop rbp\nret ".print(this.stream)
+			size = n.args.length
+			size << 3
+			size.toString().println(this.stream)
+		}
 		return None<Node>
 	}
 
 	func Option<BlockNode> visit(BlockNode n) {
+		if (this.top == true) {
+			"section .text\nglobal _start".println(this.stream)
+			this.top = false
+		}
+
 		n.accept_children(this)
 
 		return None<BlockNode>
@@ -271,64 +256,77 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 
 	func Option<ListNode> visit(ListNode n) {
 		if (n.type == nSYS) {
-			"syscall(".print(this.stream)
+			var ix = 0
 			for (nn in n.children) {
-				nn.accept(this)
+				"mov ".print(this.stream)
+				var s = this.scallreg.get(ix)
+				s.print(this.stream)
 				", ".print(this.stream)
-			}
-			");".println(this.stream)
-		} else if (n.type == nGLOBAL) {
-			for (nn in n.children) {
-				"window.".print(this.stream)
 				nn.accept(this)
-				" = [null];".println(this.stream)
+				"\n".print(this.stream)
+				ix++
 			}
+			"syscall".println(this.stream)
+		} else if (n.type == nGLOBAL) {
+			"section .bss".println(this.stream)
+			for (nn in n.children) {
+				"global ".print(this.stream)
+				nn.accept(this)
+				"\n".print(this.stream)
+				nn.accept(this)
+				": resq 1".println(this.stream)
+			}
+			"section .text".println(this.stream)
 		} else if (n.type == nSTRINGS) {
+			"section .data".println(this.stream)
 			var ix = 0
 			for (nn in n.children) {
 				if (nn.type != nSTRING) error()
 
-				"window.string_".print(this.stream)
+				"string_".print(this.stream)
 				ix.toString().print(this.stream)
-				" = [".print(this.stream)
+				":\ndq ".print(this.stream)
 				var s = nn.to(StringNode).string.unescaped_length().toString()
 				s.print(this.stream)
 				", ".print(this.stream)
 				s.print(this.stream)
-				", [...\`".print(this.stream)
+				", 24+string_".print(this.stream)
+				ix.toString().println(this.stream)
+				"db \`".print(this.stream)
 				nn.to(StringNode).string.print(this.stream)
-				"\`].map(c => c.charCodeAt(0))];\n".print(this.stream)
+				"\`\n".print(this.stream)
 				ix++
 			}
+			"section .text".println(this.stream)
 		} else if (n.type == nFUNCTIONS) {
-			"window._FUNCTIONLIST = [".print(this.stream)
+			"section .data\n_FUNCTIONLIST:\ndq ".print(this.stream)
 			var ix = n.children.length
 			ix >> 1
 			var s = ix.toString()
 			s.print(this.stream)
 			", ".print(this.stream)
 			s.print(this.stream)
-			", [".print(this.stream)
+			", 24+_FUNCTIONLIST".print(this.stream)
 
 			for (nn in n.children) {
-				nn.accept(this)
 				", ".print(this.stream)
+				nn.accept(this)
 				nn_iter.fetch()
 			}
 
-			"]];\nwindow._FUNCTIONNAMELIST = [".print(this.stream)
+			"\n_FUNCTIONNAMELIST:\ndq ".print(this.stream)
 			s.print(this.stream)
 			", ".print(this.stream)
 			s.print(this.stream)
-			", [".print(this.stream)
+			", 24+_FUNCTIONNAMELIST".print(this.stream)
 
 			for (nn in n.children) {
 				nn = nn_iter.fetch()
-				nn.accept(this)
 				", ".print(this.stream)
+				nn.accept(this)
 			}
 
-			"]]".println(this.stream)
+			"\nsection .text".println(this.stream)
 		} else {
 			n.accept_children(this)
 		}
@@ -350,26 +348,21 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		this.negate = true
 		n.condition.accept(this)
 
-
-		"case '".print(this.stream)
 		this.trueLabel.print(this.stream)
-		"':".println(this.stream)
+		":".println(this.stream)
 		n.block_if.accept(this)
 
 		var endLabel = this.createLabel(".endIf")
 		if (n.block_else.is_some() == true) {
-			"target = '".print(this.stream)
-			endLabel.print(this.stream)
-			"'; continue;".println(this.stream)
+			"jmp ".print(this.stream)
+			endLabel.println(this.stream)
 		}
-		"case '".print(this.stream)
 		this.falseLabel.print(this.stream)
-		"':".println(this.stream)
+		":".println(this.stream)
 		if (n.block_else.is_some() == true) {
 			n.block_else.unwrap().accept(this)
-			"case '".print(this.stream)
 			endLabel.print(this.stream)
-			"':".println(this.stream)
+			":".println(this.stream)
 		}
 
 		this.trueLabel = old_trueLabel
@@ -385,17 +378,17 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 		this.idloop = this.counter.toString()
 		this.counter++
 
-		"case '.loop_".print(this.stream)
+		".loop_".print(this.stream)
 		this.idloop.print(this.stream)
-		"':\n".print(this.stream)
+		":\n".print(this.stream)
 
 		n.accept_children(this)
 
-		"target = '.loop_".print(this.stream)
+		"jmp .loop_".print(this.stream)
+		this.idloop.println(this.stream)
+		".loop_end_".print(this.stream)
 		this.idloop.print(this.stream)
-		"'; continue;\ncase '.loop_end_".print(this.stream)
-		this.idloop.print(this.stream)
-		"':".println(this.stream)
+		":".println(this.stream)
 
 		this.idloop = oldid
 
@@ -403,28 +396,29 @@ class virtual Dump < Visitor (Array<String> binops, Array<String> scallreg, Bool
 	}
 
 	func Option<Node> visit(ReturnNode n) {
-		"return ".print(this.stream)
+		"mov rax, ".print(this.stream)
 		n.accept_children(this)
-		";".println(this.stream)
+		"\njmp .ret".println(this.stream)
 		return None<Node>
 	}
 
 	func Option<Node> visit(EnumNode n) {
-		"const ".print(this.stream)
-		n.name.replace('#', '_').print(this.stream)
-		"Values = [".print(this.stream)
+		"section .data".println(this.stream)
+		n.name.print(this.stream)
+		":\ndq ".print(this.stream)
 		var len = n.values.children.length.toString()
 		len.print(this.stream)
 		", ".print(this.stream)
 		len.print(this.stream)
-		", [".print(this.stream)
+		", 24+".print(this.stream)
+		n.name.print(this.stream)
 
 		for (nn in n.values.children) {
-			nn.accept(this)
 			", ".print(this.stream)
+			nn.accept(this)
 		}
 
-		"]];".println(this.stream)
+		"\nsection .text".println(this.stream)
 		return None<Node>
 	}
 

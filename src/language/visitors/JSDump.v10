@@ -1,0 +1,431 @@
+func JSDump JSDump_new(Stream stream) {
+	var binops = Array<String>_new(5)
+	binops.append(" += ")
+	binops.append(" -= ")
+	binops.append(" <<= ")
+	binops.append(" >>= ")
+	binops.append(" = ")
+
+	return JSDump_new(binops, true, 0, "ERRORlabel", "ERRORlabel", "ERRORlabel", true, stream, " ")
+}
+
+class virtual JSDump < Visitor (Array<String> binops, Array<String> scallreg, Boolean top, Number counter,
+					 String trueLabel, String falseLabel, String target, Boolean negate,
+					 Stream stream, String idloop) {
+
+	func Option<Node> visit(Node n) {
+		if (n.type == nNEXT) {
+			"target = '.loop_".print(this.stream)
+			this.idloop.print(this.stream)
+			"'; continue;".println(this.stream)
+		} else if (n.type == nBREAK) {
+			"target = '.loop_end_".print(this.stream)
+			this.idloop.print(this.stream)
+			"'; continue;".println(this.stream)
+		}
+
+		return None<Node>
+	}
+
+	func Option<Node> visit(CallNode n) {
+		if (n.cfunction.type == nFUNCTION) {
+			n.cfunction.to(FunctionNode).name.replace('#', '_').print(this.stream)
+		} else {
+			n.cfunction.accept(this)
+		}
+		"(".print(this.stream)
+		for (arg in n.args) {
+			arg.accept(this)
+			", ".print(this.stream)
+		}
+		")".println(this.stream)
+
+		return None<Node>
+	}
+
+	func Option<Node> visit(BinaryOperationNode n) {
+		if (n.op == DOT || n.op == SQUARE_OPEN) {
+			if (n.rhs.type != nNUMBER && n.rhs.type != nINDEX)
+				error("Non-number ", n.rhs.type.toString(), " in DOT or SQUARE_OPEN")
+			var num = n.rhs.to(StringNode).string
+
+			if (n.lhs.type == nREGISTER && n.lhs.to(StringNode).string.equal("rbp") == true) {
+				if (num.get(0) == '-') {
+					num.set(0, 'v')
+					num.print(this.stream)
+					num.set(0, '-')
+				} else {
+					"a".print(this.stream)
+					num.print(this.stream)
+				}
+			} else {
+				n.lhs.accept(this)
+				"[".print(this.stream)
+				num.print(this.stream)
+				">>3]".print(this.stream)
+			}
+
+		} else if (n.op == OR) {
+			var lastFalse = this.falseLabel
+			this.falseLabel = this.createLabel(".falseCond")
+
+			this.target = this.trueLabel
+			this.negate = false
+			n.lhs.accept(this)
+
+			"case '".print(this.stream)
+			this.falseLabel.print(this.stream)
+			"':".println(this.stream)
+			this.falseLabel = lastFalse
+
+			this.target = this.trueLabel
+			this.negate = false
+			n.rhs.accept(this)
+
+			"target = '".print(this.stream)
+			this.falseLabel.print(this.stream)
+			"'; continue;".println(this.stream)
+
+		} else if (n.op == AND) {
+			var lastTrue = this.trueLabel
+			this.trueLabel = this.createLabel(".trueCond")
+
+			this.target = this.falseLabel
+			this.negate = true
+			n.lhs.accept(this)
+
+			"case '".print(this.stream)
+			this.trueLabel.print(this.stream)
+			"':".println(this.stream)
+			this.trueLabel = lastTrue
+
+			this.target = this.falseLabel
+			this.negate = true
+			n.rhs.accept(this)
+			"target = '".print(this.stream)
+			this.trueLabel.print(this.stream)
+			"'; continue;".println(this.stream)
+		} else {
+			# Standard binops
+			if (n.op >= ADD)
+			if (n.op <= ASSIGN) {
+				# Retrieve string representation of op
+				var ix = (n.op - ADD).to(Number)
+
+				n.lhs.accept(this)
+				var op = this.binops.get(ix)
+				op.print(this.stream)
+				n.rhs.accept(this)
+				";\n".print(this.stream)
+				return None<Node>
+			}
+
+			# Comparisons
+			if (n.op >= EQUAL)
+			if (n.op <= LESS_EQ) {
+				"if (".print(this.stream)
+				n.lhs.accept(this)
+
+				if (this.negate == true) {
+					if (n.op == EQUAL)      " !== ".print(this.stream)
+					if (n.op == NOT_EQUAL)  " === ".print(this.stream)
+					if (n.op == GREATER)    " <= ".print(this.stream)
+					if (n.op == GREATER_EQ) " < ".print(this.stream)
+					if (n.op == LESS)       " >= ".print(this.stream)
+					if (n.op == LESS_EQ)    " > ".print(this.stream)
+				} else {
+					if (n.op == EQUAL)      " === ".print(this.stream)
+					if (n.op == NOT_EQUAL)  " !== ".print(this.stream)
+					if (n.op == GREATER)    " > ".print(this.stream)
+					if (n.op == GREATER_EQ) " >= ".print(this.stream)
+					if (n.op == LESS)       " < ".print(this.stream)
+					if (n.op == LESS_EQ)    " <= ".print(this.stream)
+				}
+
+				n.rhs.accept(this)
+				") { target = '".print(this.stream)
+				this.target.print(this.stream)
+				"'; continue; }".println(this.stream)
+
+				return None<Node>
+			}
+
+			# Check op token is valid
+			error("Can't use ", n.op.toString(), " as a binary operator")
+		}
+
+		return None<Node>
+	}
+
+	func Option<Node> visit(UnaryOperationNode n) {
+		if (n.op == INCREMENT) "++".print(this.stream)
+		else if (n.op == DECREMENT) "--".print(this.stream)
+		else if (n.op == ASTERISK) "rax *= ".print(this.stream)
+		else if (n.op == FWD_SLASH) "rax /= ".print(this.stream)
+		else if (n.op == MINUS) {
+			n.accept_children(this)
+			" = -".print(this.stream)
+		}
+		else error("Can't use ", n.op.toString(), " as a unary operator")
+
+		n.accept_children(this)
+		"\n".print(this.stream)
+		return None<Node>
+	}
+
+	func Option<Node> visit(StringNode n) {
+		if (n.type == nCHARACTER) {
+			"\`".print(this.stream)
+			n.string.print(this.stream)
+			"\`.charCodeAt(0)".print(this.stream)
+		} else if (n.type == nNASM) {
+			# "/*".print(this.stream)
+			n.string.print(this.stream)
+			# "*/".println(this.stream)
+		} else {
+			n.string.replace('#', '_').print(this.stream)
+		}
+		return None<Node>
+	}
+
+	func Option<Node> visit(ClassNode n) {
+		n.name.replace('#', '_').print(this.stream)
+		"Static".print(this.stream)
+
+		return None<Node>
+	}
+
+	func Option<Node> visit(StaticClassNode n) {
+		"window.st.".print(this.stream)
+		n.klass.name.replace('#', '_').print(this.stream)
+		"Static = new Array(".print(this.stream)
+		n.klass.fields.length.toString().print(this.stream)
+		");".println(this.stream)
+
+		if (n.klass.vtable.is_none() == true) return None<Node>
+		"window._vtable_".print(this.stream)
+		n.klass.name.print(this.stream)
+		" = [".print(this.stream)
+
+		var array = n.klass.vtable.unwrap().values
+		var ix = 0
+		loop {
+			if (ix == array.length) { break }
+			var FunctionNode funnode = array.get(ix)
+			funnode.name.replace('#', '_').print(this.stream)
+			", ".print(this.stream)
+			ix++
+		}
+
+		"];".println(this.stream)
+		return None<Node>
+	}
+
+	func Option<Node> visit(FunctionNode n) {
+		"function ".print(this.stream)
+		n.name.replace('#', '_').print(this.stream)
+		"(".print(this.stream)
+
+		# Arguments
+		for (ix in Range_new(n.args.length)) {
+			var num = ix + 2
+			num << 3
+			"a".print(this.stream)
+			num.toString().print(this.stream)
+			", ".print(this.stream)
+		}
+
+		") {\nlet r12, r13, target".print(this.stream)
+
+		# Variables
+		for (ix in Range_new(n.num_vars)) {
+			var num = ix + 1
+			num << 3
+			", v".print(this.stream)
+			num.toString().print(this.stream)
+		}
+		";\nwhile(1) {\nswitch(target) {\ndefault:".println(this.stream)
+
+		# Dump block
+		n.block.accept(this)
+
+		"}\nreturn;\n}\n}".println(this.stream)
+
+		return None<Node>
+	}
+
+	func Option<BlockNode> visit(BlockNode n) {
+		n.accept_children(this)
+
+		return None<BlockNode>
+	}
+
+	func Option<ListNode> visit(ListNode n) {
+		if (n.type == nSYS) {
+			"syscall(".print(this.stream)
+			for (nn in n.children) {
+				nn.accept(this)
+				", ".print(this.stream)
+			}
+			");".println(this.stream)
+		} else if (n.type == nGLOBAL) {
+			for (nn in n.children) {
+				"window.".print(this.stream)
+				nn.accept(this)
+				" = [null];".println(this.stream)
+			}
+		} else if (n.type == nSTRINGS) {
+			var ix = 0
+			for (nn in n.children) {
+				if (nn.type != nSTRING) error()
+
+				"window.string_".print(this.stream)
+				ix.toString().print(this.stream)
+				" = [".print(this.stream)
+				var s = nn.to(StringNode).string.unescaped_length().toString()
+				s.print(this.stream)
+				", ".print(this.stream)
+				s.print(this.stream)
+				", [...\`".print(this.stream)
+				nn.to(StringNode).string.print(this.stream)
+				"\`].map(c => c.charCodeAt(0))];\n".print(this.stream)
+				ix++
+			}
+		} else if (n.type == nFUNCTIONS) {
+			"window._FUNCTIONLIST = [".print(this.stream)
+			var ix = n.children.length
+			ix >> 1
+			var s = ix.toString()
+			s.print(this.stream)
+			", ".print(this.stream)
+			s.print(this.stream)
+			", [".print(this.stream)
+
+			for (nn in n.children) {
+				nn.accept(this)
+				", ".print(this.stream)
+				nn_iter.fetch()
+			}
+
+			"]];\nwindow._FUNCTIONNAMELIST = [".print(this.stream)
+			s.print(this.stream)
+			", ".print(this.stream)
+			s.print(this.stream)
+			", [".print(this.stream)
+
+			for (nn in n.children) {
+				nn = nn_iter.fetch()
+				nn.accept(this)
+				", ".print(this.stream)
+			}
+
+			"]]".println(this.stream)
+		} else {
+			n.accept_children(this)
+		}
+
+		return None<ListNode>
+	}
+
+	func Option<Node> visit(IfNode n) {
+		var old_trueLabel = this.trueLabel
+		var old_falseLabel = this.falseLabel
+		var old_target = this.target
+		var old_negate = this.negate
+
+		this.trueLabel = this.createLabel(".trueLabel")
+		this.falseLabel = this.createLabel(".falseLabel")
+		this.counter++
+
+		this.target = this.falseLabel
+		this.negate = true
+		n.condition.accept(this)
+
+
+		"case '".print(this.stream)
+		this.trueLabel.print(this.stream)
+		"':".println(this.stream)
+		n.block_if.accept(this)
+
+		var endLabel = this.createLabel(".endIf")
+		if (n.block_else.is_some() == true) {
+			"target = '".print(this.stream)
+			endLabel.print(this.stream)
+			"'; continue;".println(this.stream)
+		}
+		"case '".print(this.stream)
+		this.falseLabel.print(this.stream)
+		"':".println(this.stream)
+		if (n.block_else.is_some() == true) {
+			n.block_else.unwrap().accept(this)
+			"case '".print(this.stream)
+			endLabel.print(this.stream)
+			"':".println(this.stream)
+		}
+
+		this.trueLabel = old_trueLabel
+		this.falseLabel = old_falseLabel
+		this.target = old_target
+		this.negate = old_negate
+
+		return None<Node>
+	}
+
+	func Option<Node> visit(LoopNode n) {
+		var oldid = this.idloop
+		this.idloop = this.counter.toString()
+		this.counter++
+
+		"case '.loop_".print(this.stream)
+		this.idloop.print(this.stream)
+		"':\n".print(this.stream)
+
+		n.accept_children(this)
+
+		"target = '.loop_".print(this.stream)
+		this.idloop.print(this.stream)
+		"'; continue;\ncase '.loop_end_".print(this.stream)
+		this.idloop.print(this.stream)
+		"':".println(this.stream)
+
+		this.idloop = oldid
+
+		return None<Node>
+	}
+
+	func Option<Node> visit(ReturnNode n) {
+		"return ".print(this.stream)
+		n.accept_children(this)
+		";".println(this.stream)
+		return None<Node>
+	}
+
+	func Option<Node> visit(EnumNode n) {
+		"const ".print(this.stream)
+		n.name.replace('#', '_').print(this.stream)
+		"Values = [".print(this.stream)
+		var len = n.values.children.length.toString()
+		len.print(this.stream)
+		", ".print(this.stream)
+		len.print(this.stream)
+		", [".print(this.stream)
+
+		for (nn in n.values.children) {
+			nn.accept(this)
+			", ".print(this.stream)
+		}
+
+		"]];".println(this.stream)
+		return None<Node>
+	}
+
+	func String createLabel(String orig) {
+		var num = this.counter.toString()
+		var len = num.length
+		len += orig.length
+		var joined = String_new(len)
+		joined.append(orig).append(num)
+		this.counter++
+		return joined
+	}
+}
