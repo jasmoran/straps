@@ -15,7 +15,8 @@ include "src/language/visitors/Resolving.v10"
 include "src/language/visitors/IndexCall.v10"
 include "src/language/visitors/Functions.v10"
 include "src/language/visitors/Strings.v10"
-include "src/language/visitors/Dump.v10"
+include "src/language/visitors/NASMDump.v10"
+include "src/language/visitors/JSDump.v10"
 include "src/language/visitors/Variables.v10"
 include "src/language/visitors/Inherit.v10"
 include "src/language/visitors/ForLoop.v10"
@@ -79,11 +80,13 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, Option<CharArr>
 	var keep = false
 	var report = false
 	var link = true
+	var js = false
 	if (caflags.is_some() == true) {
 		var flags = String_fromTerminated(caflags.unwrap())
 		if (flags.length > 1) {
 			keep = flags.contains('k')
 			report = flags.contains('r')
+			report = flags.contains('j')
 			if(flags.contains('n') == true) link = false
 		}
 	}
@@ -141,6 +144,10 @@ func Set<String> build(String name, Reporting reporting, Boolean link) {
 
 	var externals = LinkedList<String>_new()
 	headerize(glob_reqs, parser.reqs, lfuncs, externals, reporting)
+	for (fnc in lfuncs.children) {
+		externals.append(fnc.to(StringNode).string)
+		fnc_iter.fetch()
+	}
 
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "GLOBALS_SETUP")
 	var type = Type_new("void")
@@ -192,8 +199,11 @@ func Set<String> build(String name, Reporting reporting, Boolean link) {
 	v = Strings_new()
 	root.accept(v)
 
-	v = Dump_new(output)
-	root.accept(v)
+	if (js == true) {
+		root.accept(JSDump_new(output))
+	} else {
+		root.accept(NASMDump_new(output, externals))
+	}
 
 	# nasm -f elf64 out.asm
 	if (link == true) {
