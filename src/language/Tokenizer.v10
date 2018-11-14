@@ -16,18 +16,27 @@ class Token(void type) {
 }
 
 func Tokenizer Tokenizer_new(String stream_name, Stream s) {
-	return Tokenizer_new(stream_name, ReversibleStream_new(s, 1024), NONE, String_new(1024), MetaCharacter_new(' ', 0, 0), None<ReversibleStream>, Map<String_String>_new(256))
+	return Tokenizer_new(stream_name, ReversibleStream_new(s, 1024), NONE, String_new(1024), None<MetaCharacter>, None<MetaCharacter>, None<ReversibleStream>, Array<String>_new(128))
 }
 
-class Tokenizer(
+class Tokenizer (
 	String stream_name,
 	ReversibleStream rs,
 	Token type,
 	String image,
-	MetaCharacter first_char,
+	Option<MetaCharacter> first_char,
+	Option<MetaCharacter> last_char,
 	Option<ReversibleStream> rs_old,
-	Map<String_String> macros
+	Array<String> macros
 ) {
+
+	func void use_macro() {
+		var character = this.rs.get().get_character()
+		var macro = this.macros.get(character.to(Number))
+		if (macro == NullString) error("Undefined macro ", character.toString())
+		this.rs_old = Some(this.rs)
+		this.rs = ReversibleStream_new(macro)
+	}
 
 	func Token peek() {
 		if (this.type == NONE) {
@@ -64,7 +73,7 @@ class Tokenizer(
 			" in stream ".print(STDERR)
 			this.stream_name.print(STDERR)
 			" ".print(STDERR)
-			this.first_char.toString().println(STDERR)
+			this.first_char.unwrap().toString().println(STDERR)
 			error()
 		}
 		return this.consume()
@@ -87,6 +96,7 @@ class Tokenizer(
 		}
 
 		# Flush and return true if string matched
+		this.last_char = this.rs.last()
 		this.rs.flush()
 		return true
 	}
@@ -95,11 +105,7 @@ class Tokenizer(
 		var c = this.rs.get().get_character()
 
 		# Must have at least one digit
-		if (c < '0') {
-			this.rs.rewind()
-			return false
-		}
-		if (c > '9') {
+		if (c < '0' || c > '9') {
 			this.rs.rewind()
 			return false
 		}
@@ -107,11 +113,11 @@ class Tokenizer(
 		loop {
 			this.image.append(c)
 			c = this.rs.get().get_character()
-			if (c < '0') { break }
-			if (c > '9') { break }
+			if (c < '0' || c > '9') break
 		}
 
 		this.rs.rewind(1)
+		this.last_char = this.rs.last()
 		this.rs.flush()
 		return true
 	}
@@ -131,48 +137,22 @@ class Tokenizer(
 				}
 			}
 
-			if (c >= 'a') {
-				if (c <= 'z') {
-					this.image.append(c)
-					next
-				}
-			}
-
-			if (c >= 'A') {
-				if (c <= 'Z') {
-					this.image.append(c)
-					next
-				}
-			}
-
-			if (c >= '0') {
-				if (c <= '9') {
-					this.image.append(c)
-					next
-				}
-			}
-
-			if (c == '_') {
+			if ((c >= 'a' && c <= 'z') ||
+					(c >= 'A' && c <= 'Z') ||
+					(c >= '0' && c <= '9') ||
+					 c == '_') {
 				this.image.append(c)
 				next
 			}
 
-			if (c == '<') {
-				this.image.append('#')
-				next
-			}
-
-			if (c == '>') {
+			if (c == '<' || c == '>') {
 				this.image.append('#')
 				next
 			}
 
 			# Use macros
 			if (c == '?') {
-				var macro_name = c.toString().clone(1).append(this.rs.get().get_character())
-				var macro = this.macros.get(macro_name).expect("Used undefined macro")
-				this.rs_old = Some(this.rs)
-				this.rs = ReversibleStream_new(macro)
+				this.use_macro()
 				next
 			}
 
@@ -180,11 +160,14 @@ class Tokenizer(
 		}
 
 		this.rs.rewind(1)
-		this.rs.flush()
 
 		if (this.image.length > 0) {
+			this.last_char = this.rs.last()
+			this.rs.flush()
 			return true
 		}
+
+		this.rs.flush()
 		return false
 	}
 
@@ -210,10 +193,7 @@ class Tokenizer(
 
 			# Use macros
 			if (c == '?') {
-				var macro_name = c.toString().clone(1).append(this.rs.get().get_character())
-				var macro = this.macros.get(macro_name).expect("Used undefined macro")
-				this.rs_old = Some(this.rs)
-				this.rs = ReversibleStream_new(macro)
+				this.use_macro()
 				next
 			}
 
@@ -224,6 +204,8 @@ class Tokenizer(
 
 			this.image.append(c)
 		}
+
+		this.last_char = this.rs.last()
 
 		this.rs.flush()
 		return true
@@ -250,6 +232,8 @@ class Tokenizer(
 			if (c == '\n') { break }
 		}
 
+		this.last_char = this.rs.last()
+
 		this.rs.flush()
 		return true
 	}
@@ -273,6 +257,8 @@ class Tokenizer(
 			return false
 		}
 
+		this.last_char = this.rs.last()
+
 		this.rs.flush()
 		return true
 	}
@@ -280,8 +266,10 @@ class Tokenizer(
 	func Token load() {
 		# Skip whitespace
 		loop {
-			this.first_char = this.rs.get()
-			var c = this.first_char.get_character()
+			var mc = this.rs.get()
+			if (mc.to(Number) == 0) error("Zero mc")
+			this.first_char = Some(mc)
+			var c = mc.get_character()
 			if (c == '\0') {
 				if (this.rs_old.is_none() == true) {
 					File_close(this.rs.stream)
@@ -291,7 +279,7 @@ class Tokenizer(
 					this.rs_old = None<ReversibleStream>
 				}
 			}
-			#if (c == 10) return NEW_LINE
+
 			if (c > ' ') break
 		}
 		this.rs.rewind(1)
@@ -301,11 +289,11 @@ class Tokenizer(
 		if (this.match("define") == true) {
 			if (this.load() != IDENTIFIER)
 				error("Malformed definition at ", this.rs.get().toString(), " in stream ", this.stream_name)
-			var macro = this.image.clone(1).prepend('?')
+			var macro = this.image.get(0)
 			this.image.clear()
 			if (this.load() != STRING)
 				error("Malformed definition at ", this.rs.get().toString(), " in stream ", this.stream_name)
-			this.macros.set(macro, this.image.clone())
+			this.macros.set(macro.to(Number), this.image.clone())
 			this.image.clear()
 			return this.load()
 		}
@@ -376,18 +364,9 @@ class Tokenizer(
 		if (this.match_comment() == true) { return this.load() }
 
 		# Use macros
-		var ix = 0
-		loop {
-			if (this.macros.keys.length == ix) break
-			var macro = this.macros.keys.get(ix)
-			if (this.match(macro) == true) {
-				macro = this.macros.values.get(ix)
-				this.rs_old = Some(this.rs)
-				this.rs = ReversibleStream_new(macro)
-				return this.load()
-			}
-
-			ix++
+		if (this.rs.get().get_character() == '?') {
+			this.use_macro()
+			return this.load()
 		}
 
 		"Error: invalid character: '".print(STDERR)
@@ -397,7 +376,10 @@ class Tokenizer(
 		return NONE
 	}
 
-	func Position get_pos() {
-		return Position_new(this.first_char, this.stream_name)
+	func PositionRange get_pos_range() {
+		return PositionRange_new(
+			Position_new(this.first_char.unwrap(), this.stream_name),
+			Position_new(this.last_char.unwrap(), this.stream_name)
+		)
 	}
 }

@@ -1,7 +1,7 @@
-func BinaryOperationNode BinaryOperationNode_new(Position pos, Token op, Node lhs, Node rhs) {
+func BinaryOperationNode BinaryOperationNode_new(PositionRange pos, Token op, Node lhs, Node rhs) {
 	return BinaryOperationNode_new(Type_new(), pos, op, lhs, rhs)
 }
-func BinaryOperationNode BinaryOperationNode_new(Type ret_type, Position pos, Token op, Node lhs, Node rhs) {
+func BinaryOperationNode BinaryOperationNode_new(Type ret_type, PositionRange pos, Token op, Node lhs, Node rhs) {
 	return BinaryOperationNode_new(nBINARYOP, pos, ret_type, op, lhs, rhs)
 }
 

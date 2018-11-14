@@ -1,4 +1,4 @@
-func Node EnumNode_new(Position pos, String name, BlockNode values) {
+func Node EnumNode_new(PositionRange pos, String name, BlockNode values) {
 	return EnumNode_new(nENUM, pos, name, values)
 }
 

@@ -91,7 +91,8 @@ class virtual Definition < Visitor () {
 
 			# TODO: Fix SEGFAULT
 			#var pos = field.position.clone("Definition")
-			var pos = Position_new(MetaCharacter_new('?', 0, 0), "Definition")
+			var nullpos = Position_new(MetaCharacter_new('?', 0, 0), "Definition")
+			var pos = PositionRange_new(nullpos, nullpos)
 
 			# Store global variable in global scope
 			scope.set(

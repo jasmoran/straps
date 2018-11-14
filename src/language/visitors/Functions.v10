@@ -1,5 +1,6 @@
 func Functions Functions_new() {
-	var pos = Position_new(MetaCharacter_new('?', 0, 0), "Functions")
+	var nullpos = Position_new(MetaCharacter_new('?', 0, 0), "Functions")
+	var pos = PositionRange_new(nullpos, nullpos)
 	return Functions_new(ListNode_new(nFUNCTIONS, pos), true)
 }
 

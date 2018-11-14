@@ -1,5 +1,6 @@
 func IndexCall IndexCall_new(Boolean js) {
-	var pos = Position_new(MetaCharacter_new('?', 0, 0), "IndexCall_scratchreg")
+	var nullpos = Position_new(MetaCharacter_new('?', 0, 0), "IndexCall_scratchreg")
+	var pos = PositionRange_new(nullpos, nullpos)
 	return IndexCall_new(
 		None<LinkedList<Node>>,
 		None<LinkedListNode<Node>>,
@@ -14,7 +15,7 @@ class virtual IndexCall < Visitor (
 	Option<LinkedList<Node>> parent_list,
 	Option<LinkedListNode<Node>> parent_lln,
 	Node scratch_reg,
-	Position pos,
+	PositionRange pos,
 	Number count,
 	Boolean js
 ) {

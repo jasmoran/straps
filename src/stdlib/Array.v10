@@ -4,6 +4,8 @@ define t "String"
 include "src/stdlib/Array.generic"
 define t "CharArr"
 include "src/stdlib/Array.generic"
+define t "Character"
+include "src/stdlib/Array.generic"
 
 func Any Array_get(Array<Any> arr, Number ix) {
 	var addr = ix.to(Any)

@@ -1,6 +1,6 @@
 class virtual ForLoop < Visitor () {
 
-	func Node call_method(Position pos, Node obj, String method) {
+	func Node call_method(PositionRange pos, Node obj, String method) {
 		# Create method call
 		return CallNode_new(
 			pos,
@@ -11,7 +11,7 @@ class virtual ForLoop < Visitor () {
 		)
 	}
 
-	func Node assign_method(Position pos, StringNode vrbl, Node obj, String method) {
+	func Node assign_method(PositionRange pos, StringNode vrbl, Node obj, String method) {
 		# Create method call
 		var Node methcall = this.call_method(pos, obj, method)
 

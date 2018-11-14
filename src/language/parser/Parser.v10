@@ -13,7 +13,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 	func Node nt_class() {
 		this.t.consume(CLASS)
 
-		var pos = this.t.get_pos()
+		var pos = this.t.get_pos_range()
 
 		var vtable = None<Map<String_FunctionNode>>
 		if (this.t.peek() == VIRTUAL) {
@@ -32,43 +32,48 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 		var fields = this.typed_list()
 		var block = this.block(None<Scope>)
 
+		pos = PositionRange_between(pos, this.t.get_pos_range())
 		return ClassNode_new(pos, name, fields, block, vtable, parent)
 	}
 
 	func Node nt_enum() {
 		this.t.consume(ENUM)
 
-		var pos = this.t.get_pos()
+		var pos = this.t.get_pos_range()
 
 		var name = this.t.consume(IDENTIFIER)
+
 		var values = this.block(None<Scope>)
 
+		pos = PositionRange_between(pos, this.t.get_pos_range())
 		return EnumNode_new(pos, name, values)
 	}
 
 	func Node nt_function() {
 		this.t.consume(FUNC)
 
-		var pos = this.t.get_pos()
+		var pos = this.t.get_pos_range()
 
 		var ret_type = this.t.consume(IDENTIFIER)
 		var name = this.t.consume(IDENTIFIER)
+
 		var args = this.typed_list()
 		var block = this.block(Some(scope))
 
+		pos = PositionRange_between(pos, this.t.get_pos_range())
 		return FunctionNode_new(pos, Type_new(ret_type), name, args, block)
 	}
 
 	func StringNode nt_identifier() {
 		var ident = this.t.consume(IDENTIFIER)
-		var pos = this.t.get_pos()
+		var pos = this.t.get_pos_range()
 		return StringNode_new(nIDENTIFIER, pos, Type_new(), ident)
 	}
 
 	func Node nt_if() {
 		this.t.consume(IF)
 
-		var pos = this.t.get_pos()
+		var pos = this.t.get_pos_range()
 
 		var expr = this.expression()
 		var block_if = this.block(this.parent_scope)
@@ -80,6 +85,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 			node.block_else = Some(this.block(this.parent_scope))
 		}
 
+		pos.end = this.t.get_pos_range().end
 		return node
 	}
 
@@ -94,16 +100,17 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 	func Node nt_nasm() {
 		this.t.consume(NASM)
-		var pos = this.t.get_pos()
+		var pos = this.t.get_pos_range()
 		this.t.consume(PAREN_OPEN)
-		var node = StringNode_new(nNASM, pos, Type_new("void"), this.t.consume(STRING))
+		var str = this.t.consume(STRING)
 		this.t.consume(PAREN_CLOSE)
-		return node
+		pos = PositionRange_between(pos, this.t.get_pos_range())
+		return StringNode_new(nNASM, pos, Type_new("void"), str)
 	}
 
 	func void nt_require() {
 		this.t.consume(REQUIRE)
-		var pos = this.t.get_pos()
+		var pos = this.t.get_pos_range()
 		this.t.consume(PAREN_OPEN)
 		this.reqs.add(norm_name(this.t.consume(STRING)))
 		this.t.consume(PAREN_CLOSE)
@@ -115,7 +122,8 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 
 	func Node parse() {
-		var pos = this.t.get_pos()
+		this.t.peek()
+		var pos = this.t.get_pos_range()
 		var block = BlockNode_new(pos, scope)
 
 		loop {
@@ -124,6 +132,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 			block.append(expr)
 		}
 
+		pos.end = this.t.get_pos_range().end
 		return block
 	}
 
@@ -131,7 +140,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 		this.skip_newlines()
 
 		var peek = this.t.peek()
-		var pos = this.t.get_pos()
+		var pos = this.t.get_pos_range()
 
 		var block = BlockNode_new(pos, Scope_new("BlockScope", parent_scope))
 		var prev_scope = this.parent_scope
@@ -154,6 +163,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 		this.parent_scope = prev_scope
 
+		pos.end = this.t.get_pos_range().end
 		return block
 	}
 
@@ -165,7 +175,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 			if (this.t.peek() == PAREN_CLOSE) { break }
 
 			var type = this.t.consume(IDENTIFIER)
-			var pos = this.t.get_pos()
+			var pos = this.t.get_pos_range()
 			var vrbl = this.t.consume(IDENTIFIER)
 			var n = StringNode_new(nIDENTIFIER, pos, Type_new(type), vrbl)
 
@@ -218,8 +228,9 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 			if (tk != SHIFTL)
 			if (tk != SHIFTR) break
 			this.t.consume(tk)
-			var pos = this.t.get_pos()
-			node = BinaryOperationNode_new(pos, tk, node, this.logic_expr())
+			var rhs = this.logic_expr()
+			var pos = PositionRange_between(node.position, rhs.position)
+			node = BinaryOperationNode_new(pos, tk, node, rhs)
 		}
 		return node
 	}
@@ -231,8 +242,9 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 			if (tk != AND)
 			if (tk != OR) break
 			this.t.consume(tk)
-			var pos = this.t.get_pos()
-			node = BinaryOperationNode_new(pos, tk, node, this.comp_expr())
+			var rhs = this.comp_expr()
+			var pos = PositionRange_between(node.position, rhs.position)
+			node = BinaryOperationNode_new(pos, tk, node, rhs)
 		}
 		return node
 	}
@@ -248,8 +260,9 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 			if (tk != LESS)
 			if (tk != LESS_EQ) break
 			this.t.consume(tk)
-			var pos = this.t.get_pos()
-			node = BinaryOperationNode_new(pos, tk, node, this.add_expr())
+			var rhs = this.add_expr()
+			var pos = PositionRange_between(node.position, rhs.position)
+			node = BinaryOperationNode_new(pos, tk, node, rhs)
 		}
 		return node
 	}
@@ -262,8 +275,9 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 			if (tk != PLUS)
 			if (tk != MINUS) break
 			this.t.consume(tk)
-			var pos = this.t.get_pos()
-			node = BinaryOperationNode_new(pos, tk, node, this.mult_expr())
+			var rhs = this.mult_expr()
+			var pos = PositionRange_between(node.position, rhs.position)
+			node = BinaryOperationNode_new(pos, tk, node, rhs)
 		}
 		return node
 	}
@@ -275,8 +289,9 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 			if (tk != ASTERISK)
 			if (tk != FWD_SLASH) break
 			this.t.consume(tk)
-			var pos = this.t.get_pos()
-			node = BinaryOperationNode_new(pos, tk, node, this.snd_expr())
+			var rhs = this.snd_expr()
+			var pos = PositionRange_between(node.position, rhs.position)
+			node = BinaryOperationNode_new(pos, tk, node, rhs)
 		}
 		return node
 	}
@@ -289,35 +304,46 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 		if (tk != ASTERISK) return this.top_expr()
 
 		this.t.consume(tk)
-		var pos = this.t.get_pos()
-		return UnaryOperationNode_new(pos, tk, this.snd_expr(), true)
+		var pos = this.t.get_pos_range()
+		var expr = this.snd_expr()
+		pos = PositionRange_between(pos, expr.position)
+		return UnaryOperationNode_new(pos, tk, expr, true)
 	}
 
 	func RetNode top_expr() {
 		var node = this.value()
 		loop {
 			var tk = this.t.peek()
-			var pos = this.t.get_pos()
 			if (tk == PAREN_OPEN) {
 				var LinkedList<RetNode> arglist = this.expression_list()
+				var pos = PositionRange_between(node.position, this.t.get_pos_range())
 				node = CallNode_new(pos, node, arglist)
+
 			} else if (tk == SQUARE_OPEN) {
 				this.t.consume(SQUARE_OPEN)
+				var pos = this.t.get_pos_range()
 				node = BinaryOperationNode_new(pos, SQUARE_OPEN, node, this.expression())
 				this.t.consume(SQUARE_CLOSE)
+
 			} else if (tk == DOT) {
 				this.t.consume(DOT)
-				var rhs = StringNode_new(nIDENTIFIER, pos, Type_new(), "_MISSING").to(StringNode)
+				var rhs = StringNode_new(nIDENTIFIER, this.t.get_pos_range(), Type_new(), "_MISSING")
 				if (this.t.peek() == IDENTIFIER) {
 					rhs = this.nt_identifier()
 				}
+				var pos = PositionRange_between(node.position, rhs.position)
 				node = BinaryOperationNode_new(pos, DOT, node, rhs)
+
 			} else if (tk == INCREMENT) {
 				this.t.consume(INCREMENT)
+				var pos = PositionRange_between(node.position, this.t.get_pos_range())
 				node = UnaryOperationNode_new(pos, INCREMENT, node, false)
+
 			} else if (tk == DECREMENT) {
 				this.t.consume(DECREMENT)
+				var pos = PositionRange_between(node.position, this.t.get_pos_range())
 				node = UnaryOperationNode_new(pos, DECREMENT, node, false)
+
 			} else break
 		}
 		return node
@@ -328,11 +354,11 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 		var tk = this.t.peek()
 
-		if (tk == EOF) return Node_new(nNONE, this.t.get_pos())
+		if (tk == EOF) return Node_new(nNONE, this.t.get_pos_range())
 
 		if (tk == BREAK) {
 			this.t.consume(BREAK)
-			var pos = this.t.get_pos()
+			var pos = this.t.get_pos_range()
 			return Node_new(nBREAK, pos)
 		}
 
@@ -346,7 +372,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 		if (tk == FOR) {
 			this.t.consume(FOR)
-			var pos = this.t.get_pos()
+			var pos = this.t.get_pos_range()
 			this.t.consume(PAREN_OPEN)
 			var item = this.nt_identifier()
 			this.t.consume(IN)
@@ -362,7 +388,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 		if (tk == GLOBAL) {
 			this.t.consume(GLOBAL)
-			return ListNode_new(nGLOBAL, this.t.get_pos(), this.typed_list().to(LinkedList<Node>))
+			return ListNode_new(nGLOBAL, this.t.get_pos_range(), this.typed_list().to(LinkedList<Node>))
 		}
 
 		if (tk == IF) {
@@ -375,7 +401,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 		if (tk == LOOP) {
 			this.t.consume(LOOP)
-			var pos = this.t.get_pos()
+			var pos = this.t.get_pos_range()
 			return LoopNode_new(pos, this.block(this.parent_scope))
 		}
 
@@ -385,13 +411,13 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 		if (tk == NEXT) {
 			this.t.consume(NEXT)
-			var pos = this.t.get_pos()
+			var pos = this.t.get_pos_range()
 			return Node_new(nNEXT, pos)
 		}
 
 		if (tk == RETURN) {
 			this.t.consume(RETURN)
-			var pos = this.t.get_pos()
+			var pos = this.t.get_pos_range()
 			return ReturnNode_new(pos, this.expression())
 		}
 
@@ -405,14 +431,14 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 		if (tk == SYS) {
 			this.t.consume(SYS)
 			var retnode_to_node = this.expression_list().to(LinkedList<Node>)
-			return ListNode_new(nSYS, this.t.get_pos(), retnode_to_node)
+			return ListNode_new(nSYS, this.t.get_pos_range(), retnode_to_node)
 		}
 
 		if (tk == VAR) {
 			this.t.consume(VAR)
-			var vr_pos = this.t.get_pos()
+			var vr_pos = this.t.get_pos_range()
 			var raw_type = this.t.consume(IDENTIFIER)
-			var ident_pos = this.t.get_pos()
+			var ident_pos = this.t.get_pos_range()
 
 			# Inferring
 			var vrbl = raw_type
@@ -425,7 +451,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 			}
 
 			this.t.consume(ASSIGN)
-			var ass_pos = this.t.get_pos()
+			var ass_pos = this.t.get_pos_range()
 
 			return UnaryOperationNode_new(vr_pos, type, VAR,
 				BinaryOperationNode_new(Type_new(), ass_pos, ASSIGN,
@@ -453,7 +479,7 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 		if (tk == CHARACTER) {
 			var chr = this.t.consume(CHARACTER)
-			var pos = this.t.get_pos()
+			var pos = this.t.get_pos_range()
 			return StringNode_new(nCHARACTER, pos, Type_new("Character"), chr)
 		}
 
@@ -463,18 +489,19 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 		if (tk == NUMBER) {
 			var num = this.t.consume(NUMBER)
-			var pos = this.t.get_pos()
+			var pos = this.t.get_pos_range()
 			return StringNode_new(nNUMBER, pos, Type_new("Number"), num)
 		}
 
 		if (tk == STRING) {
 			var str = this.t.consume(STRING)
-			var pos = this.t.get_pos()
+			var pos = this.t.get_pos_range()
 			return StringNode_new(nSTRING, pos, Type_new("String"), str)
 		}
 
-		error("Unknown expression ", tk.toString(), " at ", this.t.get_pos().toString())
+		error("Unknown expression ", tk.toString(), " at ", this.t.get_pos_range().start.toString())
 
-		return RetNode_new(nNONE, Position_new(MetaCharacter_new('?', 0, 0), "Impossible"), Type_new())
+		var nullpos = Position_new(MetaCharacter_new('?', 0, 0), "Impossible")
+		return RetNode_new(nNONE, PositionRange_new(nullpos, nullpos), Type_new())
 	}
 }

@@ -1,4 +1,4 @@
-func ForNode ForNode_new(Position pos, StringNode item, Node iterable, BlockNode block) {
+func ForNode ForNode_new(PositionRange pos, StringNode item, Node iterable, BlockNode block) {
 	return ForNode_new(nFOR, pos, item, iterable, block)
 }
 

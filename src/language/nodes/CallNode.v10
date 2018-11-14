@@ -1,9 +1,9 @@
-func CallNode CallNode_new(Position pos, Node cfunction) {
+func CallNode CallNode_new(PositionRange pos, Node cfunction) {
 	var args = LinkedList<RetNode>_new()
 	return CallNode_new(pos, cfunction, args)
 }
 
-func CallNode CallNode_new(Position pos, Node cfunction, LinkedList<RetNode> args) {
+func CallNode CallNode_new(PositionRange pos, Node cfunction, LinkedList<RetNode> args) {
 	return CallNode_new(nCALL, pos, Type_new(), cfunction, args)
 }
 

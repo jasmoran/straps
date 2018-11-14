@@ -137,7 +137,8 @@ func Set<String> build(String name, Reporting reporting, Boolean link, Boolean j
 
 	# if (name.equal("src/stdlib/stdlib") == false) parser.reqs.add("src/stdlib/stdlib")
 
-	var fn_pos = Position_new(MetaCharacter_new('?', 0, 0), "MainFunctions")
+	var fn_nullpos = Position_new(MetaCharacter_new('?', 0, 0), "MainFunctions")
+	var fn_pos = PositionRange_new(fn_nullpos, fn_nullpos)
 	var lfuncs = ListNode_new(nFUNCTIONS, fn_pos)
 	var glob_reqs = Set<String>_new()
 	glob_reqs.add(name)
@@ -149,7 +150,8 @@ func Set<String> build(String name, Reporting reporting, Boolean link, Boolean j
 		fnc_iter.fetch()
 	}
 
-	var pos = Position_new(MetaCharacter_new('?', 0, 0), "GLOBALS_SETUP")
+	var nullpos = Position_new(MetaCharacter_new('?', 0, 0), "GLOBALS_SETUP")
+	var pos = PositionRange_new(nullpos, nullpos)
 	var type = Type_new("void")
 	sc.set("rax", StringNode_new(nREGISTER, pos, type, "rax"))
 	sc.set("rbx", StringNode_new(nREGISTER, pos, type, "rbx"))

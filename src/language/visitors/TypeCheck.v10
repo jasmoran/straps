@@ -19,7 +19,7 @@ class virtual TypeCheck < Visitor (Option<Type> fret_type, Reporting report) {
 			lhs.ret_type.resolve(scope)
 
 			if (lhs.ret_type.has_child(rhs.ret_type) == false) {
-				this.report.printNotMatch(lhs, rhs)
+				this.report.printNotMatch(n)
 			}
 		}
 

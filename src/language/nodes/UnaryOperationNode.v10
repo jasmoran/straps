@@ -1,7 +1,7 @@
-func UnaryOperationNode UnaryOperationNode_new(Position pos, Token op, Node expr, Boolean left) {
+func UnaryOperationNode UnaryOperationNode_new(PositionRange pos, Token op, Node expr, Boolean left) {
 	return UnaryOperationNode_new(pos, Type_new(), op, expr, left)
 }
-func UnaryOperationNode UnaryOperationNode_new(Position pos, Type ret_type, Token op, Node expr, Boolean left) {
+func UnaryOperationNode UnaryOperationNode_new(PositionRange pos, Type ret_type, Token op, Node expr, Boolean left) {
 	return UnaryOperationNode_new(nUNARYOP, pos, ret_type, op, expr, left)
 }
 

@@ -57,7 +57,7 @@ class virtual Resolving < Visitor (Scope scope, Reporting report) {
 
 		if (name.type != nIDENTIFIER) {
 			error("CallNode function name is not an identifier it is ",
-				name.type.toString(), " at ", n.position.toString())
+				name.type.toString(), " at ", n.position.start.toString())
 		}
 
 		# Resolve arguments
@@ -126,7 +126,8 @@ class virtual Resolving < Visitor (Scope scope, Reporting report) {
 			# Virtual methods
 			if (binop.rhs.type == nVTAB_ACCESS) {
 				# TODO: Use pos from CallNode
-				var pos = Position_new(MetaCharacter_new('?', 0, 0), "Resolving vtab")
+				var nullpos = Position_new(MetaCharacter_new('?', 0, 0), "Resolving vtab")
+				var pos = PositionRange_new(nullpos, nullpos)
 				var vtab_off = binop.rhs.to(FunctionNode)
 				n.cfunction = BinaryOperationNode_new(
 					vtab_off.ret_type, pos, SQUARE_OPEN,

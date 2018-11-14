@@ -1,4 +1,4 @@
-func IfNode IfNode_new(Position pos, Node condition, BlockNode block_if) {
+func IfNode IfNode_new(PositionRange pos, Node condition, BlockNode block_if) {
 	return IfNode_new(nIF, pos, condition, block_if, None<BlockNode>)
 }
 

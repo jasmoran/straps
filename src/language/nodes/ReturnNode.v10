@@ -1,4 +1,4 @@
-func Node ReturnNode_new(Position pos, Node expr) {
+func Node ReturnNode_new(PositionRange pos, Node expr) {
 	return ReturnNode_new(nRETURN, pos, expr)
 }
 

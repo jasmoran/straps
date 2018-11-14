@@ -10,13 +10,22 @@ class Reporting(Boolean enabled, Stream st) {
 		"}".print(this.st)
 	}
 
-	func void printRange(Position start, Position end, Number offset) {
+	func void printRange(PositionRange range) {
 		"- {\"file\":\"".print(this.st)
-		start.stream.print(this.st)
+		range.start.stream.print(this.st)
 		"\",\"start\":".print(this.st)
-		this.printPos(start, 0)
+		this.printPos(range.start, 0)
 		",\"end\":".print(this.st)
-		this.printPos(end, offset)
+		this.printPos(range.end, 0)
+	}
+
+	func void printRange(PositionRange start, PositionRange end, Number offset) {
+		"- {\"file\":\"".print(this.st)
+		start.start.stream.print(this.st)
+		"\",\"start\":".print(this.st)
+		this.printPos(start.start, 0)
+		",\"end\":".print(this.st)
+		this.printPos(end.start, offset)
 	}
 
 	func void printVar(String name, StringNode sn) {
@@ -67,12 +76,12 @@ class Reporting(Boolean enabled, Stream st) {
 		"]".print(this.st)
 	}
 
-	func void printNotMatch(RetNode lhs, RetNode rhs) {
-		this.printRange(lhs.position, rhs.position, 0)
+	func void printNotMatch(BinaryOperationNode binop) {
+		this.printRange(binop.position)
 		",\"level\":\"error\",\"message\":\"".print(this.st)
-		rhs.ret_type.print(this.st)
+		binop.rhs.to(RetNode).ret_type.print(this.st)
 		" does not match ".print(this.st)
-		lhs.ret_type.print(this.st)
+		binop.lhs.to(RetNode).ret_type.print(this.st)
 		"\"}".println(this.st)
 		if (this.enabled == false) error()
 	}
@@ -153,7 +162,7 @@ class Reporting(Boolean enabled, Stream st) {
 		if (this.enabled == false) error()
 	}
 
-	func void printInvalidType(Position start, Position end, Type type) {
+	func void printInvalidType(PositionRange start, PositionRange end, Type type) {
 		this.printRange(start, end, 0)
 		",\"level\":\"error\",\"message\":\"Attempted to fetch scope but type is ".print(this.st)
 		type.print(this.st)

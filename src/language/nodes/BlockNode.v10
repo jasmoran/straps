@@ -1,7 +1,7 @@
 define t "BlockNode"
 include "src/stdlib/Option.generic"
 
-func BlockNode BlockNode_new(Position pos, Scope scope) {
+func BlockNode BlockNode_new(PositionRange pos, Scope scope) {
 	return BlockNode_new(nBLOCK, pos, LinkedList<Node>_new(), scope)
 }
 

@@ -51,6 +51,11 @@ class ReversibleStream (Stream stream, CircularBuffer<MetaCharacter> buffer, Num
 		return mc
 	}
 
+	func Option<MetaCharacter> last() {
+		if (this.nxt_pos < 1) return None<MetaCharacter>
+		return Some(this.buffer.peek(this.nxt_pos - 1))
+	}
+
 	func void rewind(Number amount) {
 		# Rewind specified amount of characters
 		this.nxt_pos -= amount

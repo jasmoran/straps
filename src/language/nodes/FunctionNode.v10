@@ -13,7 +13,7 @@ include "src/stdlib/Option.generic"
 define t "Map<String_FunctionNode>"
 include "src/stdlib/Option.generic"
 
-func FunctionNode FunctionNode_new(Position pos, Type ret_type, String name, LinkedList<StringNode> args, BlockNode block) {
+func FunctionNode FunctionNode_new(PositionRange pos, Type ret_type, String name, LinkedList<StringNode> args, BlockNode block) {
 	return FunctionNode_new(nFUNCTION, pos, ret_type, name, args, block, NullString, 0)
 }
 

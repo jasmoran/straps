@@ -1,11 +1,13 @@
 func Strings Strings_new() {
-	var pos = Position_new(MetaCharacter_new('?', 0, 0), "Strings")
+	var nullpos = Position_new(MetaCharacter_new('?', 0, 0), "Strings")
+	var pos = PositionRange_new(nullpos, nullpos)
 	return Strings_new(0, ListNode_new(nSTRINGS, pos), true, false)
 }
 
 class virtual Strings < Visitor (Number counter, ListNode strings, Boolean root, Boolean do_idents) {
 	func void addString(StringNode n) {
-		var pos = Position_new(MetaCharacter_new('?', 0, 0), "Strings")
+		var nullpos = Position_new(MetaCharacter_new('?', 0, 0), "Strings")
+		var pos = PositionRange_new(nullpos, nullpos)
 		this.strings.append(StringNode_new(nSTRING, pos, Type_new(), n.string))
 		n.string = "string_".clone(4).append(this.counter.toString())
 		n.type = nIDENTIFIER

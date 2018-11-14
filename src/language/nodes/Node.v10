@@ -27,7 +27,7 @@ class NodeType() {
 define t "Node"
 include "src/stdlib/Option.generic"
 
-class virtual Node(NodeType type, Position position) {
+class virtual Node(NodeType type, PositionRange position) {
 	func Option<Node> accept(Visitor v) {
 		return v.visit(this)
 	}

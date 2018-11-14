@@ -1,4 +1,4 @@
-func Node LoopNode_new(Position pos, BlockNode block) {
+func Node LoopNode_new(PositionRange pos, BlockNode block) {
 	return LoopNode_new(nLOOP, pos, block)
 }
 

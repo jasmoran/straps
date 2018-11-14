@@ -1,12 +1,12 @@
 define t "ClassNode"
 include "src/stdlib/Option.generic"
 
-func ClassNode ClassNode_new(Position pos, String name, LinkedList<StringNode> fields, BlockNode block, Option<Map<String_FunctionNode>> vtable, Option<Type> parent) {
+func ClassNode ClassNode_new(PositionRange pos, String name, LinkedList<StringNode> fields, BlockNode block, Option<Map<String_FunctionNode>> vtable, Option<Type> parent) {
 	var ret_type = Type_new(name.clone(6).append("Static"))
 	return ClassNode_new(nCLASS, pos, ret_type, name, fields, block, vtable, parent)
 }
 
-func ClassNode ClassNode_new(Position pos, String name, LinkedList<StringNode> fields, BlockNode block) {
+func ClassNode ClassNode_new(PositionRange pos, String name, LinkedList<StringNode> fields, BlockNode block) {
 	var Option<Map<String_FunctionNode>> vtable = None<Map<String_FunctionNode>>
 	return ClassNode_new(pos, name, fields, block, vtable, None<Type>)
 }

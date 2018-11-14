@@ -23,8 +23,9 @@ class Scope (String name, Option<Scope> parent, Map<String_Node> scope) {
 	}
 
 	func void set(String name, FunctionNode node) {
+		var nullpos = Position_new(MetaCharacter_new('?', 0, 0), "Scope Capsule")
 		var capsule = this.get(name)
-											.unwrap_or(ListNode_new(nLIST, Position_new(MetaCharacter_new('?', 0, 0), "Scope Capsule")))
+											.unwrap_or(ListNode_new(nLIST, PositionRange_new(nullpos, nullpos)))
 
 		if (capsule.type != nLIST) error("Attempted to redefine identifier ", name, " with a function")
 		capsule.to(ListNode).append(node)

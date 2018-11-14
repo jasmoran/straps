@@ -21,3 +21,13 @@ class Position (MetaCharacter start, String stream, String note) {
     return Position_new(this.start, this.stream, note)
   }
 }
+
+class PositionRange (Position start, Position end) {
+  func PositionRange clone(String note) {
+    return PositionRange_new(this.start.clone(note), this.end.clone(note))
+  }
+}
+
+func PositionRange PositionRange_between(PositionRange start, PositionRange end) {
+  return PositionRange_new(start.start, end.end)
+}
