@@ -39,8 +39,8 @@ class virtual Constructor < Visitor (Option<BlockNode> pb) {
 				BinaryOperationNode_new(
 					pos,
 					ASSIGN,
-					BinaryOperationNode_new(pos, DOT, new_obj, field),
-					field
+					BinaryOperationNode_new(pos, DOT, new_obj, field.clone()),
+					field.clone()
 				)
 			)
 		}

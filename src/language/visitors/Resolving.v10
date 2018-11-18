@@ -10,11 +10,18 @@ class virtual Resolving < Visitor (Scope scope, Reporting report) {
 			var opt = this.scope.resolve(n)
 
 			if (opt.is_some() == true) {
-				var new = opt.unwrap().to(RetNode).clone()
-				new.position = n.position
-				if (n.ret_type.strength == CAST) new.ret_type = n.ret_type
+				var new = opt.unwrap().to(StringNode)
+				if (new.type == nINDEX) {
+					n.type = nINDEX
+					n.offset = Some(new.string)
+					if (n.ret_type.strength != CAST) n.ret_type = new.ret_type
+				} else {
+					new = new.clone()
+					new.position = n.position
+					if (n.ret_type.strength == CAST) new.ret_type = n.ret_type
 
-				return Some(new.to(Node))
+					return Some(new.to(Node))
+				}
 
 			} else {
 				this.report.printUndefinedIdentifier(n, this.scope)
@@ -81,7 +88,7 @@ class virtual Resolving < Visitor (Scope scope, Reporting report) {
 			var sc = opt_sc.unwrap_or(this.scope)
 			if (opt_sc.is_none() == true) {
 				this.report.printInvalidType(binop.lhs.position, binop.rhs.position, lhs.ret_type)
-				return Some(n.to(Node))
+				return None<Node>
 			}
 
 			# Resolve function
@@ -143,7 +150,7 @@ class virtual Resolving < Visitor (Scope scope, Reporting report) {
 		# Inherit ret_type from function
 		if (n.ret_type.strength < CAST) n.ret_type = n.cfunction.to(RetNode).ret_type
 
-		return Some(n.to(Node))
+		return None<Node>
 	}
 
 	func Option<Node> visit(BinaryOperationNode n) {
@@ -163,7 +170,7 @@ class virtual Resolving < Visitor (Scope scope, Reporting report) {
 			var opt_sc = lhs_type.getScope()
 			if (opt_sc.is_none() == true) {
 				this.report.printInvalidType(n.lhs.position, n.rhs.position, lhs_type)
-				return Some(n.to(Node))
+				return None<Node>
 			}
 			this.scope = opt_sc.unwrap()
 
@@ -178,7 +185,7 @@ class virtual Resolving < Visitor (Scope scope, Reporting report) {
 			# Restore scope
 			this.scope = prev_scope
 
-			return Some(n.to(Node))
+			return None<Node>
 		}
 
 		# Handle arithmetic
@@ -187,7 +194,7 @@ class virtual Resolving < Visitor (Scope scope, Reporting report) {
 
 			n.ret_type = n.lhs.to(RetNode).ret_type
 
-			return Some(n.to(Node))
+			return None<Node>
 		}
 
 		# Infer types
@@ -211,13 +218,13 @@ class virtual Resolving < Visitor (Scope scope, Reporting report) {
 				# Assign type of value to variable
 				n.lhs.to(RetNode).ret_type = n.rhs.to(RetNode).ret_type
 
-				return Some(n.to(Node))
+				return None<Node>
 			}
 		}
 
 		n.accept_children(this)
 
-		return Some(n.to(Node))
+		return None<Node>
 	}
 
 	func Option<ListNode> visit(ListNode n) {
@@ -225,12 +232,12 @@ class virtual Resolving < Visitor (Scope scope, Reporting report) {
 			n.accept_children(this)
 		}
 
-		return Some(n)
+		return None<ListNode>
 	}
 
 	# Must NOT resolve the children of the EnumNode
 	# They are used raw in the Dump visitor to form the name lookup array
 	func Option<Node> visit(EnumNode n) {
-		return Some(n)
+		return None<Node>
 	}
 }
