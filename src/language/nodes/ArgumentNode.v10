@@ -1,0 +1,15 @@
+func ArgumentNode ArgumentNode_new(Type ret_type, PositionRange pos, Number arg_no, String name) {
+	return ArgumentNode_new(nARGUMENT, pos, ret_type, arg_no, name)
+}
+
+class virtual ArgumentNode < RetNode (Number arg_no, String name) {
+	func Option<Node> accept(Visitor v) {
+		return v.visit(this)
+	}
+
+	func void accept_children(Visitor v) {}
+
+	func ArgumentNode clone() {
+		return ArgumentNode_new(this.type, this.position, this.ret_type, this.arg_no, this.name)
+	}
+}

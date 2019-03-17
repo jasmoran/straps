@@ -55,10 +55,21 @@ class virtual NASMDump < Visitor (Array<String> binops, Array<String> scallreg, 
 		return None<Node>
 	}
 
+	func Option<Node> visit(ArgumentNode n) {
+		var offset = n.arg_no + 2
+		offset << 3
+		
+		"QWORD[rbp+".print(this.stream)
+		offset.toString().print(this.stream)
+		"]".print(this.stream)
+
+		return None<Node>
+	}
+
 	func Option<Node> visit(BinaryOperationNode n) {
 		if (n.op == DOT || n.op == SQUARE_OPEN) {
 			if (n.rhs.type != nNUMBER && n.rhs.type != nINDEX)
-				error("Non-number ", n.rhs.type.toString(), "in DOT or SQUARE_OPEN")
+				error("Non-number ", n.rhs.type.toString(), " in DOT or SQUARE_OPEN")
 			var num = n.rhs.to(StringNode).string
 			if (n.rhs.type == nINDEX) num = n.rhs.to(StringNode).offset.unwrap()
 

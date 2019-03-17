@@ -11,10 +11,17 @@ class virtual Resolving < Visitor (Scope scope, Reporting report) {
 
 			if (opt.is_some() == true) {
 				var new = opt.unwrap().to(StringNode)
+
+				# Fields - new is a StringNode(type: nINDEX, string: offset)
 				if (new.type == nINDEX) {
 					n.type = nINDEX
 					n.offset = Some(new.string)
 					if (n.ret_type.strength != CAST) n.ret_type = new.ret_type
+
+				# new.type == nBINARYOP => variable (rbp - 8)
+				#          == nARGUMENT => argument (rbp + 16)
+				#          == nNUMBER   => enum
+				#          == nREGISTER => register
 				} else {
 					new = new.clone()
 					new.position = n.position

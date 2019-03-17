@@ -43,28 +43,22 @@ class virtual JSDump < Visitor (Array<String> binops, Boolean top, Number counte
 		return None<Node>
 	}
 
+	func Option<Node> visit(ArgumentNode n) {
+		this.safeIdentifier(n.name).print(this.stream)
+		return None<Node>
+	}
+
 	func Option<Node> visit(BinaryOperationNode n) {
 		if (n.op == DOT || n.op == SQUARE_OPEN) {
 			if (n.rhs.type != nNUMBER && n.rhs.type != nINDEX)
 				error("Non-number ", n.rhs.type.toString(), " in DOT or SQUARE_OPEN")
 			var num = n.rhs.to(StringNode).string
-			if (n.rhs.type == nINDEX) {
-				# "/*".print(this.stream)
-				# num.print(this.stream)
-				# "*/".print(this.stream)
-				num = n.rhs.to(StringNode).offset.unwrap()
-			}
-
+			if (n.rhs.type == nINDEX) num = n.rhs.to(StringNode).offset.unwrap()
 
 			if (n.lhs.type == nREGISTER && n.lhs.to(StringNode).string.equal("rbp") == true) {
-				if (num.get(0) == '-') {
-					num.set(0, 'v')
-					num.print(this.stream)
-					num.set(0, '-')
-				} else {
-					"a".print(this.stream)
-					num.print(this.stream)
-				}
+				num.set(0, 'v')
+				num.print(this.stream)
+				num.set(0, '-')
 			} else {
 				n.lhs.accept(this)
 				"[".print(this.stream)
@@ -232,12 +226,12 @@ class virtual JSDump < Visitor (Array<String> binops, Boolean top, Number counte
 		"(".print(this.stream)
 
 		# Arguments
-		for (ix in Range_new(n.args.length)) {
-			var num = ix + 2
-			num << 3
-			"a".print(this.stream)
-			num.toString().print(this.stream)
-			", ".print(this.stream)
+		for (arg in n.args) {
+			this.safeIdentifier(arg.string).print(this.stream)
+
+			# Skip final comma
+			if (arg_iter.finished() == false)
+				", ".print(this.stream)
 		}
 
 		") {\nlet r12, r13, target".print(this.stream)
@@ -405,5 +399,13 @@ class virtual JSDump < Visitor (Array<String> binops, Boolean top, Number counte
 		joined.append(orig).append(num)
 		this.counter++
 		return joined
+	}
+
+	func String safeIdentifier(String ident) {
+		if (ident.equal("this") == true) {
+			return "_this"
+		}
+
+		return ident
 	}
 }

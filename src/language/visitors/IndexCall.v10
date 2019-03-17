@@ -50,6 +50,7 @@ class virtual IndexCall < Visitor (
 				arg_iter.set(StringNode_new(nREGISTER, this.pos, Type_new(), nom))
 			}
 
+			# Handle vtable calls
 			if (n.cfunction.type == nBINARYOP) {
 				var cfunc = n.cfunction.to(BinaryOperationNode)
 				if (cfunc.op == SQUARE_OPEN && cfunc.lhs.type == nBINARYOP) {
@@ -95,6 +96,7 @@ class virtual IndexCall < Visitor (
 		# Visit left hand side
 		n.lhs = n.lhs.accept(this).unwrap_or(n.lhs)
 
+		# Handle arithmetic
 		if (n.op == ASTERISK || n.op == FWD_SLASH || n.op == PLUS || n.op == MINUS) {
 			# Visit rhs
 			var rhs_acc = n.rhs.accept(this)
@@ -156,6 +158,7 @@ class virtual IndexCall < Visitor (
 			return Some(rx)
 		}
 
+		# Handle fields, variables and arguments
 		if (n.op == DOT || n.op == SQUARE_OPEN) {
 			# Check if lhs is also DOT/SQUARE_OPEN
 			if (n.lhs.type == nBINARYOP) {
@@ -173,6 +176,17 @@ class virtual IndexCall < Visitor (
 					)
 					n.lhs = this.scratch_reg
 				}
+			} else if (n.lhs.type == nARGUMENT) {
+				# Move lhs to parent block
+				this.prepend(
+					BinaryOperationNode_new(
+						n.position.clone("IndexCall"),
+						ASSIGN,
+						this.scratch_reg,
+						n.lhs
+					)
+				)
+				n.lhs = this.scratch_reg
 			}
 		} else {
 			# Visit right hand side
@@ -194,6 +208,17 @@ class virtual IndexCall < Visitor (
 					)
 					n.rhs = this.scratch_reg
 				}
+			} else if (n.rhs.type == nARGUMENT) {
+				# Move rhs to parent block
+				this.prepend(
+					BinaryOperationNode_new(
+						n.position.clone("IndexCall"),
+						ASSIGN,
+						this.scratch_reg,
+						n.rhs
+					)
+				)
+				n.rhs = this.scratch_reg
 			}
 
 			this.scratch_reg = StringNode_new(nREGISTER, this.pos, Type_new(), "r12")

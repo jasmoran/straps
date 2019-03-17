@@ -42,17 +42,20 @@ class virtual Definition < Visitor () {
 	}
 
 	func Option<Node> visit(FunctionNode n) {
-		var ix = 16
+		var ix = 0
 
 		# Loop through arguments
 		for (field in n.args) {
+			var pos = field.position.clone("Definition")
+			var arg = ArgumentNode_new(field.ret_type, pos, ix, field.string)
+
 			# Store value in function scope
 			n.block.scope.set(
 				field.string,
-				this.new_variable(ix, field)
+				arg
 			)
 
-			ix += 8
+			ix++
 		}
 
 		# Store cloned FunctionNode in the global scope
