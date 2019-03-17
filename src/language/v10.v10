@@ -106,13 +106,13 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, Option<CharArr>
 	for (req in glob_reqs) {
 		if (req == glob_reqs.first.unwrap().payload) next
 		build(req, reporting, link, js)
-
+		
 		# Add object to linker args
-		if (link == true) linker.add(req.clone(2).append(".o"))
+		if (link == true && js == false) linker.add(req.clone(2).append(".o"))
 	}
 
 	# ld -m elf_x86_64 -o out_path out.o
-	if (link == true) linker.add(name.clone(2).append(".o")).exec()
+	if (link == true && js == false) linker.add(name.clone(2).append(".o")).exec()
 
 	# # Clean up
 	# if (keep == false) {
@@ -205,6 +205,7 @@ func Set<String> build(String name, Reporting reporting, Boolean link, Boolean j
 
 	if (js == true) {
 		root.accept(JSDump_new(output))
+		return glob_reqs
 	} else {
 		root.accept(NASMDump_new(output, externals))
 	}
