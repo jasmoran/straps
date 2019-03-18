@@ -45,26 +45,20 @@ class virtual Variables < Visitor (
 			return Some(assignment.to(Node))
 		}
 
-		# Calculate offset of variable from offset
-		this.available_position++
-		var offset = this.available_position
-		offset << 3
-		offset = 0 - offset
-
-		# Update max_vars if required
-		if (this.available_position > this.max_vars) this.max_vars = this.available_position
-
 		# Add variable to block scope
 		containing_block.scope.set(
 			vrbl.string,
-			BinaryOperationNode_new(
+			LocalVariableNode_new(
 				vrbl.ret_type,
 				vrbl.position,
-				SQUARE_OPEN,
-				StringNode_new(nREGISTER, vrbl.position, Type_new(), "rbp"),
-				StringNode_new(nNUMBER, vrbl.position, Type_new("Number"), offset.toString())
+				this.available_position,
+				vrbl.string
 			)
 		)
+
+		# Update max_vars if required
+		this.available_position++
+		if (this.available_position > this.max_vars) this.max_vars = this.available_position
 
 		return Some(assignment.to(Node))
 	}

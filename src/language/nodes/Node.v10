@@ -16,7 +16,7 @@ enum NodeType {
 	nNEXT nLOOP nBREAK nIDENTIFIER nENUM nCOMMENT nCHARACTER nSTRING nNUMBER
 	nINDEX nCALL nOPERATION nMEM_ACCESS nREGISTER nPUSH nPOP nCLASS nFIELD nGLOBAL
 	nSTRINGS nBINARYOP nUNARYOP nLIST nFUNCTIONS nVTAB_ACCESS nFOR nSTATIC_CLASS
-	nARGUMENT
+	nARGUMENT nLOCAL
 }
 
 class NodeType() {
@@ -58,3 +58,4 @@ include "src/language/nodes/EnumNode.v10"
 include "src/language/nodes/ForNode.v10"
 include "src/language/nodes/BlockNode.v10"
 include "src/language/nodes/ArgumentNode.v10"
+include "src/language/nodes/LocalVariableNode.v10"

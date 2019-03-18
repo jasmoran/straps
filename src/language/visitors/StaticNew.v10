@@ -90,12 +90,11 @@ class virtual StaticNew < Visitor (Option<BlockNode> pb) {
       # Add obj to block scope
       new_block.scope.set(
         obj.string,
-        BinaryOperationNode_new(
+        LocalVariableNode_new(
           obj.ret_type,
           obj.position,
-          SQUARE_OPEN,
-          StringNode_new(nREGISTER, obj.position, Type_new(), "rbp"),
-          StringNode_new(nNUMBER, obj.position, Type_new("Number"), "-8")
+          0,
+          obj.string
         )
       )
 

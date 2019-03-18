@@ -74,12 +74,11 @@ class virtual Constructor < Visitor (Option<BlockNode> pb) {
 		# Add new_obj to block scope
 		block.scope.set(
 			new_obj.string,
-			BinaryOperationNode_new(
+			LocalVariableNode_new(
 				new_obj.ret_type,
 				new_obj.position,
-				SQUARE_OPEN,
-				StringNode_new(nREGISTER, new_obj.position, Type_new(), "rbp"),
-				StringNode_new(nNUMBER, new_obj.position, Type_new("Number"), "-8")
+				0,
+				new_obj.string
 			)
 		)
 

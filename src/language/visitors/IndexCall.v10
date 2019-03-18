@@ -176,7 +176,7 @@ class virtual IndexCall < Visitor (
 					)
 					n.lhs = this.scratch_reg
 				}
-			} else if (n.lhs.type == nARGUMENT) {
+			} else if (n.lhs.type == nARGUMENT || n.lhs.type == nLOCAL) {
 				# Move lhs to parent block
 				this.prepend(
 					BinaryOperationNode_new(
@@ -208,7 +208,7 @@ class virtual IndexCall < Visitor (
 					)
 					n.rhs = this.scratch_reg
 				}
-			} else if (n.rhs.type == nARGUMENT) {
+			} else if (n.rhs.type == nARGUMENT || n.rhs.type == nLOCAL) {
 				# Move rhs to parent block
 				this.prepend(
 					BinaryOperationNode_new(

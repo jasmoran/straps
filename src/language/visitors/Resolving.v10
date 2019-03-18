@@ -18,7 +18,7 @@ class virtual Resolving < Visitor (Scope scope, Reporting report) {
 					n.offset = Some(new.string)
 					if (n.ret_type.strength != CAST) n.ret_type = new.ret_type
 
-				# new.type == nBINARYOP => variable (rbp - 8)
+				# new.type == nLOCAL    => variable (rbp - 8)
 				#          == nARGUMENT => argument (rbp + 16)
 				#          == nNUMBER   => enum
 				#          == nREGISTER => register

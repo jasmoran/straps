@@ -48,6 +48,15 @@ class virtual JSDump < Visitor (Array<String> binops, Boolean top, Number counte
 		return None<Node>
 	}
 
+	func Option<Node> visit(LocalVariableNode n) {
+		var offset = n.number + 1
+		offset << 3
+		"v".print(this.stream)
+		offset.toString().print(this.stream)
+		# this.safeIdentifier(n.name).print(this.stream)
+		return None<Node>
+	}
+
 	func Option<Node> visit(BinaryOperationNode n) {
 		if (n.op == DOT || n.op == SQUARE_OPEN) {
 			if (n.rhs.type != nNUMBER && n.rhs.type != nINDEX)
@@ -55,16 +64,10 @@ class virtual JSDump < Visitor (Array<String> binops, Boolean top, Number counte
 			var num = n.rhs.to(StringNode).string
 			if (n.rhs.type == nINDEX) num = n.rhs.to(StringNode).offset.unwrap()
 
-			if (n.lhs.type == nREGISTER && n.lhs.to(StringNode).string.equal("rbp") == true) {
-				num.set(0, 'v')
-				num.print(this.stream)
-				num.set(0, '-')
-			} else {
-				n.lhs.accept(this)
-				"[".print(this.stream)
-				num.print(this.stream)
-				">>3]".print(this.stream)
-			}
+			n.lhs.accept(this)
+			"[".print(this.stream)
+			num.print(this.stream)
+			">>3]".print(this.stream)
 
 		} else if (n.op == OR) {
 			var lastFalse = this.falseLabel

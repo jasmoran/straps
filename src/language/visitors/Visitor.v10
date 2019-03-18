@@ -77,4 +77,9 @@ class virtual Visitor() {
 		n.accept_children(this)
 		return None<Node>
 	}
+
+	func Option<Node> visit(LocalVariableNode n) {
+		n.accept_children(this)
+		return None<Node>
+	}
 }
