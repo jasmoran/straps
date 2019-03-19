@@ -13,3 +13,9 @@ class virtual LocalVariableNode < RetNode (Number number, String name) {
 		return LocalVariableNode_new(this.type, this.position, this.ret_type, this.number, this.name)
 	}
 }
+
+define t "LocalVariableNode"
+include "src/stdlib/LinkedList.generic"
+
+define t "LocalVariableNode"
+include "src/stdlib/Option.generic"

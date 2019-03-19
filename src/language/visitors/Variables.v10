@@ -46,15 +46,14 @@ class virtual Variables < Visitor (
 		}
 
 		# Add variable to block scope
-		containing_block.scope.set(
-			vrbl.string,
-			LocalVariableNode_new(
+		var localvar = LocalVariableNode_new(
 				vrbl.ret_type,
 				vrbl.position,
 				this.available_position,
 				vrbl.string
 			)
-		)
+		containing_block.scope.set(vrbl.string, localvar)
+		containing_block.vrbls.append(localvar)
 
 		# Update max_vars if required
 		this.available_position++
