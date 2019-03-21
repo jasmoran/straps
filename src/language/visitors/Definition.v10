@@ -59,8 +59,7 @@ class virtual Definition < Visitor () {
 		}
 
 		# Store cloned FunctionNode in the global scope
-		if (n.pure == NullString) error("Null pure")
-		scope.set(n.pure, n.shallow_clone())
+		scope.set(n.name, n.shallow_clone())
 
   	return None<Node>
 	}

@@ -4,6 +4,7 @@ include "src/language/Scope.v10"
 include "src/language/Type.v10"
 include "src/language/Position.v10"
 include "src/language/Reporting.v10"
+include "src/language/VirtualTable.v10"
 
 include "src/language/visitors/Visitor.v10"
 include "src/language/visitors/Printer.v10"

@@ -15,10 +15,10 @@ class Parser(String name, Tokenizer t, Set<String> reqs, Option<Scope> parent_sc
 
 		var pos = this.t.get_pos_range()
 
-		var vtable = None<Map<String_FunctionNode>>
+		var vtable = None<VirtualTable>
 		if (this.t.peek() == VIRTUAL) {
 			this.t.consume(VIRTUAL)
-			vtable = Some(Map<String_FunctionNode>_new(32))
+			vtable = Some(VirtualTable_new())
 		}
 
 		var name = this.t.consume(IDENTIFIER)

@@ -1,0 +1,57 @@
+define t "VirtualTable"
+include "src/stdlib/Option.generic"
+
+func VirtualTable VirtualTable_new() {
+	var set = LinkedList<FunctionNode>_new().to(VirtualTable)
+	return set
+}
+
+class VirtualTable < LinkedList<FunctionNode> () {
+	func Boolean equal(FunctionNode a, FunctionNode b) {
+		# Compare function names
+		if (a.name.equal(b.name) == false) return false
+
+		# Compare number of arguments
+		if (a.args.length != b.args.length) return false
+
+		if (a.args.length < 2) return true
+
+		# Compare type of each argument
+		for (ix in Range_new(a.args.length - 1)) {
+			var pos = ix + 1
+			var atype = a.args.get(pos).unwrap().ret_type
+			var btype = b.args.get(pos).unwrap().ret_type
+
+			# if (atype.has_child(btype) == false)
+			# if (btype.has_child(atype) == false) {
+			# 	return false
+			# }
+			if (atype.raw.equal(btype.raw) == false) return false
+		}
+
+		return true
+	}
+
+	func Number get_ix(FunctionNode value) {
+		var ix = 0
+		for (item in this) {
+			if (this.equal(item, value) == true) return ix
+			ix++
+		}
+		return -1
+	}
+
+	func Boolean contains(FunctionNode value) {
+		if (this.get_ix(value) < 0) return false
+		return true
+	}
+
+	func void add(FunctionNode value) {
+		var ix = this.get_ix(value)
+		if (ix < 0) {
+			this.append(value)
+		} else {
+			this.set(ix, value)
+		}
+	}
+}

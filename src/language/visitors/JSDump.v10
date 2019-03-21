@@ -29,7 +29,7 @@ class virtual JSDump < Visitor (Array<String> binops, Boolean top, Number counte
 
 	func Option<Node> visit(CallNode n) {
 		if (n.cfunction.type == nFUNCTION) {
-			n.cfunction.to(FunctionNode).name.replace('#', '_').print(this.stream)
+			this.printName(n.cfunction.to(FunctionNode))
 		} else {
 			n.cfunction.accept(this)
 		}
@@ -185,13 +185,13 @@ class virtual JSDump < Visitor (Array<String> binops, Boolean top, Number counte
 		} else if (n.type == nNASM) {
 			n.string.print(this.stream)
 		} else {
-			n.string.replace('#', '_').print(this.stream)
+			this.safeIdentifier(n.string).print(this.stream)
 		}
 		return None<Node>
 	}
 
 	func Option<Node> visit(ClassNode n) {
-		n.name.replace('#', '_').print(this.stream)
+		this.safeIdentifier(n.name).print(this.stream)
 		"Static".print(this.stream)
 
 		return None<Node>
@@ -199,7 +199,7 @@ class virtual JSDump < Visitor (Array<String> binops, Boolean top, Number counte
 
 	func Option<Node> visit(StaticClassNode n) {
 		"const ".print(this.stream)
-		n.klass.name.replace('#', '_').print(this.stream)
+		this.safeIdentifier(n.klass.name).print(this.stream)
 		"Static = new Array(".print(this.stream)
 		n.klass.fields.length.toString().print(this.stream)
 		");".println(this.stream)
@@ -209,14 +209,10 @@ class virtual JSDump < Visitor (Array<String> binops, Boolean top, Number counte
 		n.klass.name.print(this.stream)
 		" = [".print(this.stream)
 
-		var array = n.klass.vtable.unwrap().values
-		var ix = 0
-		loop {
-			if (ix == array.length) { break }
-			var FunctionNode funnode = array.get(ix)
-			funnode.name.replace('#', '_').print(this.stream)
+		var array = n.klass.vtable.unwrap()
+		for (funnode in array) {
+			this.printName(funnode.to(FunctionNode))
 			", ".print(this.stream)
-			ix++
 		}
 
 		"];".println(this.stream)
@@ -225,7 +221,7 @@ class virtual JSDump < Visitor (Array<String> binops, Boolean top, Number counte
 
 	func Option<Node> visit(FunctionNode n) {
 		"function ".print(this.stream)
-		n.name.replace('#', '_').print(this.stream)
+		this.printName(n)
 		"(".print(this.stream)
 
 		# Arguments
@@ -377,7 +373,7 @@ class virtual JSDump < Visitor (Array<String> binops, Boolean top, Number counte
 
 	func Option<Node> visit(EnumNode n) {
 		"const ".print(this.stream)
-		n.name.replace('#', '_').print(this.stream)
+		this.safeIdentifier(n.name).print(this.stream)
 		"Values = [".print(this.stream)
 		var len = n.values.children.length.toString()
 		len.print(this.stream)
@@ -409,6 +405,18 @@ class virtual JSDump < Visitor (Array<String> binops, Boolean top, Number counte
 			return "_this"
 		}
 
-		return ident
+		return ident.replace('#', '_')
+	}
+
+	func void printName(FunctionNode n) {
+		if (n.name.equal("main") == true) return "main".print(this.stream)
+
+		this.safeIdentifier(n.name).print(this.stream)
+
+		# Print each argument type
+		for (arg in n.args) {
+			"_".print(this.stream)
+			this.safeIdentifier(arg.ret_type.raw).print(this.stream)
+		}
 	}
 }

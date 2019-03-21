@@ -46,7 +46,7 @@ class virtual NASMDump < Visitor (Array<String> binops, Array<String> scallreg, 
 	func Option<Node> visit(CallNode n) {
 		"call ".print(this.stream)
 		if (n.cfunction.type == nFUNCTION) {
-			n.cfunction.to(FunctionNode).name.print(this.stream)
+			this.printName(n.cfunction.to(FunctionNode))
 		} else {
 			n.cfunction.accept(this)
 		}
@@ -225,14 +225,13 @@ class virtual NASMDump < Visitor (Array<String> binops, Array<String> scallreg, 
 		n.klass.name.print(this.stream)
 		":\ndq ".print(this.stream)
 
-		var array = n.klass.vtable.unwrap().values
-		var ix = 0
-		loop {
-			if (ix == array.length) { break }
-			var FunctionNode funnode = array.get(ix)
-			funnode.name.print(this.stream)
+		var array = n.klass.vtable.unwrap()
+		for (funnode in array) {
+			if (funnode.type != nFUNCTION) {
+				Printer_new().visit(funnode)
+			}
+			this.printName(funnode.to(FunctionNode))
 			", ".print(this.stream)
-			ix++
 		}
 
 		"0\nsection .text".println(this.stream)
@@ -241,8 +240,9 @@ class virtual NASMDump < Visitor (Array<String> binops, Array<String> scallreg, 
 
 	func Option<Node> visit(FunctionNode n) {
 		"global ".print(this.stream)
-		n.name.println(this.stream)
-		n.name.print(this.stream)
+		this.printName(n)
+		"\n".print(this.stream)
+		this.printName(n)
 		":\npush rbp\nmov rbp, rsp\nsub rsp, ".print(this.stream)
 		var size = n.num_vars
 		size << 3
@@ -319,16 +319,16 @@ class virtual NASMDump < Visitor (Array<String> binops, Array<String> scallreg, 
 			var ix = n.children.length
 			ix >> 1
 			var s = ix.toString()
-			s.print(this.stream)
-			", ".print(this.stream)
-			s.print(this.stream)
-			", 24+_FUNCTIONLIST".print(this.stream)
+			# s.print(this.stream)
+			# ", ".print(this.stream)
+			# s.print(this.stream)
+			"0, 0, 24+_FUNCTIONLIST".print(this.stream)
 
-			for (nn in n.children) {
-				", ".print(this.stream)
-				nn.accept(this)
-				nn_iter.fetch()
-			}
+			# for (nn in n.children) {
+			# 	", ".print(this.stream)
+			# 	this.printName(nn.to(FunctionNode))
+			# 	nn_iter.fetch()
+			# }
 
 			"\n_FUNCTIONNAMELIST:\ndq ".print(this.stream)
 			s.print(this.stream)
@@ -447,5 +447,17 @@ class virtual NASMDump < Visitor (Array<String> binops, Array<String> scallreg, 
 		joined.append(orig).append(num)
 		this.counter++
 		return joined
+	}
+
+	func void printName(FunctionNode n) {
+		if (n.name.equal("main") == true) return "main".print(this.stream)
+
+		n.name.print(this.stream)
+
+		# Print each argument type
+		for (arg in n.args) {
+			"_".print(this.stream)
+			arg.ret_type.raw.print(this.stream)
+		}
 	}
 }

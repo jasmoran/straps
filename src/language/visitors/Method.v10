@@ -20,7 +20,7 @@ class virtual Method < Visitor (Option<BlockNode> pb, Option<ClassNode> cls) {
 				if (n.vtable.is_some() == true) {
 					var par_vtab = parent.res.unwrap().vtable
 					if (par_vtab.is_some() == true) {
-						n.vtable = Some(par_vtab.unwrap().shallow_clone())
+						n.vtable = Some(par_vtab.unwrap().shallow_clone().to(VirtualTable))
 					}
 				}
 			}
@@ -37,62 +37,31 @@ class virtual Method < Visitor (Option<BlockNode> pb, Option<ClassNode> cls) {
 	}
 
 	func Option<Node> visit(FunctionNode n) {
-		var pure = n.name.clone()
-		n.pure = pure
-
-		# Leave main function alone
-		if (n.name.equal("main") == true) return None<Node>
-		if (n.name.get(0) == '_') return None<Node>
-
 		if (this.cls.is_some() == true) {
 			# Add 'this' to arguments
 			n.args.prepend(
 				StringNode_new(nIDENTIFIER, n.position.clone("Method this"), Type_new(this.cls.unwrap().name), "this")
 			)
-		}
 
-		n.name = String_new(256).append(n.name)
-		var cls_scope_name = String_new(256).append(n.name)
-
-		# Loop through arguments
-		for (arg in n.args) {
-			var type = arg.ret_type.raw
-
-			# Append arguments type to function name
-			n.name.append('_').append(type)
-
-			if (arg != n.args.first.unwrap().payload) {
-				cls_scope_name.append('_').append(type)
-			}
-		}
-
-		if (this.cls.is_some() == true) {
 			var cls = this.cls.unwrap()
 			var clone = n.shallow_clone()
 
 			if (cls.vtable.is_none() == true) {
 				# Add method (direct) to scope of class
-				cls.block.scope.set(pure, clone)
+				cls.block.scope.set(n.name, clone)
 			} else {
 				# Add method to vtable of class
-				cls.vtable.unwrap().set(cls_scope_name, n)
+				cls.vtable.unwrap().add(n)
 
 				# Find method offset in vtable
-				var offset = cls.vtable.unwrap().get_pos(cls_scope_name)
+				var offset = cls.vtable.unwrap().get_ix(n)
 				offset << 3
 
 				# Add method (via vtable) to scope of class
-				var vtab = n.shallow_clone()
-				vtab.type = nVTAB_ACCESS
-				vtab.name = offset.toString()
-				cls.block.scope.set(pure, vtab)
+				clone.type = nVTAB_ACCESS
+				clone.name = offset.toString()
+				cls.block.scope.set(n.name, clone)
 			}
-
-			# Save new method name "_CLASS_METHOD"
-			var length = n.name.length
-			length += 2
-			n.name = cls.name.clone(length).prepend('_').append('_').append(n.name)
-			clone.name = n.name
 
 			# Copy method to parent block
 			this.pb.expect("Attempted to append method outside of a block").append(n)

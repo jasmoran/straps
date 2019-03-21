@@ -91,7 +91,6 @@ class virtual Constructor < Visitor (Option<BlockNode> pb) {
 				n.name.clone(4).append("_new"),
 				args,
 				block,
-				NullString,
 				1
 			)
 		)

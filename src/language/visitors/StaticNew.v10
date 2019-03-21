@@ -106,7 +106,6 @@ class virtual StaticNew < Visitor (Option<BlockNode> pb) {
           "new",
           new_args,
           new_block,
-          NullString,
           1
         )
       )
