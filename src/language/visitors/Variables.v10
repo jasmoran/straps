@@ -40,7 +40,8 @@ class virtual Variables < Visitor (
 		var assignment = n.expr.to(BinaryOperationNode)
 		var vrbl = assignment.lhs.to(StringNode)
 
-		if (containing_block.scope.search(vrbl.string).is_some() == true) {
+		var match = containing_block.scope.get(vrbl.string)
+		if (match.is_some() == true) {
 			this.reporting.printRedefinedVar(vrbl)
 			return Some(assignment.to(Node))
 		}

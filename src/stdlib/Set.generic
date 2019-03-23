@@ -25,4 +25,10 @@ class Set<?t> < LinkedList<?t> () {
 		# Inherited method lookup doesn't properly support overloads
 		if (lln.is_some() == true) this.remove_node(lln.unwrap())
 	}
+
+	func void remove(Set<?t> other) {
+		for (item in other) {
+			this.remove(item)
+		}
+	}
 }

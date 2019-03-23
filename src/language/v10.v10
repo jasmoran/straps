@@ -146,10 +146,6 @@ func Set<String> build(String name, Reporting reporting, Boolean link, Boolean j
 
 	var externals = LinkedList<String>_new()
 	headerize(glob_reqs, parser.reqs, lfuncs, externals, reporting)
-	for (fnc in lfuncs.children) {
-		externals.append(fnc.to(StringNode).string)
-		fnc_iter.fetch()
-	}
 
 	var nullpos = Position_new(MetaCharacter_new('?', 0, 0), "GLOBALS_SETUP")
 	var pos = PositionRange_new(nullpos, nullpos)
@@ -208,7 +204,7 @@ func Set<String> build(String name, Reporting reporting, Boolean link, Boolean j
 		root.accept(JSDump_new(output))
 		return glob_reqs
 	} else {
-		root.accept(NASMDump_new(output, externals))
+		NASMDump_new(output, externals).start(root)
 	}
 
 	# nasm -f elf64 out.asm
