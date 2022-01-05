@@ -108,7 +108,7 @@ class virtual StaticNew < Visitor (Visitor v, ListNode pb) {
 
     # Add static class to scope
     if (scope == 0) error("NULL global scope")
-    scope.set(name, static_class)
+    scope.set(name, static_class, 1337)
 
     return 0
   }

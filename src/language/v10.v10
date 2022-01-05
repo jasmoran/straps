@@ -26,6 +26,19 @@ include "src/language/visitors/Statics.v10"
 include "src/language/visitors/StaticNew.v10"
 include "src/language/visitors/Externals.v10"
 
+define k "String"
+define v "Headers"
+include "src/stdlib/Map.generic"
+
+define t "Headers"
+include "src/stdlib/Array.generic"
+
+define t "Headers"
+include "src/stdlib/LinkedList.generic"
+
+define t "Headers"
+include "src/stdlib/Set.generic"
+
 global(Scope scope)
 
 # Normalises file names
@@ -39,39 +52,113 @@ func String norm_name(String name) {
 	return name
 }
 
+class Headers (
+	String name,
+	Set<Headers> reqs,
+	ListNode trace_functions,
+	LinkedList<String> externals,
+	Scope scope
+) {
+		func Boolean equal(Headers other) {
+		return this.name.equal(other.name)
+	}
 
-func void headerize(Set<String> glob_reqs, Set<String> reqs, ListNode lfuncs, LinkedList<String> externals) {
-	for (req in reqs) {
-		# Skip requirement if it has already been dealt with globally
-		if (glob_reqs.contains(req) == true) {
-			next
+	func void print() this.print(2)
+
+	func void print(Number depth) {
+		if (depth < 0) return 0
+		depth--
+		"{name:".print()
+		this.name.print()
+		",reqs:[".print()
+		for (hdr in this.reqs) hdr.print(depth)
+		"]},".print()
+	}
+
+	func Headers fix(Set<Headers> already_fixed) {
+		if (already_fixed.contains(this) == true) return this
+		already_fixed.add(this)
+		"Fixing ".print()
+		this.name.println()
+		for(req in this.reqs) {
+			req.fix(already_fixed)
+			for(rr in req.reqs) {
+				this.reqs.add(rr)
+			}
+		}
+		return this
+	}
+}
+
+class Builder(Set<String> built_files, Map<String_Headers> header_cache) {
+	# Returns all headers (including headers of required files) for a single file
+	func Headers get_headers(String name) {
+		# Return cached headers if this file has already been processed
+		var headers = this.header_cache.get(name)
+		if (headers > 0) {
+			name.print()
+			":cached".println()
+			return headers
 		}
 
 		# Add this requirement to the glob_reqs
-		glob_reqs.add(req)
+		this.built_files.add(name)
 
-		var src_path = req.clone(4).append(".v10")
-		var parser = Parser_new(req, File_open(src_path))
-		var reqroot = parser.parse()
+		# Parse the source file
+		var src_path = name.clone(4).append(".v10")
+		var parser = Parser_new(src_path, File_open(src_path))
+		var root = parser.parse()
+		name.print()
+		":get_headers".println()
 
-		# Add stdlib if not required already
-		# if (req.equal("src/stdlib/stdlib") == false) parser.reqs.add("src/stdlib/stdlib")
+		# Create scope, externals and trace_functions for this file
+		var trace_funcs = ListNode_new(nFUNCTIONS, Position_new(MetaCharacter_new('?', 0, 0), "get_all_headers"))
+		var externals = LinkedList<String>_new()
+		var reqs = Set<Headers>_new()
+		scope = Scope_new()
 
-		# Process this file's requirements
-		headerize(glob_reqs, parser.reqs, lfuncs, externals)
+		headers = Headers_new(name, reqs, trace_functions, externals, scope)
+		this.header_cache.set(name, headers)
 
-		# Visit this file
-		reqroot.accept(Externals_new(externals))
-		reqroot.accept(Typing_new())
-		reqroot.accept(Inherit_new())
-		reqroot.accept(Constructor_new())
-		reqroot.accept(Method_new())
-		reqroot.accept(Definition_new())
-		var fncvis = Functions_new()
-		fncvis.lfuncs = lfuncs
-		reqroot.accept(fncvis)
+		for (req in parser.reqs) {
+			# Skip file if it has already been built
+			if (this.built_files.contains(name) == true) {
+				name.print()
+				":skip_req".println()
+				next
+			}
+
+			var req_head = this.get_headers(req)
+			reqs.add(req_head)
+
+			# Add items from requirement's scope
+			for (pair in req_head.scope.scope) sc.set(pair.key, pair.value, 1337)
+		}
+
+		"Got past all req headers for ".print()
+		name.println()
+		scope.print()
+		"\n".print()
+
+		# Run visitors over the file's AST
+		root.accept(Externals_new(externals))
+		root.accept(Typing_new())
+		root.accept(Inherit_new())
+		root.accept(StaticNew_new())
+		root.accept(Constructor_new())
+		root.accept(Method_new())
+		root.accept(Definition_new())
+		root.accept(Functions_new(trace_functions))
+
+		"Done ".print()
+		name.println()
+		headers.scope.print()
+		"\n".print()
+
+		return headers
 	}
 }
+
 
 func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags) {
 	load_loop()
@@ -86,9 +173,10 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags
 	}
 
 	var reporting = Reporting_new(report, STDOUT)
+	var header_cache = Map<String_Headers>_new(512)
 
 	var name = norm_name(String_fromTerminated(src_path))
-	var glob_reqs = build(name, reporting)
+	var glob_reqs = build(name, reporting, header_cache)
 
 	if (report == true) return 0
 
@@ -99,7 +187,7 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags
 
 	for (req in glob_reqs) {
 		if (req == glob_reqs.first.payload) next
-		build(req, reporting)
+		build(req, reporting, header_cache)
 
 		# Add object to linker args
 		linker.add(req.clone(2).append(".o"))
@@ -117,7 +205,7 @@ func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags
 	return 0
 }
 
-func Set<String> build(String name, Reporting reporting) {
+func Set<String> build(String name, Reporting reporting, Map<String_Headers> header_cache) {
 	# Open input file
 	var src_path = name.clone(4).append(".v10")
 	var input = File_open(src_path)
@@ -127,83 +215,64 @@ func Set<String> build(String name, Reporting reporting) {
 	scope = sc
 	var parser = Parser_new(src_path, input)
 	var root = parser.parse()
+	name.print()
+	":build".println()
 
 	# Open output file
 	var asm_path = name.clone(4).append(".asm")
 	var output = File_create(asm_path)
 	if (output < 0) { return 0 }
 
-	# if (name.equal("src/stdlib/stdlib") == false) parser.reqs.add("src/stdlib/stdlib")
-
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "MainFunctions")
-	var lfuncs = ListNode_new(nFUNCTIONS, pos)
 	var glob_reqs = Set<String>_new()
 	glob_reqs.add(name)
 
-	var externals = LinkedList<String>_new()
+	var req_headers = Builder_new(glob_reqs, header_cache).get_all_headers(parser.reqs)
+	scope = req_headers.scope
+
 	"section .text".println(output)
-	headerize(glob_reqs, parser.reqs, lfuncs, externals)
-	for (fnc in lfuncs.children) {
+	for (fnc in req_headers.trace_functions.children) {
 		"extern ".print(output)
 		fnc.to(StringNode).string.println(output)
 		fnc_iter.fetch()
 	}
-	for (extern in externals) {
+	for (extern in req_headers.externals) {
 		"extern ".print(output)
 		extern.println(output)
 	}
 
 	var pos = Position_new(MetaCharacter_new('?', 0, 0), "GLOBALS_SETUP")
-	sc.set("rax", StringNode_new(nREGISTER, pos, Type_new(), "rax").toNode())
-	sc.set("rbx", StringNode_new(nREGISTER, pos, Type_new(), "rbx").toNode())
-	sc.set("rcx", StringNode_new(nREGISTER, pos, Type_new(), "rcx").toNode())
-	sc.set("rdx", StringNode_new(nREGISTER, pos, Type_new(), "rdx").toNode())
-	sc.set("rsp", StringNode_new(nREGISTER, pos, Type_new(), "rsp").toNode())
-	sc.set("rbp", StringNode_new(nREGISTER, pos, Type_new(), "rbp").toNode())
-	sc.set("rsi", StringNode_new(nREGISTER, pos, Type_new(), "rsi").toNode())
-	sc.set("rdi", StringNode_new(nREGISTER, pos, Type_new(), "rdi").toNode())
-	sc.set("r12", StringNode_new(nREGISTER, pos, Type_new(), "r12").toNode())
-	sc.set("r13", StringNode_new(nREGISTER, pos, Type_new(), "r13").toNode())
+	sc.set("rax", StringNode_new(nREGISTER, pos, Type_new(), "rax").toNode(), 1337)
+	sc.set("rbx", StringNode_new(nREGISTER, pos, Type_new(), "rbx").toNode(), 1337)
+	sc.set("rcx", StringNode_new(nREGISTER, pos, Type_new(), "rcx").toNode(), 1337)
+	sc.set("rdx", StringNode_new(nREGISTER, pos, Type_new(), "rdx").toNode(), 1337)
+	sc.set("rsp", StringNode_new(nREGISTER, pos, Type_new(), "rsp").toNode(), 1337)
+	sc.set("rbp", StringNode_new(nREGISTER, pos, Type_new(), "rbp").toNode(), 1337)
+	sc.set("rsi", StringNode_new(nREGISTER, pos, Type_new(), "rsi").toNode(), 1337)
+	sc.set("rdi", StringNode_new(nREGISTER, pos, Type_new(), "rdi").toNode(), 1337)
+	sc.set("r12", StringNode_new(nREGISTER, pos, Type_new(), "r12").toNode(), 1337)
+	sc.set("r13", StringNode_new(nREGISTER, pos, Type_new(), "r13").toNode(), 1337)
 
-	var Visitor v = PlusMinus_new()
-	root.accept(v)
-	v = Statics_new()
-	root.accept(v)
-	v = Casting_new()
-	root.accept(v)
-	v = ForLoop_new()
-	root.accept(v)
-	v = Variables_new()
-	root.accept(v)
-	v = Typing_new()
-	root.accept(v)
-	v = Inherit_new()
-	root.accept(v)
-	v = StaticNew_new()
-	root.accept(v)
-	v = Constructor_new()
-	root.accept(v)
-	v = Method_new()
-	root.accept(v)
-	v = Definition_new()
-	root.accept(v)
-	v = Resolving_new(reporting)
-	root.accept(v)
-	v = TypeCheck_new(reporting)
-	root.accept(v)
+	root.accept(PlusMinus_new())
+	root.accept(Statics_new())
+	root.accept(Casting_new())
+	root.accept(ForLoop_new())
+	root.accept(Variables_new())
+	root.accept(Typing_new())
+	root.accept(Inherit_new())
+	root.accept(StaticNew_new())
+	root.accept(Constructor_new())
+	root.accept(Method_new())
+	root.accept(Definition_new())
+	root.accept(Resolving_new(reporting))
+	root.accept(TypeCheck_new(reporting))
 
 	if (reporting.enabled == true) return 0
 
-	v = IndexCall_new()
-	root.accept(v)
-	var fncvis = Functions_new()
-	fncvis.lfuncs = lfuncs
-	root.accept(fncvis)
-	v = Strings_new()
-	root.accept(v)
-
-	v = Dump_new(output)
-	root.accept(v)
+	root.accept(IndexCall_new())
+	root.accept(Functions_new(req_headers.trace_functions))
+	root.accept(Strings_new())
+	root.accept(Dump_new(output))
 
 	# nasm -f elf64 out.asm
 	var obj_path = name.clone(2).append(".o")

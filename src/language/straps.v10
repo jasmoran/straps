@@ -1,0 +1,149 @@
+include "src/stdlib/stdlib.v10"
+include "src/language/parser/Parser.v10"
+include "src/language/Scope.v10"
+include "src/language/Type.v10"
+include "src/language/Position.v10"
+include "src/language/Reporting.v10"
+
+include "src/language/visitors/Visitor.v10"
+include "src/language/visitors/Printer.v10"
+include "src/language/visitors/Constructor.v10"
+include "src/language/visitors/Typing.v10"
+include "src/language/visitors/Method.v10"
+include "src/language/visitors/Definition.v10"
+include "src/language/visitors/Resolving.v10"
+include "src/language/visitors/IndexCall.v10"
+include "src/language/visitors/Functions.v10"
+include "src/language/visitors/Strings.v10"
+include "src/language/visitors/Dump.v10"
+include "src/language/visitors/Variables.v10"
+include "src/language/visitors/Inherit.v10"
+include "src/language/visitors/ForLoop.v10"
+include "src/language/visitors/TypeCheck.v10"
+include "src/language/visitors/Casting.v10"
+include "src/language/visitors/PlusMinus.v10"
+include "src/language/visitors/Statics.v10"
+include "src/language/visitors/StaticNew.v10"
+include "src/language/visitors/Externals.v10"
+
+define k "String"
+define v "Headers"
+include "src/stdlib/Map.generic"
+
+define t "Headers"
+include "src/stdlib/Array.generic"
+
+define t "Headers"
+include "src/stdlib/LinkedList.generic"
+
+define t "Headers"
+include "src/stdlib/Set.generic"
+
+global(Scope scope)
+
+# Normalises file names
+# e.g. "LinkedList.v10" => "LinkedList"
+#      "LinkedList"     => "LinkedList"
+func String norm_name(String name) {
+	var Number dot_pos = name.length - 4
+	if (name.get(dot_pos) == '.') {
+		name.length -= 4
+	}
+	return name
+}
+
+class Headers (String tmp_name, Set<Headers> reqs, ListNode trace_functions, LinkedList<String> externals, Scope scope) {
+	func Boolean equal(Headers other) {
+		return this.tmp_name.equal(other.tmp_name)
+	}
+
+	func void print() this.print(2)
+
+	func void print(Number depth) {
+		if (depth < 0) return 0
+		depth--
+		"{name:".print()
+		this.tmp_name.print()
+		",reqs:[".print()
+		for (hdr in this.reqs) hdr.print(depth)
+		"]},".print()
+	}
+
+	func Headers fix(Set<Headers> already_fixed) {
+		if (already_fixed.contains(this) == true) return this
+		already_fixed.add(this)
+		"Fixing ".print()
+		this.tmp_name.println()
+		for(req in this.reqs) {
+			req.fix(already_fixed)
+			for(rr in req.reqs) {
+				this.reqs.add(rr)
+			}
+		}
+		return this
+	}
+}
+
+class Builder(Map<String_Headers> header_cache) {
+	func Headers get_headers(String name) {
+		# Check for existing headers
+		var headers = this.header_cache.get(name)
+		if (headers > 0) {
+			return headers
+		}
+		name.println()
+
+		# Parse the source file
+		var src_path = name.clone(4).append(".v10")
+		var parser = Parser_new(src_path, File_open(src_path))
+		var root = parser.parse()
+
+		# Create scope, externals and trace_functions for this file
+		# scope = Scope_new()
+		var externals = LinkedList<String>_new()
+		var trace_functions = ListNode_new(nFUNCTIONS, Position_new(MetaCharacter_new('?', 0, 0), "get_headers"))
+		var reqs = Set<Headers>_new()
+
+		headers = Headers_new(name, reqs, trace_functions, externals, scope)
+		this.header_cache.set(name, headers)
+
+		# Process and add requirements to reqs
+		for (req in parser.reqs) reqs.add(this.get_headers(req))
+		# for (req in parser.reqs) {
+		# 	var hr = this.get_headers(req)
+		# 	reqs.add(hr)
+		# 	for (hrreq in hr.reqs) reqs.add(hrreq)
+		# }
+
+		# Run visitors over the file's AST
+		root.accept(Externals_new(externals))
+		root.accept(Typing_new())
+		root.accept(Inherit_new())
+		root.accept(StaticNew_new())
+		root.accept(Constructor_new())
+		root.accept(Method_new())
+		root.accept(Definition_new())
+		root.accept(Functions_new(trace_functions))
+
+		return headers
+	}
+}
+
+
+func void main(CharArr comp, CharArr src_path, CharArr out_path, CharArr caflags) {
+	load_loop()
+	scope = Scope_new()
+
+
+	var name = norm_name(String_fromTerminated(src_path))
+	name.println()
+	var builder = Builder_new(Map<String_Headers>_new(1024))
+	var hdr = builder.get_headers(name)
+	hdr.fix(Set<Headers>_new())
+	hdr.print()
+	"\n".println()
+	builder.get_headers("src/stdlib/Number").print()
+	"\n".println()
+
+	return 0
+}

@@ -1,3 +1,23 @@
+class Stat (
+  Number device_id, Number inode, Number hard_links, Number user_mode,
+  Number gid, Number unknown, Number size, Number block_size,
+  Number blocks, Number last_access, Number last_access_ns,
+  Number last_mod, Number last_mod_ns, Number last_status, Number last_status_ns
+) {
+  func Number file_mode() {
+    rax = this.user_mode
+    nasm("and rax, 0xFFFF")
+    return rax
+  }
+
+  func Number uid() {
+    rax = this.user_mode
+    rax >> 32
+    nasm("and rax, 0xFFFF")
+    return rax
+  }
+}
+
 func Stream File_open(CharArr path)(Stream file) {
 	sys(2, path, 0, 511)
 	file = rax
@@ -34,4 +54,11 @@ func Stream File_create(String path)() {
 
 func void File_delete(String path)() {
 	File_delete(path.toTerminated())
+}
+
+func Stat File_stat(String path) {
+  var stat = Stat_new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+  var null_path = path.toTerminated()
+  sys(4, null_path, stat)
+  return stat
 }

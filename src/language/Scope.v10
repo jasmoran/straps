@@ -1,5 +1,5 @@
-func Scope Scope_new()(Scope sc) {
-	sc = 0
+func Scope Scope_new() {
+	var Scope sc = 0
 	return Scope_new("GLOBAL", sc)
 }
 
@@ -13,11 +13,11 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 		return this.scope.get(name)
 	}
 
-	func void set(String name, Node node) {
+	func void set(String name, Node node, Number a) {
 		this.scope.set(name, node)
 	}
 
-	func void set(String name, FunctionNode node) {
+	func void set(String name, FunctionNode node, Number a) {
 		var ListNode capsule = this.scope.get(name)
 		if (capsule < 1) capsule = ListNode_new(nBLOCK, Position_new(MetaCharacter_new('?', 0, 0), "Scope Capsule"))
 		capsule.append(node.toNode())
@@ -106,15 +106,22 @@ class Scope (String name, Scope parent, Map<String_Node> scope) {
 	}
 
 	func void print()(Number index, Visitor printer) {
-		index = 0
-		printer = Printer_new(1, STDOUT, 1)
-		loop {
-			if (this.scope.keys.length == index) break
-			this.scope.keys.get(index).print()
-			": <<".println()
-			this.scope.values.get(index).accept(printer)
-			">>".println()
-			index++
+		# index = 0
+		# printer = Printer_new(1, STDOUT, 1)
+		# loop {
+		# 	if (this.scope.keys.length == index) break
+		# 	this.scope.keys.get(index).print()
+		# 	": <<".println()
+		# 	this.scope.values.get(index).accept(printer)
+		# 	">>".println()
+		# 	index++
+		# }
+		for (pair in this.scope) {
+			pair.key.print()
+			":".print()
+			pair.value.type.toString().print()
+			", ".print()
 		}
+		"\n".print()
 	}
 }

@@ -20,7 +20,7 @@ class virtual Definition < Visitor (Visitor v) {
 			# Store field offset in class scope
 			n.scope.set(
 				field.string,
-				StringNode_new(nINDEX, field.position.clone("Definition"), field.ret_type, ix.toString()).toNode()
+				StringNode_new(nINDEX, field.position.clone("Definition"), field.ret_type, ix.toString()).toNode(), 1337
 			)
 
 			ix += 8
@@ -45,7 +45,7 @@ class virtual Definition < Visitor (Visitor v) {
 			sc = scope
 			sc.set(
 				field.string,
-				StringNode_new(nNUMBER, field.position.clone("Definition"), type, ix.toString()).toNode()
+				StringNode_new(nNUMBER, field.position.clone("Definition"), type, ix.toString()).toNode(), 1337
 			)
 
 			ix++
@@ -67,7 +67,7 @@ class virtual Definition < Visitor (Visitor v) {
 			# Store value in function scope
 			n.scope.set(
 				field.string,
-				this.new_variable(ix, field)
+				this.new_variable(ix, field), 1337
 			)
 
 			ix += 8
@@ -78,7 +78,7 @@ class virtual Definition < Visitor (Visitor v) {
 		# Store cloned FunctionNode in the global scope
 		sc = scope
 		if (n.pure == 0) error("Null pure")
-		sc.set(n.pure, n.shallow_clone())
+		sc.set(n.pure, n.shallow_clone(), 1337)
 
 		# Loop through variables
 		ix = 0
@@ -92,7 +92,7 @@ class virtual Definition < Visitor (Visitor v) {
 			# Store value in function scope
 			n.scope.set(
 				field.string,
-				this.new_variable(ix, field)
+				this.new_variable(ix, field), 1337
 			)
 
 			lln = lln.fwrd
@@ -121,7 +121,7 @@ class virtual Definition < Visitor (Visitor v) {
 						SQUARE_OPEN,
 						field.toNode(),
 						StringNode_new(nNUMBER, pos, Type_new("Number"), "0").toNode()
-					).toNode()
+					).toNode(), 1337
 				)
 			} else {
 				field.accept(this.v)

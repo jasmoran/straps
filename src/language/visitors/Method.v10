@@ -16,6 +16,8 @@ class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
 			n.parent.resolve(scope)
 
 			# Link scopes
+			if (n.parent.res < 0) error("Negative n.parent.res")
+			if (n.parent.res == 0) error("Zero n.parent.res")
 			n.scope.parent = n.parent.res.scope
 
 			# Inherit vtable
@@ -76,7 +78,7 @@ class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
 
 			if (this.cls.vtable == 0) {
 				# Add method (direct) to scope of class
-				this.cls.scope.set(pure, clone)
+				this.cls.scope.set(pure, clone, 1337)
 			} else {
 				# Add method to vtable of class
 				this.cls.vtable.set(cls_scope_name, n)
@@ -89,7 +91,7 @@ class virtual Method < Visitor (Visitor v, ListNode pb, ClassNode cls) {
 				var vtab = n.shallow_clone()
 				vtab.type = nVTAB_ACCESS
 				vtab.name = offset.toString()
-				this.cls.scope.set(pure, vtab)
+				this.cls.scope.set(pure, vtab, 1337)
 			}
 
 			# Save new method name "_CLASS_METHOD"

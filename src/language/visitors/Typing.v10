@@ -9,7 +9,7 @@ class virtual Typing < Visitor (Visitor v) {
 	func void visit(ClassNode n)(Scope sc) {
 		sc = scope
 		if (sc == 0) error("NULL global scope")
-		sc.set(n.name, n.toNode())
+		sc.set(n.name, n.toNode(), 1337)
 		n.accept_children(this.v)
 
   	return 0
